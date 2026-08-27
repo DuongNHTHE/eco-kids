@@ -1,4 +1,4 @@
-const topics = [
+export const topics = [
   {
     id: 'animals',
     title: 'Amazing Animals',
@@ -40,11 +40,9 @@ const topics = [
   }
 ];
 
-const products = [
+export const products = [
   { id: 'starter', name: 'Starter Kit', subtitle: 'Khởi đầu đa giác quan', price: 399000, badge: 'Bán chạy', color: '#ff7b54', items: ['01 sách Animals', '03 mô hình PLA', 'Web 3D trọn đời', 'AI Voice 30 ngày'] },
   { id: 'explorer', name: 'Explorer Kit', subtitle: 'Học đủ 3 chủ đề', price: 899000, badge: 'Tiết kiệm 18%', color: '#397ad7', featured: true, items: ['03 sách tương tác', '09 mô hình PLA', 'Web 3D trọn đời', 'AI Premium 3 tháng'] },
   { id: 'premium', name: 'AI Premium', subtitle: 'Bạn đồng hành mỗi ngày', price: 59000, period: '/tháng', badge: 'Dùng thử 7 ngày', color: '#7566d9', items: ['Luyện nói không giới hạn', 'Câu chuyện cá nhân hóa', 'Dashboard chi tiết', 'Nội dung mới mỗi tháng'] }
 ];
 
-module.exports = { topics, products };
-export {};

@@ -1,4 +1,8 @@
-const { Progress, Order, Partner } = require('./models');
+import { Progress, Order, Partner } from './models';
+
+const progressModel = Progress as any;
+const orderModel = Order as any;
+const partnerModel = Partner as any;
 
 const memory = {
   progress: [
@@ -11,13 +15,13 @@ const memory = {
 };
 
 function usingMongo() {
-  return Progress.db.readyState === 1;
+  return progressModel.db.readyState === 1;
 }
 
 async function saveProgress(data) {
   const record = { ...data, practicedAt: new Date() };
   if (usingMongo()) {
-    return Progress.findOneAndUpdate(
+    return progressModel.findOneAndUpdate(
       { childName: data.childName, topicId: data.topicId, wordId: data.wordId },
       { $set: record },
       { new: true, upsert: true, runValidators: true }
@@ -30,23 +34,22 @@ async function saveProgress(data) {
 }
 
 async function getProgress(childName) {
-  if (usingMongo()) return Progress.find({ childName }).sort({ practicedAt: -1 }).lean();
+  if (usingMongo()) return progressModel.find({ childName }).sort({ practicedAt: -1 }).lean();
   return memory.progress.filter(item => item.childName.toLowerCase() === childName.toLowerCase());
 }
 
 async function createOrder(data) {
-  if (usingMongo()) return Order.create(data);
+  if (usingMongo()) return orderModel.create(data);
   const order = { _id: `DEMO-${String(memory.orders.length + 1).padStart(4, '0')}`, ...data, status: 'new', createdAt: new Date() };
   memory.orders.push(order);
   return order;
 }
 
 async function createPartner(data) {
-  if (usingMongo()) return Partner.create(data);
+  if (usingMongo()) return partnerModel.create(data);
   const partner = { _id: `PARTNER-${memory.partners.length + 1}`, ...data, status: 'new', createdAt: new Date() };
   memory.partners.push(partner);
   return partner;
 }
 
-module.exports = { usingMongo, saveProgress, getProgress, createOrder, createPartner };
-export {};
+export { usingMongo, saveProgress, getProgress, createOrder, createPartner };

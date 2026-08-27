@@ -1,6 +1,6 @@
 # ECO-KIDS English 3D
 
-Website MVP được xây dựng từ tài liệu Checkpoint 1–3: kết hợp sách giấy, Web 3D, luyện phát âm và dashboard phụ huynh. Frontend hiện dùng Next.js App Router + Tailwind CSS; Express vẫn cung cấp API và lưu dữ liệu.
+Website MVP được xây dựng từ tài liệu Checkpoint 1–3: kết hợp sách giấy, Web 3D, luyện phát âm và dashboard phụ huynh. Ứng dụng dùng thuần Next.js App Router + Tailwind CSS; API được triển khai bằng Next.js Route Handlers.
 
 ## Chạy dự án
 
@@ -8,10 +8,9 @@ Website MVP được xây dựng từ tài liệu Checkpoint 1–3: kết hợp 
 2. Sao chép `.env.example` thành `.env`.
 3. Chạy `npm install`.
 4. Chạy `npm run dev`.
-5. Chạy `npm run dev`.
-6. Mở `http://localhost:3000`.
+5. Mở `http://localhost:3000`.
 
-Nếu MongoDB chưa hoạt động, website tự chuyển sang dữ liệu demo trong bộ nhớ để vẫn xem được đầy đủ giao diện. Khi MongoDB hoạt động, tiến độ học, đơn hàng và đăng ký đối tác được lưu lâu dài. `npm run dev` tự chạy cả Next.js và API Express; khi deploy production, chạy API bằng `npm run start:api` và frontend bằng `npm run build && npm start`.
+Nếu MongoDB chưa hoạt động, website tự chuyển sang dữ liệu demo trong bộ nhớ để vẫn xem được đầy đủ giao diện. Khi MongoDB hoạt động, tiến độ học, đơn hàng và đăng ký đối tác được lưu lâu dài. API chạy cùng Next.js, không cần server phụ hoặc port `1111`.
 
 ## Các route frontend
 

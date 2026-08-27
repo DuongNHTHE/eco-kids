@@ -1,0 +1,37 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { GET as health } from '../app/api/health/route';
+import { GET as getTopics } from '../app/api/topics/route';
+import { GET as getProducts } from '../app/api/products/route';
+import { GET as getProgress } from '../app/api/progress/[childName]/route';
+import { POST as saveProgress } from '../app/api/progress/route';
+import { POST as createOrder } from '../app/api/orders/route';
+
+test('serves health, topics, and products from Next API routes', async () => {
+  assert.equal((await health()).status, 200);
+  assert.equal((await getTopics()).json instanceof Function, true);
+  const topics = await (await getTopics()).json();
+  const products = await (await getProducts()).json();
+  assert.equal(topics.length, 3);
+  assert.equal(topics[0].words.length, 3);
+  assert.equal(products.length, 3);
+});
+
+test('saves progress and dashboard route reads it back', async () => {
+  const childName = 'ApiTestChild';
+  const response = await saveProgress(new Request('http://localhost/api/progress', { method: 'POST', body: JSON.stringify({ childName, topicId: 'fruits', wordId: 'apple', score: 93, minutes: 4 }) }));
+  assert.equal(response.status, 201);
+  const dashboard = await getProgress(new Request('http://localhost/api/progress/ApiTestChild'), { params: Promise.resolve({ childName }) });
+  const result = await dashboard.json();
+  assert.equal(result.stats.wordsLearned, 1);
+  assert.equal(result.stats.averageScore, 93);
+});
+
+test('validates orders and calculates total in Next API route', async () => {
+  const invalid = await createOrder(new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify({}) }));
+  assert.equal(invalid.status, 400);
+  const valid = await createOrder(new Request('http://localhost/api/orders', { method: 'POST', body: JSON.stringify({ customer: { name: 'Test', phone: '0901', address: 'HCM' }, items: [{ productId: 'explorer', quantity: 2 }] }) }));
+  const result = await valid.json();
+  assert.equal(valid.status, 201);
+  assert.equal(result.total, 1798000);
+});

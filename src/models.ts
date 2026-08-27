@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const progressSchema = new mongoose.Schema({
   childName: { type: String, required: true, trim: true, index: true },
@@ -32,9 +32,6 @@ const partnerSchema = new mongoose.Schema({
   status: { type: String, default: 'new' }
 }, { timestamps: true });
 
-module.exports = {
-  Progress: mongoose.model('Progress', progressSchema),
-  Order: mongoose.model('Order', orderSchema),
-  Partner: mongoose.model('Partner', partnerSchema)
-};
-export {};
+export const Progress = mongoose.models.Progress || mongoose.model('Progress', progressSchema);
+export const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
+export const Partner = mongoose.models.Partner || mongoose.model('Partner', partnerSchema);
