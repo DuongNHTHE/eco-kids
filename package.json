@@ -14,20 +14,23 @@
     "node": "22.14.0"
   },
   "dependencies": {
+    "@prisma/client": "^7.10.0",
     "dotenv": "^16.4.7",
     "mongoose": "^8.9.5",
-    "next": "^15.5.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "next": "^16.3.3",
+    "prisma": "^8.0.0-rc.12",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "sonner": "^2.0.8"
   },
   "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.1.7",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
-    "@types/express": "^5.0.3",
-    "@types/node": "^22.15.21",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
