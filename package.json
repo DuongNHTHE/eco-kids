@@ -8,7 +8,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "tsx --test test/app.test.ts"
+    "test": "tsx --test test/app.test.ts",
+    "postinstall": "prisma skills sync || exit 0"
   },
   "engines": {
     "node": "22.14.0"
@@ -18,7 +19,6 @@
     "dotenv": "^16.4.7",
     "mongoose": "^8.9.5",
     "next": "^16.3.3",
-    "prisma": "^8.0.0-rc.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sonner": "^2.0.8"
@@ -30,6 +30,7 @@
     "@types/react-dom": "^19.1.7",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
+    "prisma": "^7.10.0",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"

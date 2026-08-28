@@ -51,3 +51,8 @@ next-env.d.ts
 player_visits_data.json
 
 *.log
+/src/generated/prisma
+
+.agents
+.claude
+.windsurf
