@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAPI } from '../lib/hooks/useAPI';
 
 const money = value => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
 const productIcon = id => id === 'premium' ? '✨' : id === 'explorer' ? '🚀' : '🦊';
@@ -12,6 +13,7 @@ function Button({ children, className = '', ...props }) {
 }
 
 export default function HomePage() {
+    const { API } = useAPI();
     const [topics, setTopics] = useState([]);
     const [products, setProducts] = useState([]);
     const [cart, setCart] = useState([]);
@@ -22,10 +24,12 @@ export default function HomePage() {
 
     useEffect(() => {
         setCart(JSON.parse(localStorage.getItem('eco-cart') || '[]'));
-        Promise.all([fetch('/api/topics').then(r => r.json()), fetch('/api/products').then(r => r.json())])
-            .then(([nextTopics, nextProducts]) => { setTopics(nextTopics); setProducts(nextProducts); })
-            .catch(() => setToast('Chưa tải được nội dung.'));
-    }, []);
+        Promise.all([API.get('topics', false, false, true), API.get('products', false, false, true)])
+            .then(([nextTopics, nextProducts]) => {
+                if (!Array.isArray(nextTopics) || !Array.isArray(nextProducts)) return setToast('Chưa tải được nội dung.');
+                setTopics(nextTopics); setProducts(nextProducts);
+            });
+    }, [API]);
 
     useEffect(() => { localStorage.setItem('eco-cart', JSON.stringify(cart)); }, [cart]);
     useEffect(() => { if (!toast) return; const timer = setTimeout(() => setToast(''), 2400); return () => clearTimeout(timer); }, [toast]);
@@ -43,16 +47,16 @@ export default function HomePage() {
     async function submitPartner(event) {
         event.preventDefault(); setPartnerMessage('Đang gửi…');
         const values = Object.fromEntries(new FormData(event.currentTarget));
-        const response = await fetch('/api/partners', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) });
-        const result = await response.json(); setPartnerMessage(result.message); if (response.ok) event.currentTarget.reset();
+        const result = await API.post('partners', values, false, false);
+        setPartnerMessage(result.message); if (result.success) event.currentTarget.reset();
     }
 
     async function checkout(event) {
         event.preventDefault(); setCheckoutMessage('Đang tạo đơn…');
         const customer = Object.fromEntries(new FormData(event.currentTarget));
-        const response = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customer, items: cart }) });
-        const result = await response.json(); setCheckoutMessage(response.ok ? `${result.message} Mã đơn: ${result.orderId}` : result.message);
-        if (response.ok) { setCart([]); event.currentTarget.reset(); setToast('Đơn hàng đã được ghi nhận 🎉'); }
+        const result = await API.post('orders', { customer, items: cart }, false, false);
+        setCheckoutMessage(result.success ? `${result.message} Mã đơn: ${result.orderId}` : result.message);
+        if (result.success) { setCart([]); event.currentTarget.reset(); setToast('Đơn hàng đã được ghi nhận 🎉'); }
     }
 
     return <div className="overflow-hidden">

@@ -8,9 +8,385 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  email    String  @unique
+  password String?
+  name     String
+  avatar   String?
+
+  role UserRole @default(PARENT)
+
+  children Child[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  PARENT
+  TEACHER
+  SCHOOL_ADMIN
+}
+
+model Child {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  parentId String @db.ObjectId
+  parent   User   @relation(fields: [parentId], references: [id])
+
+  name     String
+  nickname String?
+  avatar   String?
+
+  birthDate DateTime?
+  gender    String?
+
+  level Int @default(1)
+
+  progress LearningProgress[]
+  sessions LearningSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Topic {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name String
+  slug String @unique
+
+  description String?
+  small_img   String?
+
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  lessons Lesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lesson {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  topicId String @db.ObjectId
+  topic   Topic  @relation(fields: [topicId], references: [id])
+
+  title       String
+  description String?
+
+  small_img String?
+
+  order Int @default(0) // sort
+
+  duration Int?
+
+  isPremium Boolean @default(false)
+  isActive  Boolean @default(true)
+
+  vocabularies Vocabulary[]
+  models       Model3D[]
+  games        Game[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vocabulary {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  lessonId String @db.ObjectId
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  word        String
+  phonetic    String?
+  description String?
+
+  image String?
+  audio String?
+
+  example String?
+
+  difficulty Int @default(1)
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Model3D {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  lessonId String @db.ObjectId
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  vocabularyId String? @db.ObjectId
+
+  name String
+
+  modelUrl   String
+  previewUrl String?
+
+  animation Json?
+
+  scale    Float?
+  rotation Json?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QRCode {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  code String @unique
+
+  targetType QRTargetType
+  targetId   String
+
+  bookId String? @db.ObjectId
+  page   Int?
+
+  isActive Boolean @default(true)
+
+  scanCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum QRTargetType {
+  LESSON
+  VOCABULARY
+  MODEL_3D
+  GAME
+}
+
+model LearningProgress {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  childId String @db.ObjectId
+
+  lessonId String @db.ObjectId
+
+  status ProgressStatus @default(NOT_STARTED)
+
+  progress Float @default(0)
+
+  score Float?
+
+  completedAt DateTime?
+
+  lastAccessedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  child Child @relation(fields: [childId], references: [id])
+
+  @@unique([childId, lessonId])
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model LearningSession {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  childId String @db.ObjectId
+
+  lessonId String? @db.ObjectId
+
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  duration Int?
+
+  device String?
+
+  createdAt DateTime @default(now())
+
+  child Child @relation(fields: [childId], references: [id])
+}
+
+model PronunciationAttempt {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  childId String @db.ObjectId
+
+  vocabularyId String @db.ObjectId
+
+  transcript String?
+
+  score Float
+
+  accuracy Float?
+  fluency  Float?
+
+  feedback String?
+
+  createdAt DateTime @default(now())
+}
+
+// chapter 2
+model AIConversation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  childId String @db.ObjectId
+
+  lessonId String? @db.ObjectId
+
+  type AIConversationType
+
+  title String?
+
+  messages AIMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AIMessage {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  conversationId String @db.ObjectId
+
+  role MessageRole
+
+  content String
+
+  metadata Json?
+
+  createdAt        DateTime        @default(now())
+  aiconversation   AIConversation? @relation(fields: [aIConversationId], references: [id])
+  aIConversationId String?         @db.ObjectId
+}
+
+enum AIConversationType {
+  CHAT
+  QUESTION
+  STORY
+  PRONUNCIATION
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model Game {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  lessonId String @db.ObjectId
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  title String
+
+  type GameType
+
+  config Json
+
+  isPremium Boolean @default(false)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}
+
+enum GameType {
+  QUIZ
+  MATCHING
+  DRAG_DROP
+  MEMORY
+  PRONUNCIATION
+  MODEL_3D
+}
+
+model SubscriptionPlan {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name String
+
+  price Float
+
+  duration Int
+
+  features String[]
+
+  isActive Boolean @default(true)
+}
+
+model Subscription {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId
+
+  planId String @db.ObjectId
+
+  status SubscriptionStatus
+
+  startedAt DateTime
+  expiredAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Organization {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name String
+
+  type OrganizationType
+
+  address String?
+
+  contactName String?
+  email       String?
+  phone       String?
+
+  members OrganizationMember[]
+
+  createdAt DateTime @default(now())
+}
+
+enum OrganizationType {
+  KINDERGARTEN
+  ENGLISH_CENTER
+  SCHOOL
+}
+
+model OrganizationMember {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  organizationId String @db.ObjectId
+
+  userId String @db.ObjectId
+
+  role OrganizationRole
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+enum OrganizationRole {
+  ADMIN
+  TEACHER
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAPI } from '../../lib/hooks/useAPI';
 
 declare global {
     interface Window {
@@ -11,6 +12,7 @@ declare global {
 }
 
 export default function LearnPage() {
+    const { API } = useAPI();
     const [topics, setTopics] = useState([]);
     const [topicIndex, setTopicIndex] = useState(0);
     const [wordIndex, setWordIndex] = useState(0);
@@ -23,13 +25,14 @@ export default function LearnPage() {
     const word = topic?.words[wordIndex];
 
     useEffect(() => {
-        fetch('/api/topics').then(r => r.json()).then(data => {
+        API.get('topics', false, true, true).then(data => {
+            if (!Array.isArray(data)) return;
             setTopics(data);
             const requested = new URLSearchParams(window.location.search).get('topic');
             const index = data.findIndex(item => item.id === requested);
             if (index >= 0) setTopicIndex(index);
         });
-    }, []);
+    }, [API]);
 
     useEffect(() => {
         const timer = setInterval(() =>
@@ -83,18 +86,13 @@ export default function LearnPage() {
     };
 
     const complete = async () => {
-        await fetch('/api/progress', {
-            method: 'POST', headers:
-            {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                childName: localStorage.getItem('eco-child') || 'Bé Mây',
-                topicId: topic.id,
-                wordId: word.id,
-                score: score || 85, minutes: 1
-            })
-        }).catch(() => { });
+        const response = await API.post('progress', {
+            childName: localStorage.getItem('eco-child') || 'Bé Mây',
+            topicId: topic.id,
+            wordId: word.id,
+            score: score || 85, minutes: 1
+        }, true, true, false);
+        if (!response.success) return;
         setToast('Đã lưu vào hành trình của bé!');
         if (wordIndex < topic.words.length - 1) {
             setTimeout(() => {
