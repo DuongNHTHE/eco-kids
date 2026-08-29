@@ -3,18 +3,21 @@
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppSidebar, type SidebarItem } from '../../components/AppSidebar';
+import { useLocale } from '../../context/LocaleContext';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+    const { t } = useLocale();
+
     const pathname = usePathname();
 
     const baseItems: Omit<SidebarItem, 'active'>[] = [
-        { icon: '⌂', label: 'Tổng quan', href: '/admin' },
-        { icon: '▣', label: 'Khóa học', href: '/admin/dashboard' },
-        { icon: '📊', label: 'Báo cáo', href: '/admin/reports' },
-        { icon: '🛒', label: 'Đơn hàng', href: '/admin/orders' },
-        { icon: '👥', label: 'Học sinh', href: '/admin/students' },
-        { icon: '👩‍👧', label: 'Góc phụ huynh', href: '/dashboard', accent: 'muted' },
-        { icon: '▶', label: 'Phòng học', href: '/learn', accent: 'highlight' },
+        { icon: '⌂', label: t('Overview'), href: '/admin' },
+        { icon: '▣', label: t('Courses'), href: '/admin/dashboard' },
+        { icon: '📊', label: t('Reports'), href: '/admin/reports' },
+        { icon: '🛒', label: t('Orders'), href: '/admin/orders' },
+        { icon: '👥', label: t('Students'), href: '/admin/students' },
+        { icon: '👩‍👧', label: t('Parental Corner'), href: '/dashboard', accent: 'muted' },
+        { icon: '▶', label: t('Classroom'), href: '/learn', accent: 'highlight' },
     ];
 
     const items: SidebarItem[] = baseItems.map(item => ({
