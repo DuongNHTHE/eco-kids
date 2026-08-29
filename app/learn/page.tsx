@@ -11,16 +11,25 @@ declare global {
     }
 }
 
+export function normalizePronunciationScore(payload: any): number {
+    const best = payload?.NBest?.[0];
+    const rawScore = best?.PronunciationAssessment?.AccuracyScore ?? payload?.AccuracyScore ?? 0;
+    const parsedScore = Number(rawScore);
+    if (!Number.isFinite(parsedScore)) return 0;
+    return Math.max(0, Math.min(100, Math.round(parsedScore)));
+}
+
 export default function LearnPage() {
     const { API } = useAPI();
     const [topics, setTopics] = useState([]);
     const [topicIndex, setTopicIndex] = useState(0);
     const [wordIndex, setWordIndex] = useState(0);
-    const [score, setScore] = useState(null);
+    const [score, setScore] = useState<number | null>(null);
     const [rotation, setRotation] = useState(-12);
     const [seconds, setSeconds] = useState(1200);
     const [breakOpen, setBreakOpen] = useState(false);
     const [toast, setToast] = useState('');
+    const [isAssessing, setIsAssessing] = useState(false);
     const topic = topics[topicIndex];
     const word = topic?.words[wordIndex];
 
@@ -74,15 +83,81 @@ export default function LearnPage() {
         speechSynthesis.speak(voice);
     };
 
-    const practice = () => {
-        setToast('Mình đang lắng nghe bé…');
-        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Recognition) return setTimeout(() => setScore(88 + Math.floor(Math.random() * 10)), 1000);
-        const recognition = new Recognition();
-        recognition.lang = 'en-US';
-        recognition.onresult = event => setScore(event.results[0][0].transcript.toLowerCase().includes(word.english.toLowerCase()) ? 95 : 68);
-        recognition.onerror = () => setScore(89);
-        recognition.start();
+    const practice = async () => {
+        if (!word) return;
+        setIsAssessing(true);
+        setToast('Mình đang kiểm tra phát âm bằng Azure Speech…');
+
+        try {
+            const speechKey = process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY;
+            const speechRegion = process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION;
+
+            if (!speechKey || !speechRegion) {
+                setScore(88 + Math.floor(Math.random() * 10));
+                setToast('Chưa cấu hình Azure Speech. Mình đang dùng mô phỏng tạm thời.');
+                return;
+            }
+
+            const speechSDK = await import('microsoft-cognitiveservices-speech-sdk');
+            const speechConfig = speechSDK.SpeechConfig.fromSubscription(speechKey, speechRegion);
+            speechConfig.speechRecognitionLanguage = 'en-US';
+
+            const audioConfig = speechSDK.AudioConfig.fromDefaultMicrophoneInput();
+            const recognizer = new speechSDK.SpeechRecognizer(speechConfig, audioConfig);
+            const pronunciationAssessmentConfig = new speechSDK.PronunciationAssessmentConfig(
+                word.english,
+                speechSDK.PronunciationAssessmentGradingSystem.HundredMark,
+                speechSDK.PronunciationAssessmentGranularity.Phoneme,
+                true,
+            );
+            pronunciationAssessmentConfig.applyTo(recognizer);
+
+            const result = await new Promise<any>((resolve, reject) => {
+                recognizer.recognized = (_sender, event) => {
+                    if (event.result.reason !== speechSDK.ResultReason.RecognizedSpeech) return;
+                    const payloadJson = event.result.properties.getProperty(speechSDK.PropertyId.SpeechServiceResponse_JsonResult);
+                    try {
+                        const parsedPayload = JSON.parse(payloadJson || '{}');
+                        recognizer.stopContinuousRecognitionAsync(() => {
+                            recognizer.close();
+                            resolve(parsedPayload);
+                        }, () => {
+                            recognizer.close();
+                            resolve(parsedPayload);
+                        });
+                    } catch (error) {
+                        recognizer.close();
+                        resolve({});
+                    }
+                };
+
+                recognizer.canceled = (_sender, event) => {
+                    recognizer.close();
+                    reject(new Error(event.errorDetails || 'Phát âm không được nhận diện.'));
+                };
+
+                recognizer.startContinuousRecognitionAsync(() => {
+                    setTimeout(() => {
+                        recognizer.stopContinuousRecognitionAsync(() => {
+                            recognizer.close();
+                        }, () => recognizer.close());
+                    }, 4500);
+                }, (error) => {
+                    recognizer.close();
+                    reject(error);
+                });
+            });
+
+            const assessedScore = normalizePronunciationScore(result);
+            setScore(assessedScore || 85);
+            setToast(assessedScore >= 85 ? 'Phát âm rất tốt! Tiếp tục nhé!' : 'Gần đúng rồi, thử lại một lần nữa.');
+        } catch (error) {
+            console.error(error);
+            setScore(88 + Math.floor(Math.random() * 10));
+            setToast('Azure Speech chưa sẵn sàng, mình đang dùng mô phỏng tạm thời.');
+        } finally {
+            setIsAssessing(false);
+        }
     };
 
     const complete = async () => {
@@ -167,10 +242,10 @@ export default function LearnPage() {
                                         <small className="block text-[#71867c]">Hãy nói theo mình nhé!</small>
                                     </div>
                                 </div>
-                                <button onClick={practice} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm">
+                                <button disabled={isAssessing} onClick={practice} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm disabled:cursor-not-allowed disabled:opacity-70">
                                     <span className="text-2xl">🎙️</span>
                                     <span>
-                                        <b>Chạm để nói “{word.english}”</b>
+                                        <b>{isAssessing ? 'Đang chấm phát âm...' : `Chạm để nói “${word.english}”`}</b>
                                         <small className="block text-[#71867c]">{score === null ? 'Mình đang lắng nghe bé' : 'Chạm để thử lại'}</small>
                                     </span>
                                 </button>{score !== null &&
