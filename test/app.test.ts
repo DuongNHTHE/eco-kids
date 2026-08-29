@@ -1,11 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { normalizePronunciationScore } from '../app/learn/page';
 import { GET as health } from '../app/api/health/route';
 import { GET as getTopics } from '../app/api/topics/route';
 import { GET as getProducts } from '../app/api/products/route';
 import { GET as getProgress } from '../app/api/progress/[childName]/route';
 import { POST as saveProgress } from '../app/api/progress/route';
 import { POST as createOrder } from '../app/api/orders/route';
+
+test('extracts pronunciation score from Azure assessment payload', () => {
+  const score = normalizePronunciationScore({
+    NBest: [{
+      PronunciationAssessment: { AccuracyScore: 94.2 }
+    }]
+  });
+  assert.equal(score, 94);
+});
 
 test('serves health, topics, and products from Next API routes', async () => {
   assert.equal((await health()).status, 200);
