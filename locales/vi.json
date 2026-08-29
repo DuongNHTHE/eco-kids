@@ -1,4 +1,11 @@
 {
   "hello": "Xin chào",
-  "goodbye": "Tạm biệt"
+  "goodbye": "Tạm biệt",
+  "Overview": "Tổng quan",
+  "Courses": "Khóa học",
+  "Reports": "Báo cáo",
+  "Orders": "Đơn hàng",
+  "Students": "Học sinh",
+  "Parental Corner": "Góc phụ huynh",
+  "Classroom": "Phòng học"
 }
