@@ -55,8 +55,23 @@ const vocabularySchema = new mongoose.Schema({
   phonetic: String,
   color: String,
   shape: String,
+  modelUrl: String,
   prompt: String,
 }, { _id: false });
+
+const vocabularyCollectionSchema = new mongoose.Schema({
+  topicId: { type: String, required: true, index: true },
+  id: { type: String, required: true },
+  english: { type: String, required: true },
+  vietnamese: String,
+  phonetic: String,
+  color: String,
+  shape: String,
+  modelUrl: String,
+  prompt: String,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+}, { collection: 'vocabularies' });
 
 const topicSchema = new mongoose.Schema({
   slug: { type: String, unique: true, required: true },
@@ -64,9 +79,10 @@ const topicSchema = new mongoose.Schema({
   vietnamese: String,
   icon: String,
   color: String,
+  description: String,
   lessonCount: Number,
   words: [vocabularySchema],
-}, { timestamps: true });
+}, { timestamps: true, collection: 'topics' });
 
 const productSchema = new mongoose.Schema({
   slug: { type: String, unique: true, required: true },
@@ -82,4 +98,5 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export const Topic = (mongoose.models.Topic || mongoose.model('Topic', topicSchema)) as mongoose.Model<any>;
+export const Vocabulary = (mongoose.models.Vocabulary || mongoose.model('Vocabulary', vocabularyCollectionSchema)) as mongoose.Model<any>;
 export const Product = (mongoose.models.Product || mongoose.model('Product', productSchema)) as mongoose.Model<any>;

@@ -145,8 +145,7 @@ model Model3D {
 
   vocabularyId String? @db.ObjectId
 
-  name String
-
+  name       String
   modelUrl   String
   previewUrl String?
 

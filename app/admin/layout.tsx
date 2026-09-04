@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { AppSidebar, type SidebarItem } from '../../components/AppSidebar';
 import { useLocale } from '../../context/LocaleContext';
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
     const { t } = useLocale();
 
     const pathname = usePathname();
@@ -13,6 +13,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const baseItems: Omit<SidebarItem, 'active'>[] = [
         { icon: '⌂', label: t('Overview'), href: '/admin' },
         { icon: '▣', label: t('Courses'), href: '/admin/dashboard' },
+        { icon: '＋', label: 'Thêm chủ đề', href: '/admin/topics' },
         { icon: '📊', label: t('Reports'), href: '/admin/reports' },
         { icon: '🛒', label: t('Orders'), href: '/admin/orders' },
         { icon: '👥', label: t('Students'), href: '/admin/students' },

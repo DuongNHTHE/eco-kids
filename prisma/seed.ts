@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { connectMongo, Product, Topic } from '../src/models';
+import { connectMongo, Product, Topic, Vocabulary } from '../src/models';
 
 const topics = [
     { slug: 'animals', title: 'Amazing Animals', vietnamese: 'Động vật kỳ thú', icon: '🦊', color: '#ff7b54', words: [['fox', 'Fox', 'Con cáo', '/fɒks/', 'fox', 'The fox is quick and clever.'], ['whale', 'Whale', 'Cá voi', '/weɪl/', 'whale', 'A whale swims in the blue ocean.'], ['turtle', 'Turtle', 'Con rùa', '/ˈtɜː.təl/', 'turtle', 'The turtle has a strong shell.']] },
@@ -16,7 +16,23 @@ const products = [
 async function main() {
     await connectMongo();
     for (const topic of topics) {
-        await Topic.findOneAndUpdate({ slug: topic.slug }, { ...topic, lessonCount: 1, words: topic.words.map(([id, english, vietnamese, phonetic, shape, prompt]) => ({ id, english, vietnamese, phonetic, shape, prompt, color: topic.color })) }, { upsert: true, new: true, setDefaultsOnInsert: true });
+        const { words, ...topicData } = topic;
+        await Topic.findOneAndUpdate(
+            { slug: topic.slug },
+            { $set: { ...topicData, lessonCount: words.length }, $unset: { words: 1 } },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        await Vocabulary.deleteMany({ topicId: topic.slug });
+        await Vocabulary.insertMany(words.map(([id, english, vietnamese, phonetic, shape, prompt]) => ({
+            topicId: topic.slug,
+            id,
+            english,
+            vietnamese,
+            phonetic,
+            shape,
+            prompt,
+            color: topic.color,
+        })));
     }
     for (const product of products) await Product.findOneAndUpdate({ slug: product.slug }, product, { upsert: true, new: true, setDefaultsOnInsert: true });
     console.log('Seed completed');
