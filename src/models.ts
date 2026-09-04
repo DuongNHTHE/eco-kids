@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
 
+let connectionPromise: Promise<typeof mongoose> | undefined;
+
+export function connectMongo() {
+  if (mongoose.connection.readyState === 1) return Promise.resolve(mongoose);
+  if (!connectionPromise) {
+    const uri = process.env.MONGODB_URI ?? process.env.DATABASE_URL;
+    if (!uri) throw new Error('MONGODB_URI is not configured.');
+    connectionPromise = mongoose.connect(uri);
+  }
+  return connectionPromise;
+}
+
 const progressSchema = new mongoose.Schema({
   childName: { type: String, required: true, trim: true, index: true },
   topicId: { type: String, required: true },
@@ -7,7 +19,7 @@ const progressSchema = new mongoose.Schema({
   score: { type: Number, min: 0, max: 100, default: 0 },
   minutes: { type: Number, min: 0, default: 1 },
   practicedAt: { type: Date, default: Date.now }
-}, { timestamps: true });
+}, { timestamps: true, collection: 'learning_progress' });
 
 progressSchema.index({ childName: 1, topicId: 1, wordId: 1 }, { unique: true });
 
@@ -32,6 +44,42 @@ const partnerSchema = new mongoose.Schema({
   status: { type: String, default: 'new' }
 }, { timestamps: true });
 
-export const Progress = mongoose.models.Progress || mongoose.model('Progress', progressSchema);
-export const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
-export const Partner = mongoose.models.Partner || mongoose.model('Partner', partnerSchema);
+export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
+export const Order = (mongoose.models.Order || mongoose.model('Order', orderSchema)) as mongoose.Model<any>;
+export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;
+
+const vocabularySchema = new mongoose.Schema({
+  id: String,
+  english: { type: String, required: true },
+  vietnamese: String,
+  phonetic: String,
+  color: String,
+  shape: String,
+  prompt: String,
+}, { _id: false });
+
+const topicSchema = new mongoose.Schema({
+  slug: { type: String, unique: true, required: true },
+  title: { type: String, required: true },
+  vietnamese: String,
+  icon: String,
+  color: String,
+  lessonCount: Number,
+  words: [vocabularySchema],
+}, { timestamps: true });
+
+const productSchema = new mongoose.Schema({
+  slug: { type: String, unique: true, required: true },
+  name: { type: String, required: true },
+  subtitle: String,
+  price: { type: Number, required: true },
+  period: String,
+  badge: String,
+  color: String,
+  featured: Boolean,
+  items: [String],
+  isActive: { type: Boolean, default: true },
+}, { timestamps: true });
+
+export const Topic = (mongoose.models.Topic || mongoose.model('Topic', topicSchema)) as mongoose.Model<any>;
+export const Product = (mongoose.models.Product || mongoose.model('Product', productSchema)) as mongoose.Model<any>;

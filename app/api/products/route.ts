@@ -1,5 +1,5 @@
-import { products } from '../../../src/data';
+import { getProducts } from '../../../src/content';
 
-export function GET() {
-  return Response.json(products);
+export async function GET() {
+  return Response.json(await getProducts());
 }

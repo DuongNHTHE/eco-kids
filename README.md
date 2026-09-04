@@ -9,8 +9,9 @@ Website MVP được xây dựng từ tài liệu Checkpoint 1–3: kết hợp 
 3. Chạy `npm install`.
 4. Chạy `npm run dev`.
 5. Mở `http://localhost:3000`.
+6. Chạy `npm run db:seed` để clone data
 
-Nếu MongoDB chưa hoạt động, website tự chuyển sang dữ liệu demo trong bộ nhớ để vẫn xem được đầy đủ giao diện. Khi MongoDB hoạt động, tiến độ học, đơn hàng và đăng ký đối tác được lưu lâu dài. API chạy cùng Next.js, không cần server phụ hoặc port `1111`.
+MongoDB là bắt buộc. Chạy `npm run db:seed` một lần sau khi cấu hình `MONGODB_URI` để tạo chủ đề, từ vựng và sản phẩm ban đầu. Tiến độ học, đơn hàng, đăng ký đối tác và nội dung đều được đọc/ghi từ MongoDB; ứng dụng không có dữ liệu fallback trong bộ nhớ.
 
 ## Các route frontend
 

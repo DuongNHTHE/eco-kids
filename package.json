@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "test": "tsx --test test/app.test.ts",
+    "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma skills sync || exit 0"
   },
   "engines": {
@@ -26,7 +27,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
-    "@types/node": "^22.15.21",
+    "@types/node": "^22.20.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.1.7",
     "autoprefixer": "^10.4.21",

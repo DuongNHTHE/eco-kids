@@ -1,5 +1,5 @@
-import { topics } from '../../../src/data';
+import { getTopics } from '../../../src/content';
 
-export function GET() {
-  return Response.json(topics);
+export async function GET() {
+  return Response.json(await getTopics());
 }

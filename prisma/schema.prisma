@@ -18,8 +18,11 @@ model User {
 
   children Child[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  organizationMembers OrganizationMember[]
+
+  @@map("users")
 }
 
 enum UserRole {
@@ -47,8 +50,11 @@ model Child {
   progress LearningProgress[]
   sessions LearningSession[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  aiconversations AIConversation[]
+
+  @@map("children")
 }
 
 model Topic {
@@ -59,6 +65,9 @@ model Topic {
 
   description String?
   small_img   String?
+  translation String?
+  icon        String?
+  color       String?
 
   order    Int     @default(0)
   isActive Boolean @default(true)
@@ -67,6 +76,8 @@ model Topic {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("topics")
 }
 
 model Lesson {
@@ -93,6 +104,8 @@ model Lesson {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("lessons")
 }
 
 model Vocabulary {
@@ -102,8 +115,12 @@ model Vocabulary {
   lesson   Lesson @relation(fields: [lessonId], references: [id])
 
   word        String
+  translation String?
   phonetic    String?
   description String?
+  prompt      String?
+  shape       String?
+  color       String?
 
   image String?
   audio String?
@@ -116,6 +133,8 @@ model Vocabulary {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("vocabularies")
 }
 
 model Model3D {
@@ -140,6 +159,8 @@ model Model3D {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("model_3ds")
 }
 
 model QRCode {
@@ -159,6 +180,8 @@ model QRCode {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("qrcodes")
 }
 
 enum QRTargetType {
@@ -173,13 +196,15 @@ model LearningProgress {
 
   childId String @db.ObjectId
 
-  lessonId String @db.ObjectId
+  lessonId     String  @db.ObjectId
+  vocabularyId String? @db.ObjectId
 
   status ProgressStatus @default(NOT_STARTED)
 
   progress Float @default(0)
 
-  score Float?
+  score   Float?
+  minutes Int    @default(1)
 
   completedAt DateTime?
 
@@ -191,6 +216,7 @@ model LearningProgress {
   child Child @relation(fields: [childId], references: [id])
 
   @@unique([childId, lessonId])
+  @@map("learning_progress")
 }
 
 enum ProgressStatus {
@@ -216,6 +242,8 @@ model LearningSession {
   createdAt DateTime @default(now())
 
   child Child @relation(fields: [childId], references: [id])
+
+  @@map("learning_sessions")
 }
 
 model PronunciationAttempt {
@@ -235,6 +263,8 @@ model PronunciationAttempt {
   feedback String?
 
   createdAt DateTime @default(now())
+
+  @@map("pronunciation_attempts")
 }
 
 // chapter 2
@@ -253,6 +283,10 @@ model AIConversation {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  child Child @relation(fields: [childId], references: [id])
+
+  @@map("ai_conversations")
 }
 
 model AIMessage {
@@ -269,6 +303,8 @@ model AIMessage {
   createdAt        DateTime        @default(now())
   aiconversation   AIConversation? @relation(fields: [aIConversationId], references: [id])
   aIConversationId String?         @db.ObjectId
+
+  @@map("ai_messages")
 }
 
 enum AIConversationType {
@@ -301,6 +337,9 @@ model Game {
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("games")
 }
 
 enum GameType {
@@ -313,24 +352,22 @@ enum GameType {
 }
 
 model SubscriptionPlan {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  name String
-
-  price Float
-
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  price    Float
   duration Int
-
   features String[]
+  isActive Boolean  @default(true)
 
-  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscription_plans")
 }
 
 model Subscription {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @db.ObjectId
-
   planId String @db.ObjectId
 
   status SubscriptionStatus
@@ -340,6 +377,8 @@ model Subscription {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
 }
 
 enum SubscriptionStatus {
@@ -349,12 +388,9 @@ enum SubscriptionStatus {
 }
 
 model Organization {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  name String
-
-  type OrganizationType
-
+  id      String           @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  type    OrganizationType
   address String?
 
   contactName String?
@@ -364,6 +400,9 @@ model Organization {
   members OrganizationMember[]
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("organizations")
 }
 
 enum OrganizationType {
@@ -384,6 +423,55 @@ model OrganizationMember {
   createdAt DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model Product {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug      String   @unique
+  name      String
+  subtitle  String?
+  price     Float
+  period    String?
+  badge     String?
+  color     String?
+  items     String[]
+  featured  Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("products")
+}
+
+model Order {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  customer  Json
+  items     Json
+  total     Float
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model Partner {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  organization String
+  contactName  String
+  phone        String
+  email        String?
+  studentCount Int?
+  note         String?
+  status       String   @default("new")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("partners")
 }
 
 enum OrganizationRole {
