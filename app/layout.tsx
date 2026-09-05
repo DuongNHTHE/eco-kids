@@ -1,4 +1,5 @@
 import { LocaleProvider } from '../context/LocaleContext';
+import Providers from './providers';
 import './globals.css';
 
 export const metadata = {
@@ -10,9 +11,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="vi">
       <body>
-        <LocaleProvider>
-          {children}
-        </LocaleProvider>
+        <Providers>
+          <LocaleProvider>{children}</LocaleProvider>
+        </Providers>
       </body>
     </html>
   );

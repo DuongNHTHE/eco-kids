@@ -12,6 +12,16 @@ export function connectMongo() {
   return connectionPromise;
 }
 
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+  password: { type: String },
+  name: { type: String, required: true, trim: true },
+  avatar: String,
+  role: { type: String, enum: ['ADMIN', 'PARENT', 'TEACHER', 'SCHOOL_ADMIN'], default: 'PARENT' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+}, { collection: 'users' });
+
 const progressSchema = new mongoose.Schema({
   childName: { type: String, required: true, trim: true, index: true },
   topicId: { type: String, required: true },
@@ -44,6 +54,7 @@ const partnerSchema = new mongoose.Schema({
   status: { type: String, default: 'new' }
 }, { timestamps: true });
 
+export const User = (mongoose.models.User || mongoose.model('User', userSchema)) as mongoose.Model<any>;
 export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
 export const Order = (mongoose.models.Order || mongoose.model('Order', orderSchema)) as mongoose.Model<any>;
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;

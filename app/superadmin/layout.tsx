@@ -1,11 +1,27 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { AppSidebar, type SidebarItem } from '../../components/AppSidebar';
 
 export default function SuperAdminLayout({ children }: { children: ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const { data: session, status } = useSession();
+
+    useEffect(() => {
+        if (status === 'loading') return;
+        if (!session?.user) {
+            router.replace('/login');
+            return;
+        }
+
+        if ((session.user as { role?: string }).role !== 'ADMIN') {
+            router.replace('/dashboard');
+        }
+    }, [router, session, status]);
 
     const baseItems: Omit<SidebarItem, 'active'>[] = [
         { icon: '⌂', label: 'Tổng quan', href: '/superadmin' },

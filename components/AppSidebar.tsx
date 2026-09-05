@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
+import { clearSession } from '../lib/auth';
 
 export type SidebarItem = {
     icon: string;
@@ -21,6 +25,11 @@ export function AppSidebar({
     footerTitle?: string;
     footerText?: string;
 }) {
+    async function handleLogout() {
+        clearSession();
+        await signOut({ callbackUrl: '/login' });
+    }
+
     return (
         <aside className="fixed inset-y-0 left-0 z-20 w-64 bg-[#203b35] p-6 text-white transition-transform lg:translate-x-0">
             <Link href="/" className="flex items-center gap-2 text-white">
@@ -64,6 +73,9 @@ export function AppSidebar({
                 <div className="absolute bottom-8 rounded-2xl bg-white/10 p-4 text-sm">
                     {footerTitle && <b>{footerTitle}</b>}
                     {footerText && <p className="mt-2 text-white/70">{footerText}</p>}
+                    <button type="button" onClick={handleLogout} className="mt-4 font-bold text-[#f4c8a9] hover:underline">
+                        Đăng xuất
+                    </button>
                 </div>
             )}
         </aside>

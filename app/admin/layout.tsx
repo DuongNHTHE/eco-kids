@@ -1,14 +1,31 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { AppSidebar, type SidebarItem } from '../../components/AppSidebar';
 import { useLocale } from '../../context/LocaleContext';
 
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
     const { t } = useLocale();
-
+    const router = useRouter();
     const pathname = usePathname();
+    const { data: session, status } = useSession();
+
+    useEffect(() => {
+        const allowedRoles = ['ADMIN', 'TEACHER', 'SCHOOL_ADMIN'];
+
+        if (status === 'loading') return;
+        if (!session?.user) {
+            router.replace('/login');
+            return;
+        }
+
+        if (!allowedRoles.includes((session.user as { role?: string }).role || '')) {
+            router.replace('/dashboard');
+        }
+    }, [router, session, status]);
 
     const baseItems: Omit<SidebarItem, 'active'>[] = [
         { icon: '⌂', label: t('Overview'), href: '/admin' },
