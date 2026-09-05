@@ -146,10 +146,10 @@ export default function TopicsListPage() {
                                             </div>
                                             <div className="grid gap-3 sm:grid-cols-2">
                                                 {([['english', 'Tiếng Anh', 'Forest'], ['vietnamese', 'Tiếng Việt', 'Khu rừng'], ['phonetic', 'Phiên âm', '/ˈfɒr.ɪst/'], ['shape', 'Mô hình', 'tree'], ['modelUrl', 'URL mô hình 3D', 'https://example.com/model.glb'], ['prompt', 'Câu ví dụ', 'The forest is green.']] as const).map(([field, label, placeholder]) =>
-                                                <label key={field} className="text-sm font-bold">{label}
-                                                    <input required={field === 'english' || field === 'vietnamese' || field === 'prompt'} value={word[field]} onChange={event => updateWord(index, field, event.target.value)} placeholder={placeholder} className="mt-2 w-full rounded-lg border border-[#dceadd] bg-white px-3 py-2 font-normal outline-none focus:border-[#6eaa83]" />
-                                                </label>
-                                            )}
+                                                    <label key={field} className="text-sm font-bold">{label}
+                                                        <input required={field === 'english' || field === 'vietnamese' || field === 'prompt'} value={word[field]} onChange={event => updateWord(index, field, event.target.value)} placeholder={placeholder} className="mt-2 w-full rounded-lg border border-[#dceadd] bg-white px-3 py-2 font-normal outline-none focus:border-[#6eaa83]" />
+                                                    </label>
+                                                )}
                                             </div>
                                         </div>
                                     )}

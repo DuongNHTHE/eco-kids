@@ -64,6 +64,15 @@ export default function LearnPage() {
     }, [API]);
 
     useEffect(() => {
+        if (localStorage.getItem('eco-child')) return;
+        API.get('children', false, true, true).then(children => {
+            if (Array.isArray(children) && children[0]?.name) {
+                localStorage.setItem('eco-child', children[0].name);
+            }
+        });
+    }, [API]);
+
+    useEffect(() => {
         const timer = setInterval(() =>
             setSeconds(value => {
                 if (value <= 1) {
@@ -98,7 +107,7 @@ export default function LearnPage() {
         speechSynthesis.cancel();
         const voice = new SpeechSynthesisUtterance(text);
         voice.lang = 'en-US'; voice.rate = .78;
-        voice.pitch = 1.08;
+        voice.pitch = 1.0;
         speechSynthesis.speak(voice);
     };
 
@@ -179,7 +188,7 @@ export default function LearnPage() {
 
     const complete = async () => {
         const response = await API.post('progress', {
-            childName: localStorage.getItem('eco-child') || 'Bé Mây',
+            childName: localStorage.getItem('eco-child') || 'Bé Heo',
             topicId: topic.id,
             wordId: word.id,
             score: score ?? 0, minutes: 1

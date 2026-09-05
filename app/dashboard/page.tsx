@@ -9,11 +9,21 @@ import { useAPI } from '../../lib/hooks/useAPI';
 import { useLocale } from '../../context/LocaleContext';
 import { clearSession } from '../../lib/auth';
 
+type ChildProfile = {
+  id: string;
+  name: string;
+  nickname: string;
+  avatar: string;
+  level: number;
+};
+
 export default function DashboardPage() {
   const { API } = useAPI();
   const router = useRouter();
   const [data, setData] = useState(null);
   const [topics, setTopics] = useState([]);
+  const [children, setChildren] = useState<ChildProfile[]>([]);
+  const [selectedChildName, setSelectedChildName] = useState('');
   const [done, setDone] = useState(false);
   const [menu, setMenu] = useState(false);
   const { data: session, status } = useSession();
@@ -26,14 +36,34 @@ export default function DashboardPage() {
   useEffect(() => {
     if (status !== 'authenticated') return;
 
-    const name = localStorage.getItem('eco-child') || 'Bé Heo';
-    Promise.all([API.get(`progress/${encodeURIComponent(name)}`, false, true, true),
-    API.get('topics', false, true, true)]).then(([progress, nextTopics]) => {
-      if (!progress.success && progress.message) return;
-      setData({ ...progress, shortName: name.replace(/^Bé\s*/i, '') });
+    Promise.all([
+      API.get('children', false, true, true),
+      API.get('topics', false, true, true),
+    ]).then(([nextChildren, nextTopics]) => {
+      if (!Array.isArray(nextChildren)) return;
+      const savedName = localStorage.getItem('eco-child');
+      const selectedChild = nextChildren.find(child => child.name === savedName) || nextChildren[0];
+      setChildren(nextChildren);
       setTopics(nextTopics);
+      setSelectedChildName(selectedChild?.name || savedName || 'Bé Heo');
     });
   }, [API, status]);
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !selectedChildName) return;
+
+    API.get(`progress/${encodeURIComponent(selectedChildName)}`, false, true, true).then(progress => {
+      if (!progress.success && progress.message) return;
+      setData({ ...progress, shortName: selectedChildName.replace(/^Bé\s*/i, '') });
+    });
+  }, [API, selectedChildName, status]);
+
+  function chooseChild(child: ChildProfile) {
+    localStorage.setItem('eco-child', child.name);
+    setSelectedChildName(child.name);
+    setData(null);
+  }
+
   if (status !== 'authenticated' || !data) return <div className="grid min-h-screen place-items-center text-xl">Đang tải dashboard...</div>;
 
   const recent = data.records.slice(0, 3);
@@ -171,6 +201,26 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-extrabold sm:text-4xl">
               {t('Good evening, parent')} 👋
             </h1>
+
+            {children.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <label htmlFor="dashboard-child" className="text-sm font-bold text-[#60786e]">Đang xem tiến độ của:</label>
+                <select
+                  id="dashboard-child"
+                  value={selectedChildName}
+                  onChange={event => {
+                    const child = children.find(item => item.name === event.target.value);
+                    if (child) chooseChild(child);
+                  }}
+                  className="rounded-xl border border-[#d9eadc] bg-white px-3 py-2 font-bold shadow-sm outline-none focus:border-[#2d6358]"
+                >
+                  {children.map(child => (
+                    <option key={child.id} value={child.name}>{child.avatar} {child.name}</option>
+                  ))}
+                </select>
+                <Link href="/children" className="font-bold text-[#2d6358]">+ Thêm bé</Link>
+              </div>
+            )}
           </div>
 
           <div className="hidden items-center gap-3 rounded-full bg-white p-2 pr-5 shadow-sm sm:flex">
