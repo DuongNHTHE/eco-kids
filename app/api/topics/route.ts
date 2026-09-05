@@ -1,5 +1,5 @@
 import { getTopics } from '../../../src/content';
-import { connectMongo, Topic, Vocabulary } from '../../../src/models';
+import { connectMongo, Model3D, Topic, Vocabulary } from '../../../src/models';
 
 export async function GET() {
   return Response.json(await getTopics());
@@ -51,7 +51,26 @@ export async function POST(request: Request) {
       lessonCount: 1,
     });
 
-    await Vocabulary.insertMany(normalizedWords.map(word => ({ topicId: topic.slug, ...word })));
+    const savedWords = await Vocabulary.insertMany(normalizedWords.map(word => ({ topicId: topic.slug, ...word })));
+    for (const word of savedWords) {
+      const modelUrl = String(word.modelUrl || '').trim();
+      if (!modelUrl) continue;
+      await Model3D.updateOne(
+        { vocabularyId: String(word.id) },
+        {
+          vocabularyId: String(word.id),
+          name: String(word.english || 'model').trim() || 'model',
+          modelUrl,
+          previewUrl: '',
+          animation: null,
+          scale: 1,
+          rotation: { x: 0, y: 0, z: 0 },
+          isActive: true,
+          updatedAt: new Date(),
+        },
+        { upsert: true }
+      );
+    }
     await Topic.updateOne({ _id: topic._id }, { lessonCount: normalizedWords.length });
 
     return Response.json({ message: 'Đã thêm chủ đề.', topic: { ...topic.toObject(), id: topic.slug } }, { status: 201 });

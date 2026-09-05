@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizePronunciationScore } from '../app/learn/page';
+import { normalizePronunciationScore, resolveWordModel } from '../app/learn/page';
 import { GET as health } from '../app/api/health/route';
 import { GET as getTopics } from '../app/api/topics/route';
 import { GET as getProducts } from '../app/api/products/route';
@@ -15,6 +15,16 @@ test('extracts pronunciation score from Azure assessment payload', () => {
     }]
   });
   assert.equal(score, 94);
+});
+
+test('uses saved 3d model url when present and falls back to shape icon otherwise', () => {
+  const urlModel = resolveWordModel({ modelUrl: 'https://example.com/model.glb', shape: 'fox' });
+  const iconModel = resolveWordModel({ shape: 'whale' });
+
+  assert.equal(urlModel.type, 'iframe');
+  assert.equal(urlModel.src, 'https://example.com/model.glb');
+  assert.equal(iconModel.type, 'emoji');
+  assert.equal(iconModel.icon, '🐋');
 });
 
 test('serves health, topics, and products from Next API routes', async () => {

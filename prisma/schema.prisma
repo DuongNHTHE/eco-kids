@@ -99,7 +99,6 @@ model Lesson {
   isActive  Boolean @default(true)
 
   vocabularies Vocabulary[]
-  models       Model3D[]
   games        Game[]
 
   createdAt DateTime @default(now())
@@ -121,6 +120,7 @@ model Vocabulary {
   prompt      String?
   shape       String?
   color       String?
+  models      Model3D[]
 
   image String?
   audio String?
@@ -140,10 +140,8 @@ model Vocabulary {
 model Model3D {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  lessonId String @db.ObjectId
-  lesson   Lesson @relation(fields: [lessonId], references: [id])
-
-  vocabularyId String? @db.ObjectId
+  vocabulary   Vocabulary @relation(fields: [vocabularyId], references: [id])
+  vocabularyId String     @db.ObjectId
 
   name       String
   modelUrl   String

@@ -19,6 +19,24 @@ export function normalizePronunciationScore(payload: any): number {
     return Math.max(0, Math.min(100, Math.round(parsedScore)));
 }
 
+export function resolveWordModel(word: any) {
+    const modelUrl = String(word?.modelUrl || word?.models?.[0]?.modelUrl || '').trim();
+    if (modelUrl) {
+        return {
+            type: 'iframe',
+            src: modelUrl,
+            icon: null,
+        };
+    }
+
+    const shape = String(word?.shape || '').trim();
+
+    return {
+        type: 'emoji',
+        src: null,
+    };
+}
+
 export default function LearnPage() {
     const { API } = useAPI();
     const [topics, setTopics] = useState([]);
@@ -32,6 +50,7 @@ export default function LearnPage() {
     const [isAssessing, setIsAssessing] = useState(false);
     const topic = topics[topicIndex];
     const word = topic?.words[wordIndex];
+    const model = resolveWordModel(word);
 
     useEffect(() => {
         API.get('topics', false, true, true).then(data => {
@@ -177,6 +196,7 @@ export default function LearnPage() {
         }
     };
     const time = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+
     return (
         <div className="min-h-screen bg-[#f4faf4] text-[#203b35]">
             <header className="flex items-center justify-between border-b border-[#dceadd] bg-white px-5 py-4 lg:px-10">
@@ -218,11 +238,33 @@ export default function LearnPage() {
                         </div>
                     </div>
                     <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_.9fr]">
-                        <div className="relative grid min-h-[430px] place-items-center overflow-hidden rounded-[2rem] bg-[#dceff0] shadow-soft">
+                        <div className="relative grid min-h-[430px] place-items-center overflow-hidden rounded-[2rem] shadow-soft">
                             <div className="absolute left-7 top-7 rounded-full bg-white/80 px-4 py-2 text-sm font-bold">Mô hình 3D</div>
-                            <button aria-label="Xoay mô hình" onClick={() => setRotation(value => value + 40)} className="text-[10rem] transition-transform duration-500" style={{ transform: `rotateY(${rotation}deg)` }}>{word.shape === 'fox' ? '🦊' : word.shape === 'whale' ? '🐋' : word.shape === 'turtle' ? '🐢' : word.shape === 'apple' ? '🍎' : word.shape === 'orange' ? '🍊' : word.shape === 'pear' ? '🍐' : word.shape === 'car' ? '🚗' : word.shape === 'bus' ? '🚌' : '🚀'}</button>
-                            <div className="absolute bottom-5 text-sm text-[#557b7a]">↔ Chạm nút để xoay · Cuộn để phóng to</div>
-                            <button onClick={() => setRotation(value => value + 360)} className="absolute right-5 top-5 rounded-full bg-white px-3 py-2 text-xl shadow">✦</button></div><div className="rounded-[2rem] bg-white p-6 shadow-soft">
+                            {model.type === 'iframe' ? (
+                                <div className="h-full w-full bg-[#dceff0]">
+                                    <iframe
+                                        className="h-full w-full"
+                                        title={`${word.english} 3D model`}
+                                        frameBorder="0"
+                                        allowFullScreen
+                                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                                        src={model.src || undefined}
+                                    />
+                                </div>
+                            ) : (
+                                <button
+                                    aria-label="Xoay mô hình"
+                                    onClick={() => setRotation(value => value + 40)}
+                                    className="text-[10rem] transition-transform duration-500"
+                                    style={{ transform: `rotateY(${rotation}deg)` }}
+                                >
+                                    {model.icon}
+                                </button>
+                            )}
+                            <div className="absolute bottom-5 text-sm text-[#557b7a]">{model.type === 'iframe' ? '↔ Chạm nút để xoay · Cuộn để phóng to' : 'Mô hình minh họa theo hình dạng từ vựng'}</div>
+                            <button onClick={() => setRotation(value => value + 360)} className="absolute right-5 top-5 rounded-full bg-white px-3 py-2 text-xl shadow">✦</button>
+                        </div>
+                        <div className="rounded-[2rem] bg-white p-6 shadow-soft">
                             <span className="text-sm font-bold text-[#83968c]">Từ mới của bé</span>
                             <h2 className="mt-2 text-6xl font-extrabold">{word.english}</h2>
                             <div className="mt-2 flex items-center gap-3 text-[#6c857c]">{word.phonetic}

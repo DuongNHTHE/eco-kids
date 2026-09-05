@@ -1,5 +1,5 @@
 import { getTopics } from '../../../../src/content';
-import { connectMongo, Topic, Vocabulary } from '../../../../src/models';
+import { connectMongo, Model3D, Topic, Vocabulary } from '../../../../src/models';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -55,6 +55,33 @@ function updateWords(words: any[], action: string, body: any) {
   return updateWord(words, body);
 }
 
+async function upsertModelForVocabulary(vocabularyId: string, word: any) {
+  const modelUrl = String(word?.modelUrl || '').trim();
+  const key = String(vocabularyId || word?.id || '').trim();
+  if (!key) return;
+
+  if (!modelUrl) {
+    await Model3D.deleteMany({ vocabularyId: key });
+    return;
+  }
+
+  await Model3D.updateOne(
+    { vocabularyId: key },
+    {
+      vocabularyId: key,
+      name: String(word?.english || 'model').trim() || 'model',
+      modelUrl,
+      previewUrl: '',
+      animation: null,
+      scale: 1,
+      rotation: { x: 0, y: 0, z: 0 },
+      isActive: true,
+      updatedAt: new Date(),
+    },
+    { upsert: true }
+  );
+}
+
 async function handleWordMutation(request: Request, context: RouteContext, requiredAction?: string) {
   try {
     const { id } = await context.params;
@@ -78,11 +105,14 @@ async function handleWordMutation(request: Request, context: RouteContext, requi
     if (updateResult.error) return Response.json({ message: updateResult.error }, { status: updateResult.status });
 
     if (action === 'create') {
-      await Vocabulary.create({ topicId: id, ...updateResult.word });
+      const createdWord = await Vocabulary.create({ topicId: id, ...updateResult.word });
+      await upsertModelForVocabulary(String(createdWord?.id || updateResult.word.id), updateResult.word);
     } else if (action === 'update') {
-      await Vocabulary.findOneAndUpdate({ topicId: id, id: updateResult.wordId }, { ...updateResult.word, updatedAt: new Date() }, { runValidators: true });
+      const updatedWord = await Vocabulary.findOneAndUpdate({ topicId: id, id: updateResult.wordId }, { ...updateResult.word, updatedAt: new Date() }, { runValidators: true, new: true });
+      await upsertModelForVocabulary(String(updatedWord?.id || updateResult.wordId), updateResult.word);
     } else {
       await Vocabulary.deleteOne({ topicId: id, id: updateResult.wordId });
+      await Model3D.deleteMany({ vocabularyId: updateResult.wordId });
     }
     const wordCount = await Vocabulary.countDocuments({ topicId: id });
     await Topic.updateOne({ slug: id }, { lessonCount: wordCount });

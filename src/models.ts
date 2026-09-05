@@ -73,6 +73,19 @@ const vocabularyCollectionSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 }, { collection: 'vocabularies' });
 
+const model3DSchema = new mongoose.Schema({
+  vocabularyId: { type: String, required: true, index: true },
+  name: { type: String, required: true },
+  modelUrl: { type: String, required: true },
+  previewUrl: String,
+  animation: mongoose.Schema.Types.Mixed,
+  scale: Number,
+  rotation: mongoose.Schema.Types.Mixed,
+  isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+}, { collection: 'model_3ds' });
+
 const topicSchema = new mongoose.Schema({
   slug: { type: String, unique: true, required: true },
   title: { type: String, required: true },
@@ -99,4 +112,5 @@ const productSchema = new mongoose.Schema({
 
 export const Topic = (mongoose.models.Topic || mongoose.model('Topic', topicSchema)) as mongoose.Model<any>;
 export const Vocabulary = (mongoose.models.Vocabulary || mongoose.model('Vocabulary', vocabularyCollectionSchema)) as mongoose.Model<any>;
+export const Model3D = (mongoose.models.Model3D || mongoose.model('Model3D', model3DSchema)) as mongoose.Model<any>;
 export const Product = (mongoose.models.Product || mongoose.model('Product', productSchema)) as mongoose.Model<any>;
