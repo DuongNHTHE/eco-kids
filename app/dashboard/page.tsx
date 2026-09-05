@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { useLocale } from '../../context/LocaleContext';
+import { clearSession } from '../../lib/auth';
 
 export default function DashboardPage() {
   const { API } = useAPI();
@@ -37,6 +39,15 @@ export default function DashboardPage() {
   const recent = data.records.slice(0, 3);
   const words = topics.flatMap(topic => topic.words.map(word => ({ ...word, topic })));
   const parentName = session?.user?.name || 'Phụ huynh';
+  const parentEmail = session?.user?.email || 'Chưa cập nhật email';
+  const parentAvatar = session?.user?.image;
+  const parentInitial = parentName.trim().charAt(0).toUpperCase() || 'P';
+
+  async function handleLogout() {
+    clearSession();
+    await signOut({ callbackUrl: '/login' });
+  }
+
   const activity = Array.from({ length: 7 }, (_, index) => {
     const day = new Date();
     day.setHours(0, 0, 0, 0);
@@ -54,7 +65,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#f4faf4] text-[#203b35]">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-20 w-64 bg-[#203b35] p-6 text-white transition-transform lg:translate-x-0 ${menu ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-[#203b35] p-6 text-white transition-transform lg:translate-x-0 ${menu ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Logo */}
@@ -75,7 +86,7 @@ export default function DashboardPage() {
         </Link>
 
         {/* Navigation */}
-        <nav className="mt-12 space-y-2">
+        <nav className="mt-12 min-h-0 flex-1 space-y-2 overflow-y-auto">
           {[
             ['⌂', t('OverView'), '#overview'],
             ['▥', t('Progress'), '#progress'],
@@ -101,17 +112,38 @@ export default function DashboardPage() {
           </Link>
         </nav>
 
-        {/* Help */}
-        <div className="absolute bottom-8 rounded-2xl bg-white/10 p-4 text-sm">
-          <b>💡 {t('Need help')}?</b>
+        {/* Help and account */}
+        <div className="shrink-0 pt-6">
+          {/* <div className="rounded-2xl bg-white/10 p-4 text-sm">
+            <b>💡 {t('Need help')}?</b>
 
-          <p className="mt-2 text-white/70">
-            {t('Send a message to ECO-KIDS at any time.')}
-          </p>
+            <p className="mt-2 text-white/70">
+              {t('Send a message to ECO-KIDS at any time.')}
+            </p>
 
-          <button className="mt-2 font-bold text-[#b7e0bd]">
-            {t('Chat')}
-          </button>
+            <button className="mt-2 font-bold text-[#b7e0bd]">
+              {t('Chat')}
+            </button>
+          </div> */}
+
+          <Link href="/profile" className="mt-4 flex items-center gap-3 rounded-2xl bg-white/10 p-3 transition hover:bg-white/15">
+            {parentAvatar ? (
+              <img src={parentAvatar} alt={`Ảnh đại diện của ${parentName}`} className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-white/30" />
+            ) : (
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#f47d52] text-lg font-black text-white">
+                {parentInitial}
+              </span>
+            )}
+            <span className="min-w-0">
+              <b className="block truncate">{parentName}</b>
+              <small className="block truncate text-white/65">{parentEmail}</small>
+            </span>
+          </Link>
+
+          <div className="mt-3 flex items-center justify-between px-1 text-sm">
+            <Link href="/settings" className="font-bold text-white/75 transition hover:text-white">⚙ Cài đặt</Link>
+            <button type="button" onClick={handleLogout} className="font-bold text-[#f4c8a9] transition hover:text-white">Đăng xuất</button>
+          </div>
         </div>
       </aside>
 
@@ -137,7 +169,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="hidden items-center gap-3 rounded-full bg-white p-2 pr-5 shadow-sm sm:flex">
-            <span className="text-3xl">👩🏻</span>
+            {parentAvatar ? (
+              <img src={parentAvatar} alt={`Ảnh đại diện của ${parentName}`} className="h-11 w-11 rounded-full object-cover" />
+            ) : (
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-[#f47d52] text-lg font-black text-white">{parentInitial}</span>
+            )}
 
             <span>
               <b>{parentName}</b>

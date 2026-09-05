@@ -32,6 +32,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
         { icon: '▣', label: t('Courses'), href: '/admin/dashboard' },
         { icon: '＋', label: 'Thêm chủ đề', href: '/admin/topics' },
         { icon: '📊', label: t('Reports'), href: '/admin/reports' },
+        { icon: '⚙', label: 'Cài đặt', href: '/admin/settings' },
         { icon: '🛒', label: t('Orders'), href: '/admin/orders' },
         { icon: '👥', label: t('Students'), href: '/admin/students' },
         { icon: '👩‍👧', label: t('Parental Corner'), href: '/dashboard', accent: 'muted' },
@@ -49,8 +50,8 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
                 brand="KIDS"
                 role="Admin"
                 items={items}
-                footerTitle="✨ Hệ thống đang ổn định"
-                footerText="Tổng thời gian hoạt động 99.9% trong tháng này."
+                // footerTitle="✨ Hệ thống đang ổn định"
+                // footerText="Tổng thời gian hoạt động 99.9% trong tháng này."
             />
             <div className="lg:ml-64">{children}</div>
         </div>
