@@ -1,17 +1,29 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession, signIn } from 'next-auth/react';
+import { getSession, signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { resolveRoleHome, saveSession } from '../../lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState('admin@example.com');
   const [password, setPassword] = useState('123456789');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !session?.user) return;
+
+    const role = (session.user as { role?: string }).role || 'PARENT';
+    router.replace(resolveRoleHome(role));
+  }, [router, session, status]);
+
+  if (status === 'loading' || status === 'authenticated') {
+    return <div className="grid min-h-screen place-items-center bg-[#f4faf4] text-lg font-bold text-[#71867c]">Đang kiểm tra phiên đăng nhập...</div>;
+  }
 
   async function handleGoogleLogin() {
     setLoading(true);

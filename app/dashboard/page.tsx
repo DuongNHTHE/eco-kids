@@ -2,40 +2,54 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { useLocale } from '../../context/LocaleContext';
 
 export default function DashboardPage() {
   const { API } = useAPI();
+  const router = useRouter();
   const [data, setData] = useState(null);
   const [topics, setTopics] = useState([]);
   const [done, setDone] = useState(false);
   const [menu, setMenu] = useState(false);
+  const { data: session, status } = useSession();
   const { t } = useLocale();
 
   useEffect(() => {
-    const name = localStorage.getItem('eco-child') || 'Bé Mây';
+    if (status === 'unauthenticated') router.replace('/login');
+  }, [router, status]);
+
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+
+    const name = localStorage.getItem('eco-child') || 'Bé Heo';
     Promise.all([API.get(`progress/${encodeURIComponent(name)}`, false, true, true),
     API.get('topics', false, true, true)]).then(([progress, nextTopics]) => {
       if (!progress.success && progress.message) return;
       setData({ ...progress, shortName: name.replace(/^Bé\s*/i, '') });
       setTopics(nextTopics);
     });
-  }, [API]);
-  if (!data) return <div className="grid min-h-screen place-items-center text-xl">Đang tải dashboard…</div>;
+  }, [API, status]);
+  if (status !== 'authenticated' || !data) return <div className="grid min-h-screen place-items-center text-xl">Đang tải dashboard...</div>;
 
   const recent = data.records.slice(0, 3);
-  const wordNames = {
-    fox: ['🦊', 'Fox', 'Con cáo'],
-    whale: ['🐋', 'Whale', 'Cá voi'],
-    turtle: ['🐢', 'Turtle', 'Con rùa'],
-    apple: ['🍎', 'Apple', 'Quả táo'],
-    orange: ['🍊', 'Orange', 'Quả cam'],
-    pear: ['🍐', 'Pear', 'Quả lê'],
-    car: ['🚗', 'Car', 'Ô tô'],
-    bus: ['🚌', 'Bus', 'Xe buýt'],
-    rocket: ['🚀', 'Rocket', 'Tên lửa']
-  };
+  const words = topics.flatMap(topic => topic.words.map(word => ({ ...word, topic })));
+  const parentName = session?.user?.name || 'Phụ huynh';
+  const activity = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - (6 - index));
+    const nextDay = new Date(day);
+    nextDay.setDate(day.getDate() + 1);
+    const count = data.records.filter(record => {
+      const practicedAt = new Date(record.practicedAt || record.createdAt || 0);
+      return practicedAt >= day && practicedAt < nextDay;
+    }).length;
+    return { label: new Intl.DateTimeFormat('vi-VN', { weekday: 'short' }).format(day), count };
+  });
+  const maxActivity = Math.max(...activity.map(item => item.count), 1);
   return (
     <div className="min-h-screen bg-[#f4faf4] text-[#203b35]">
       {/* Sidebar */}
@@ -126,8 +140,8 @@ export default function DashboardPage() {
             <span className="text-3xl">👩🏻</span>
 
             <span>
-              <b>Nguyễn Thu Hà</b>
-              <small className="block">Phụ huynh</small>
+              <b>{parentName}</b>
+              <small className="block">{session?.user?.email || 'Phụ huynh'}</small>
             </span>
           </div>
         </header>
@@ -210,7 +224,7 @@ export default function DashboardPage() {
               </h3>
 
               <div className="mt-8 flex h-48 items-end justify-around gap-3">
-                {[6, 9, 5, 12, 8, 14, 10].map((value, index) => (
+                {activity.map((item, index) => (
                   <div
                     key={index}
                     className="flex h-full flex-1 flex-col items-center justify-end gap-2"
@@ -221,12 +235,12 @@ export default function DashboardPage() {
                         : 'bg-[#b7dcb9]'
                         }`}
                       style={{
-                        height: `${(value / 18) * 100}%`,
+                        height: `${Math.max((item.count / maxActivity) * 100, item.count ? 8 : 2)}%`,
                       }}
                     />
 
                     <small>
-                      {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][index]}
+                      {item.label}
                     </small>
                   </div>
                 ))}
@@ -318,12 +332,8 @@ export default function DashboardPage() {
               <div className="mt-5 space-y-3">
                 {recent.length ? (
                   recent.map((record) => {
-                    const item =
-                      wordNames[record.wordId] || [
-                        '✨',
-                        record.wordId,
-                        'Từ mới',
-                      ]
+                    const word = words.find(item => item.id === record.wordId)
+                    const item = [word?.shape || '✨', word?.english || record.wordId, word?.vietnamese || 'Từ mới']
 
                     return (
                       <div

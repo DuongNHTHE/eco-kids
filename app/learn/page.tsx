@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAPI } from '../../lib/hooks/useAPI';
+import { useSession } from 'next-auth/react';
 
 declare global {
     interface Window {
@@ -30,7 +31,6 @@ export function resolveWordModel(word: any) {
     }
 
     const shape = String(word?.shape || '').trim();
-
     return {
         type: 'emoji',
         src: null,
@@ -51,6 +51,7 @@ export default function LearnPage() {
     const topic = topics[topicIndex];
     const word = topic?.words[wordIndex];
     const model = resolveWordModel(word);
+    const { data: session } = useSession();
 
     useEffect(() => {
         API.get('topics', false, true, true).then(data => {
@@ -81,8 +82,7 @@ export default function LearnPage() {
         return () => clearTimeout(timer);
     }, [toast]);
 
-    if (!word) return
-    <div className="grid min-h-screen place-items-center text-xl">Đang mở phòng khám phá…</div>;
+    if (!word) return <div className="grid min-h-screen place-items-center text-xl">Đang mở phòng khám phá…</div>;
     const selectTopic = index => {
         setTopicIndex(index);
         setWordIndex(0);
@@ -112,8 +112,7 @@ export default function LearnPage() {
             const speechRegion = process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION;
 
             if (!speechKey || !speechRegion) {
-                setScore(88 + Math.floor(Math.random() * 10));
-                setToast('Chưa cấu hình Azure Speech. Mình đang dùng mô phỏng tạm thời.');
+                setToast('Chưa cấu hình Azure Speech. Không thể chấm điểm phát âm lúc này.');
                 return;
             }
 
@@ -172,8 +171,7 @@ export default function LearnPage() {
             setToast(assessedScore >= 85 ? 'Phát âm rất tốt! Tiếp tục nhé!' : 'Gần đúng rồi, thử lại một lần nữa.');
         } catch (error) {
             console.error(error);
-            setScore(88 + Math.floor(Math.random() * 10));
-            setToast('Azure Speech chưa sẵn sàng, mình đang dùng mô phỏng tạm thời.');
+            setToast(error instanceof Error ? error.message : 'Không thể chấm điểm phát âm.');
         } finally {
             setIsAssessing(false);
         }
@@ -184,7 +182,7 @@ export default function LearnPage() {
             childName: localStorage.getItem('eco-child') || 'Bé Mây',
             topicId: topic.id,
             wordId: word.id,
-            score: score || 85, minutes: 1
+            score: score ?? 0, minutes: 1
         }, true, true, false);
         if (!response.success) return;
         setToast('Đã lưu vào hành trình của bé!');
@@ -221,7 +219,12 @@ export default function LearnPage() {
             </header>
             <main className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[230px_1fr] lg:px-8">
                 <aside>
-                    <Link href="/" className="font-bold text-[#6c857c]">← Về trang chủ</Link>
+                    <Link
+                        href={session ? "/dashboard" : "/"}
+                        className="font-bold text-[#6c857c]"
+                    >
+                        ← Về trang chủ
+                    </Link>
                     <p className="mt-8 text-sm font-bold text-[#83968c]">Chủ đề của bé</p>
                     <nav className="mt-3 space-y-2">{topics.map((item, index) =>
                         <button key={item.id} onClick={() => selectTopic(index)} className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left font-bold ${index === topicIndex ? 'bg-[#203b35] text-white shadow-lg' : 'bg-white'}`}><span className="text-2xl">{item.icon}</span>{item.vietnamese}</button>)}</nav><div className="mt-8 rounded-2xl bg-[#fff2d5] p-4 text-sm"><b>🌿 Quy tắc 70/30</b><p className="mt-2 leading-5">Sau 20 phút, mình sẽ cùng rời màn hình và chơi với mô hình thật nhé!</p><button onClick={() => setBreakOpen(true)} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
