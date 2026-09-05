@@ -31,6 +31,16 @@ const progressSchema = new mongoose.Schema({
   practicedAt: { type: Date, default: Date.now }
 }, { timestamps: true, collection: 'learning_progress' });
 
+const childSchema = new mongoose.Schema({
+  parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  name: { type: String, required: true, trim: true, maxlength: 50 },
+  nickname: { type: String, trim: true, maxlength: 50 },
+  avatar: { type: String, default: '🧒' },
+  birthDate: Date,
+  gender: { type: String, enum: ['girl', 'boy', 'other'] },
+  level: { type: Number, default: 1 },
+}, { timestamps: true, collection: 'children' });
+
 progressSchema.index({ childName: 1, topicId: 1, wordId: 1 }, { unique: true });
 
 const orderSchema = new mongoose.Schema({
@@ -55,6 +65,7 @@ const partnerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export const User = (mongoose.models.User || mongoose.model('User', userSchema)) as mongoose.Model<any>;
+export const Child = (mongoose.models.Child || mongoose.model('Child', childSchema)) as mongoose.Model<any>;
 export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
 export const Order = (mongoose.models.Order || mongoose.model('Order', orderSchema)) as mongoose.Model<any>;
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;

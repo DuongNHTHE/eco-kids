@@ -110,6 +110,11 @@ export default function DashboardPage() {
             <span>▶</span>
             {t('Classroom')}
           </Link>
+
+          <Link href="/children" className="flex gap-3 rounded-xl px-4 py-3 font-bold text-[#bfe8c6]">
+            <span>👨‍👩‍👧</span>
+            Tài khoản của bé
+          </Link>
         </nav>
 
         {/* Help and account */}
@@ -164,7 +169,7 @@ export default function DashboardPage() {
             </span>
 
             <h1 className="text-3xl font-extrabold sm:text-4xl">
-              {t('Good evening, mother of')} <b>{data.shortName}</b> 👋
+              {t('Good evening, parent')} 👋
             </h1>
           </div>
 
