@@ -28,7 +28,7 @@ export function saveSession(user: AuthSession) {
 
 export function clearSession() {
   if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(AUTH_KEY);
+  window.localStorage.clear();
 }
 
 export function resolveRoleHome(role: string) {

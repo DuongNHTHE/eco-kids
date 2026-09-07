@@ -146,6 +146,11 @@ export default function DashboardPage() {
             {t('Classroom')}
           </Link>
 
+          <Link href="/shop" className="flex gap-3 rounded-xl px-4 py-3 font-bold text-[#f7c6a6]">
+            <span>🛍</span>
+            Cửa hàng học liệu
+          </Link>
+
           <Link href="/children" className="flex gap-3 rounded-xl px-4 py-3 font-bold text-[#bfe8c6]">
             <span>👨‍👩‍👧</span>
             Tài khoản của bé

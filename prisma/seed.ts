@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { connectMongo, Product, Topic, User, Vocabulary } from '../src/models';
+import { connectMongo, Package, Product, Topic, User, Vocabulary } from '../src/models';
 
 const topics = [
     { slug: 'animals', title: 'Amazing Animals', vietnamese: 'Động vật kỳ thú', icon: '🦊', color: '#ff7b54', words: [['fox', 'Fox', 'Con cáo', '/fɒks/', 'fox', 'The fox is quick and clever.'], ['whale', 'Whale', 'Cá voi', '/weɪl/', 'whale', 'A whale swims in the blue ocean.'], ['turtle', 'Turtle', 'Con rùa', '/ˈtɜː.təl/', 'turtle', 'The turtle has a strong shell.']] },
@@ -8,9 +8,15 @@ const topics = [
 ];
 
 const products = [
-    { slug: 'starter', name: 'Starter Kit', subtitle: 'Khởi đầu đa giác quan', price: 399000, badge: 'Bán chạy', color: '#ff7b54', items: ['01 sách Animals', '03 mô hình PLA', 'Web 3D trọn đời', 'AI Voice 30 ngày'] },
-    { slug: 'explorer', name: 'Explorer Kit', subtitle: 'Học đủ 3 chủ đề', price: 899000, badge: 'Tiết kiệm 18%', color: '#397ad7', featured: true, items: ['03 sách tương tác', '09 mô hình PLA', 'Web 3D trọn đời', 'AI Premium 3 tháng'] },
-    { slug: 'premium', name: 'AI Premium', subtitle: 'Bạn đồng hành mỗi ngày', price: 59000, period: '/tháng', badge: 'Dùng thử 7 ngày', color: '#7566d9', items: ['Luyện nói không giới hạn', 'Câu chuyện cá nhân hóa', 'Dashboard chi tiết', 'Nội dung mới mỗi tháng'] },
+    { sku: 'MODEL-FOX', slug: 'fox', name: 'Mô hình Cáo', description: 'Mô hình PLA chủ đề động vật.', price: 129000, stock: 30 },
+    { sku: 'MODEL-WHALE', slug: 'whale', name: 'Mô hình Cá voi', description: 'Mô hình PLA chủ đề đại dương.', price: 149000, stock: 20 },
+    { sku: 'MODEL-ROCKET', slug: 'rocket', name: 'Mô hình Tên lửa', description: 'Mô hình PLA chủ đề phương tiện.', price: 139000, stock: 25 },
+];
+
+const packages = [
+    { slug: 'starter', name: 'Starter Kit', subtitle: 'Khởi đầu đa giác quan', price: 399000, badge: 'Bán chạy', color: '#ff7b54', items: [{ productId: 'fox', quantity: 1 }] },
+    { slug: 'explorer', name: 'Explorer Kit', subtitle: 'Học đủ 3 chủ đề', price: 899000, badge: 'Tiết kiệm 18%', color: '#397ad7', featured: true, items: [{ productId: 'fox', quantity: 1 }, { productId: 'whale', quantity: 1 }, { productId: 'rocket', quantity: 1 }] },
+    { slug: 'premium', name: 'AI Premium', subtitle: 'Bạn đồng hành mỗi ngày', price: 59000, period: '/tháng', badge: 'Dùng thử 7 ngày', color: '#7566d9', features: ['Luyện nói không giới hạn', 'Câu chuyện cá nhân hóa', 'Dashboard chi tiết', 'Nội dung mới mỗi tháng'], items: [] },
 ];
 
 const demoUsers = [
@@ -39,7 +45,9 @@ async function main() {
             color: topic.color,
         })));
     }
+    await Product.deleteMany({ $or: [{ sku: { $exists: false } }, { sku: null }] });
     for (const product of products) await Product.findOneAndUpdate({ slug: product.slug }, product, { upsert: true, new: true, setDefaultsOnInsert: true });
+    for (const pack of packages) await Package.findOneAndUpdate({ slug: pack.slug }, pack, { upsert: true, new: true, setDefaultsOnInsert: true });
 
     for (const user of demoUsers) {
         await User.findOneAndUpdate(

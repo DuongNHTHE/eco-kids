@@ -1,4 +1,4 @@
-import { connectMongo, Model3D, Product, Topic, Vocabulary } from './models';
+import { connectMongo, Model3D, Package, Product, Topic, Vocabulary } from './models';
 
 export async function getTopics() {
   await connectMongo();
@@ -32,4 +32,22 @@ export async function getProducts() {
   await connectMongo();
   const products = await Product.find({ isActive: true }).sort({ createdAt: 1 }).lean();
   return products.map(product => ({ ...product, id: product.slug }));
+}
+
+export async function getPackages() {
+  await connectMongo();
+  const [packages, products] = await Promise.all([
+    Package.find({ isActive: true }).sort({ createdAt: 1 }).lean(),
+    Product.find({ isActive: true }).lean(),
+  ]);
+  const productsBySlug = new Map(products.map(product => [product.slug, product]));
+
+  return packages.map(pack => ({
+    ...pack,
+    id: pack.slug,
+    items: (pack.items || []).map((item: any) => ({
+      ...item,
+      product: productsBySlug.get(item.productId) || null,
+    })),
+  }));
 }

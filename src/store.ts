@@ -18,7 +18,7 @@ export async function getProgress(childName: string) {
   return Progress.find({ childName }).sort({ practicedAt: -1 }).lean();
 }
 
-export async function createOrder(data: { customer: unknown; items: unknown; total: number }) {
+export async function createOrder(data: { user_id: string; customer: unknown; items: unknown; total: number }) {
   await connectMongo();
   return Order.create(data);
 }

@@ -44,12 +44,13 @@ const childSchema = new mongoose.Schema({
 progressSchema.index({ childName: 1, topicId: 1, wordId: 1 }, { unique: true });
 
 const orderSchema = new mongoose.Schema({
+  user_id: { type: String, index: true },
   customer: {
     name: { type: String, required: true },
     phone: { type: String, required: true },
     address: { type: String, required: true }
   },
-  items: [{ productId: String, name: String, price: Number, quantity: Number }],
+  items: [{ productId: String, packageId: String, name: String, price: Number, quantity: Number }],
   total: { type: Number, required: true },
   status: { type: String, default: 'new' }
 }, { timestamps: true });
@@ -139,6 +140,23 @@ const topicSchema = new mongoose.Schema({
 }, { timestamps: true, collection: 'topics' });
 
 const productSchema = new mongoose.Schema({
+  sku: { type: String, unique: true, sparse: true, index: true },
+  slug: { type: String, unique: true, required: true },
+  name: { type: String, required: true },
+  description: String,
+  imageUrl: String,
+  modelUrl: String,
+  price: { type: Number, required: true },
+  stock: { type: Number, default: 0, min: 0 },
+  isActive: { type: Boolean, default: true },
+}, { timestamps: true, collection: 'products' });
+
+const packageItemSchema = new mongoose.Schema({
+  productId: { type: String, required: true },
+  quantity: { type: Number, required: true, min: 1, default: 1 },
+}, { _id: false });
+
+const packageSchema = new mongoose.Schema({
   slug: { type: String, unique: true, required: true },
   name: { type: String, required: true },
   subtitle: String,
@@ -147,11 +165,13 @@ const productSchema = new mongoose.Schema({
   badge: String,
   color: String,
   featured: Boolean,
-  items: [String],
+  features: { type: [String], default: [] },
+  items: { type: [packageItemSchema], default: [] },
   isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+}, { timestamps: true, collection: 'packages' });
 
 export const Topic = (mongoose.models.Topic || mongoose.model('Topic', topicSchema)) as mongoose.Model<any>;
 export const Vocabulary = (mongoose.models.Vocabulary || mongoose.model('Vocabulary', vocabularyCollectionSchema)) as mongoose.Model<any>;
 export const Model3D = (mongoose.models.Model3D || mongoose.model('Model3D', model3DSchema)) as mongoose.Model<any>;
 export const Product = (mongoose.models.Product || mongoose.model('Product', productSchema)) as mongoose.Model<any>;
+export const Package = (mongoose.models.Package || mongoose.model('Package', packageSchema)) as mongoose.Model<any>;

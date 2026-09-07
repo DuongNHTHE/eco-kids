@@ -447,25 +447,58 @@ model OrganizationMember {
 }
 
 model Product {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  slug      String   @unique
-  name      String
-  subtitle  String?
-  price     Float
-  period    String?
-  badge     String?
-  color     String?
-  items     String[]
-  featured  Boolean  @default(false)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  sku         String?
+  slug        String        @unique
+  name        String
+  description String?
+  imageUrl    String?
+  modelUrl    String?
+  price       Float
+  stock       Int           @default(0)
+  isActive    Boolean       @default(true)
+  packageItems PackageItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@map("products")
+  @@index([sku])
+}
+
+model Package {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  slug        String        @unique
+  name        String
+  subtitle    String?
+  price       Float
+  period      String?
+  badge       String?
+  color       String?
+  featured    Boolean       @default(false)
+  isActive    Boolean       @default(true)
+  features    String[]
+  items       PackageItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("packages")
+}
+
+model PackageItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  packageId String  @db.ObjectId
+  productId String  @db.ObjectId
+  quantity  Int     @default(1)
+  package   Package @relation(fields: [packageId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([packageId, productId])
+  @@map("package_items")
 }
 
 model Order {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @map("user_id")
   customer  Json
   items     Json
   total     Float
