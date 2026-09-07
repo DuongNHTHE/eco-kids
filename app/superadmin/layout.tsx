@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AppSidebar, type SidebarItem } from '../../components/AppSidebar';
+import { resolveRoleHome } from '../../lib/auth';
 
 export default function SuperAdminLayout({ children }: { children: ReactNode }) {
     const pathname = usePathname();
@@ -18,8 +19,9 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
             return;
         }
 
-        if ((session.user as { role?: string }).role !== 'ADMIN') {
-            router.replace('/dashboard');
+        const role = (session.user as { role?: string }).role || '';
+        if (role !== 'ADMIN') {
+            router.replace(resolveRoleHome(role));
         }
     }, [router, session, status]);
 

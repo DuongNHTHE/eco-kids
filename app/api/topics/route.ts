@@ -1,5 +1,8 @@
 import { getTopics } from '../../../src/content';
 import { connectMongo, Model3D, Topic, Vocabulary } from '../../../src/models';
+import { writeAuditLog } from '../../../src/audit';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../lib/next-auth';
 
 export async function GET() {
   return Response.json(await getTopics());
@@ -72,6 +75,17 @@ export async function POST(request: Request) {
       );
     }
     await Topic.updateOne({ _id: topic._id }, { lessonCount: normalizedWords.length });
+    const session = await getServerSession(authOptions);
+    const user = session?.user as { id?: string; email?: string | null; role?: string | null } | undefined;
+
+    await writeAuditLog({
+      action: 'TOPIC_CREATE',
+      resource: 'TOPIC',
+      resourceId: normalizedSlug,
+      actor: user?.id ? { userId: user.id, email: user.email, role: user.role } : undefined,
+      request,
+      metadata: { wordCount: normalizedWords.length },
+    });
 
     return Response.json({ message: 'Đã thêm chủ đề.', topic: { ...topic.toObject(), id: topic.slug } }, { status: 201 });
   } catch (error: any) {

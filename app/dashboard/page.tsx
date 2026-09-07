@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { useLocale } from '../../context/LocaleContext';
-import { clearSession } from '../../lib/auth';
+import { clearSession, resolveRoleHome } from '../../lib/auth';
 
 type ChildProfile = {
   id: string;
@@ -31,7 +31,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.replace('/login');
-  }, [router, status]);
+    if (status === 'authenticated') {
+      const role = (session?.user as { role?: string } | undefined)?.role || 'PARENT';
+      if (role !== 'PARENT') router.replace(resolveRoleHome(role));
+    }
+  }, [router, session, status]);
 
   useEffect(() => {
     if (status !== 'authenticated') return;
@@ -64,7 +68,8 @@ export default function DashboardPage() {
     setData(null);
   }
 
-  if (status !== 'authenticated' || !data) return <div className="grid min-h-screen place-items-center text-xl">Đang tải dashboard...</div>;
+  const role = (session?.user as { role?: string } | undefined)?.role || 'PARENT';
+  if (status !== 'authenticated' || role !== 'PARENT' || !data) return <div className="grid min-h-screen place-items-center text-xl">Đang tải dashboard...</div>;
 
   const recent = data.records.slice(0, 3);
   const words = topics.flatMap(topic => topic.words.map(word => ({ ...word, topic })));

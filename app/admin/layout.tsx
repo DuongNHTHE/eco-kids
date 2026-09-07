@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AppSidebar, type SidebarItem } from '../../components/AppSidebar';
 import { useLocale } from '../../context/LocaleContext';
+import { resolveRoleHome } from '../../lib/auth';
 
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
     const { t } = useLocale();
@@ -22,8 +23,9 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
             return;
         }
 
-        if (!allowedRoles.includes((session.user as { role?: string }).role || '')) {
-            router.replace('/dashboard');
+        const role = (session.user as { role?: string }).role || '';
+        if (!allowedRoles.includes(role)) {
+            router.replace(resolveRoleHome(role));
         }
     }, [router, session, status]);
 

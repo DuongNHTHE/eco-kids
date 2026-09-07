@@ -1,6 +1,7 @@
 import { createOrder } from '../../../src/store';
 import { Product } from '../../../src/models';
 import { connectMongo } from '../../../src/models';
+import { writeAuditLog } from '../../../src/audit';
 
 export async function POST(request: Request) {
   try {
@@ -18,6 +19,13 @@ export async function POST(request: Request) {
     if (!normalizedItems.length) return Response.json({ message: 'Sản phẩm không hợp lệ.' }, { status: 400 });
     const total = normalizedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const order = await createOrder({ customer, items: normalizedItems, total });
+    await writeAuditLog({
+      action: 'ORDER_CREATE',
+      resource: 'ORDER',
+      resourceId: String(order._id || order.id),
+      request,
+      metadata: { itemCount: normalizedItems.length, total },
+    });
     return Response.json({ message: 'Đặt hàng thành công!', orderId: order.id, total }, { status: 201 });
   } catch (error) {
     console.error(error);

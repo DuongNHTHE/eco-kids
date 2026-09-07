@@ -1,10 +1,11 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { Child, connectMongo } from '../../../src/models';
+import { writeAuditLog } from '../../../src/audit';
 
 async function getParentSession() {
     const session = await getServerSession(authOptions);
-    const user = session?.user as { id?: string; role?: string } | undefined;
+    const user = session?.user as { id?: string; email?: string | null; role?: string } | undefined;
     if (!user?.id) return null;
     return user;
 }
@@ -79,6 +80,15 @@ export async function POST(request: Request) {
             gender: child.gender || '',
             level: child.level,
         };
+
+        await writeAuditLog({
+            action: 'CHILD_CREATE',
+            resource: 'CHILD',
+            resourceId: String(child._id),
+            actor: { userId: user.id, email: user.email, role: user.role },
+            request,
+            metadata: { name: child.name },
+        });
 
         return Response.json({
             data: data,

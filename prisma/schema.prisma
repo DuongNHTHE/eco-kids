@@ -25,6 +25,26 @@ model User {
   @@map("users")
 }
 
+model AuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String?  @map("user_id")
+  actorEmail String?
+  actorRole  String?
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  success    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([resource, resourceId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
 enum UserRole {
   ADMIN
   PARENT

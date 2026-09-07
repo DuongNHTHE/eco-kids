@@ -1,5 +1,8 @@
 import { getTopics } from '../../../../src/content';
 import { connectMongo, Model3D, Topic, Vocabulary } from '../../../../src/models';
+import { writeAuditLog } from '../../../../src/audit';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../../lib/next-auth';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -116,6 +119,16 @@ async function handleWordMutation(request: Request, context: RouteContext, requi
     }
     const wordCount = await Vocabulary.countDocuments({ topicId: id });
     await Topic.updateOne({ slug: id }, { lessonCount: wordCount });
+    const session = await getServerSession(authOptions);
+    const user = session?.user as { id?: string; email?: string | null; role?: string | null } | undefined;
+    await writeAuditLog({
+      action: `VOCABULARY_${action.toUpperCase()}`,
+      resource: 'VOCABULARY',
+      resourceId: updateResult.wordId || updateResult.word?.id,
+      actor: user?.id ? { userId: user.id, email: user.email, role: user.role } : undefined,
+      request,
+      metadata: { topicId: id },
+    });
     const messages: Record<string, string> = { create: 'Đã thêm bài học.', update: 'Đã cập nhật bài học.', delete: 'Đã xóa bài học.' };
     const updatedTopic = (await getTopics()).find(item => item.id === id);
     return Response.json({ message: messages[action], topic: updatedTopic });

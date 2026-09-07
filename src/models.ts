@@ -64,11 +64,30 @@ const partnerSchema = new mongoose.Schema({
   status: { type: String, default: 'new' }
 }, { timestamps: true });
 
+const auditLogSchema = new mongoose.Schema({
+  user_id: { type: String, index: true },
+  actorEmail: { type: String, index: true },
+  actorRole: { type: String, index: true },
+  action: { type: String, required: true, index: true },
+  resource: { type: String, required: true, index: true },
+  resourceId: String,
+  metadata: mongoose.Schema.Types.Mixed,
+  ipAddress: String,
+  userAgent: String,
+  success: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now, index: true },
+}, { collection: 'audit_logs', versionKey: false });
+
+auditLogSchema.index({ user_id: 1, createdAt: -1 });
+auditLogSchema.index({ resource: 1, resourceId: 1, createdAt: -1 });
+auditLogSchema.index({ action: 1, createdAt: -1 });
+
 export const User = (mongoose.models.User || mongoose.model('User', userSchema)) as mongoose.Model<any>;
 export const Child = (mongoose.models.Child || mongoose.model('Child', childSchema)) as mongoose.Model<any>;
 export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
 export const Order = (mongoose.models.Order || mongoose.model('Order', orderSchema)) as mongoose.Model<any>;
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;
+export const AuditLog = (mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema)) as mongoose.Model<any>;
 
 const vocabularySchema = new mongoose.Schema({
   id: String,
