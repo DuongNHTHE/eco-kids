@@ -447,39 +447,39 @@ model OrganizationMember {
 }
 
 model Product {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  sku         String?
-  slug        String        @unique
-  name        String
-  description String?
-  imageUrl    String?
-  modelUrl    String?
-  price       Float
-  stock       Int           @default(0)
-  isActive    Boolean       @default(true)
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  sku          String?
+  slug         String        @unique
+  name         String
+  description  String?
+  imageUrl     String?
+  modelUrl     String?
+  price        Float
+  stock        Int           @default(0)
+  isActive     Boolean       @default(true)
   packageItems PackageItem[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
-  @@map("products")
   @@index([sku])
+  @@map("products")
 }
 
 model Package {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  slug        String        @unique
-  name        String
-  subtitle    String?
-  price       Float
-  period      String?
-  badge       String?
-  color       String?
-  featured    Boolean       @default(false)
-  isActive    Boolean       @default(true)
-  features    String[]
-  items       PackageItem[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  slug      String        @unique
+  name      String
+  subtitle  String?
+  price     Float
+  period    String?
+  badge     String?
+  color     String?
+  featured  Boolean       @default(false)
+  isActive  Boolean       @default(true)
+  features  String[]
+  items     PackageItem[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   @@map("packages")
 }

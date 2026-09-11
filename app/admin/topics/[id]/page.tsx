@@ -53,7 +53,7 @@ export default function TopicDetailPage() {
         if (!topic) return;
         setSaving(true);
         setMessage('');
-        const result = await API.put(`topics/${encodeURIComponent(topic.id)}`, { action: editingWordId ? 'update' : 'create', wordId: editingWordId, word: draft }, false, false, true);
+        const result = await API.put('vocabulary', { topicId: topic.id, action: editingWordId ? 'update' : 'create', wordId: editingWordId, word: draft }, false, false, true);
         if (result.success) {
             setTopic(result.topic);
             setIsModalOpen(false);
@@ -92,7 +92,7 @@ export default function TopicDetailPage() {
 
     async function deleteWord(word: Word) {
         if (!topic || !window.confirm(`Xóa bài học "${word.english}"?`)) return;
-        const result = await API.put(`topics/${encodeURIComponent(topic.id)}`, { action: 'delete', wordId: word.id }, true, false, true);
+        const result = await API.put('vocabulary', { topicId: topic.id, action: 'delete', wordId: word.id }, true, false, true);
         if (result.success) setTopic(result.topic);
     }
 
