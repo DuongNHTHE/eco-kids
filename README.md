@@ -13,6 +13,28 @@ Website MVP được xây dựng từ tài liệu Checkpoint 1–3: kết hợp 
 
 MongoDB là bắt buộc. Chạy `npm run db:seed` một lần sau khi cấu hình `MONGODB_URI` để tạo chủ đề, từ vựng và sản phẩm ban đầu. Tiến độ học, đơn hàng, đăng ký đối tác và nội dung đều được đọc/ghi từ MongoDB; ứng dụng không có dữ liệu fallback trong bộ nhớ.
 
+## AI agent dùng chung
+
+Các route server có thể dùng `callAgent` từ `lib/agent.ts`. Cấu hình `AI_PROVIDER=gemini` cùng `GEMINI_API_KEY`, hoặc `AI_PROVIDER=openai` cùng `OPENAI_API_KEY`. Nếu không chỉ định provider, thư viện ưu tiên OpenAI khi có key, sau đó đến Gemini. API key chỉ được đọc ở server-side.
+Curl
+curl -X POST http://localhost:3000/api/agent \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "prompt": "Viết 1 câu giản dị cho trẻ 6 tuổi giải thích từ dog.",
+    "temperature": 0.4, //not requirement
+    "maxTokens": 2560
+  }'
+
+```ts
+import { callAgent } from '@/lib/agent';
+
+const response = await callAgent('Giải thích từ forest cho trẻ 6 tuổi.', {
+	temperature: 0.4,
+});
+console.log(response.text);
+```
+
 ## Các route frontend
 
 - `/` — Landing page, chủ đề, bộ học liệu, giỏ hàng và đăng ký trường học.
