@@ -1,3 +1,4 @@
+import AgentAssistant from '../components/AgentAssistant';
 import { LocaleProvider } from '../context/LocaleContext';
 import Providers from './providers';
 import './globals.css';
@@ -12,7 +13,10 @@ export default function RootLayout({ children }) {
     <html lang="vi">
       <body>
         <Providers>
-          <LocaleProvider>{children}</LocaleProvider>
+          <LocaleProvider>
+            {children}
+            <AgentAssistant />
+          </LocaleProvider>
         </Providers>
       </body>
     </html>
