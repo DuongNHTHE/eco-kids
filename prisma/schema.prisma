@@ -289,12 +289,13 @@ model PronunciationAttempt {
 model AIConversation {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  childId String @db.ObjectId
+  userId              String  @db.ObjectId
+  isChildConversation Boolean @default(false)
 
   lessonId String? @db.ObjectId
+  childId  String? @db.ObjectId
 
-  type AIConversationType
-
+  type  AIConversationType
   title String?
 
   messages AIMessage[]
@@ -302,8 +303,11 @@ model AIConversation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  child Child @relation(fields: [childId], references: [id])
+  child Child? @relation(fields: [childId], references: [id])
 
+  @@index([userId])
+  @@index([childId])
+  @@index([lessonId])
   @@map("ai_conversations")
 }
 
@@ -318,9 +322,8 @@ model AIMessage {
 
   metadata Json?
 
-  createdAt        DateTime        @default(now())
-  aiconversation   AIConversation? @relation(fields: [aIConversationId], references: [id])
-  aIConversationId String?         @db.ObjectId
+  createdAt      DateTime       @default(now())
+  aiconversation AIConversation @relation(fields: [conversationId], references: [id])
 
   @@map("ai_messages")
 }

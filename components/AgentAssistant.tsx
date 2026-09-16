@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useEffect } from 'react';
 
 type ChatRole = 'user' | 'assistant';
 
@@ -8,6 +9,11 @@ type ChatMessage = {
     id: string;
     role: ChatRole;
     text: string;
+};
+
+type ChildProfile = {
+    id: string;
+    name: string;
 };
 
 const initialMessages: ChatMessage[] = [
@@ -24,6 +30,19 @@ export default function AgentAssistant() {
     const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
     const [loading, setLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
+    const [childId, setChildId] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetch('/api/children')
+            .then((response) => response.ok ? response.json() : [])
+            .then((children: ChildProfile[]) => {
+                if (!Array.isArray(children) || children.length === 0) return;
+                const selectedName = localStorage.getItem('eco-child');
+                const selectedChild = children.find((child) => child.name === selectedName) || children[0];
+                setChildId(selectedChild.id);
+            })
+            .catch(() => undefined);
+    }, []);
 
     async function handleSubmit(event: FormEvent) {
         event.preventDefault();
@@ -55,7 +74,7 @@ export default function AgentAssistant() {
                 body: JSON.stringify({
                     prompt: trimmed,
                     history,
-                    conversationId,
+                    childId,
                     provider: 'gemini',
                     temperature: 0.4,
                     maxTokens: 220,

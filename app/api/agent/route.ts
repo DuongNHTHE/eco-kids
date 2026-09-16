@@ -31,95 +31,100 @@ function normalizeMessages(payload: any): AgentMessage[] | undefined {
     return messages.length ? messages : undefined;
 }
 
-async function resolveChildId(requestBody: any) {
+async function getSessionUserId() {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user && typeof (session.user as { id?: string }).id === 'string'
+        ? (session.user as { id: string }).id.trim()
+        : '';
+    return userId || null;
+}
+
+async function resolveChildId(requestBody: any, userId: string) {
     const requestedChildId = typeof requestBody?.childId === 'string' ? requestBody.childId.trim() : '';
     if (requestedChildId) return requestedChildId;
 
     try {
-        const session = await getServerSession(authOptions);
-        const userId = session?.user && typeof (session.user as { id?: string }).id === 'string'
-            ? (session.user as { id?: string }).id
-            : undefined;
-        if (!userId) return null;
-
         const child = await prisma.child.findFirst({
             where: { parentId: userId },
             orderBy: { createdAt: 'asc' },
             select: { id: true },
         });
-
         return child?.id ?? null;
-    } catch {
+    } catch (error) {
+        console.error('[agent] resolveChildId failed:', error);
         return null;
     }
 }
 
 async function saveConversationHistory({
+    userId,
     childId,
     historyMessages,
     prompt,
     assistantText,
-    conversationId,
 }: {
+    userId: string;
     childId: string | null;
     historyMessages: AgentMessage[];
     prompt: string;
     assistantText: string;
-    conversationId?: string | null;
 }) {
-    if (!childId) return { conversationId: conversationId ?? null, saved: false };
+    if (!childId) {
+        console.warn('[agent] persistence skipped: no childId; saving as parent conversation');
+    }
 
-    let activeConversation = conversationId
-        ? await prisma.aIConversation.findUnique({
-            where: { id: conversationId },
-            select: { id: true, title: true },
-        })
-        : null;
+    try {
+        console.info('[agent] persistence start:', {
+            userId,
+            childId,
+            historyCount: historyMessages.length,
+        });
 
-    if (!activeConversation) {
-        const title = buildConversationTitle(prompt, 'Cuộc trò chuyện mới');
-        activeConversation = await prisma.aIConversation.create({
+        const conversation = await prisma.aIConversation.create({
             data: {
-                childId,
+                userId,
+                childId: childId || undefined,
+                isChildConversation: Boolean(childId),
                 type: $Enums.AIConversationType.CHAT,
-                title,
+                title: buildConversationTitle(prompt, 'Cuộc trò chuyện mới'),
             },
-            select: { id: true, title: true },
         });
 
-        const allMessages = [...historyMessages, { role: 'user' as const, content: prompt }, { role: 'assistant' as const, content: assistantText }];
-        await prisma.aIMessage.createMany({
+        const allMessages = [
+            ...historyMessages,
+            { role: 'user' as const, content: prompt },
+            { role: 'assistant' as const, content: assistantText },
+        ];
+        const documents = await prisma.aIMessage.createMany({
             data: allMessages
-                .filter((message) => message.content.trim().length > 0)
-                .map((message) => ({
-                    conversationId: activeConversation!.id,
-                    role: message.role === 'assistant' ? $Enums.MessageRole.ASSISTANT : $Enums.MessageRole.USER,
-                    content: message.content,
-                })),
+            .filter((message) => message.content.trim().length > 0)
+            .map((message) => ({
+                conversationId: conversation.id,
+                role: message.role === 'assistant' ? $Enums.MessageRole.ASSISTANT : $Enums.MessageRole.USER,
+                content: message.content,
+            })),
         });
 
-        return { conversationId: activeConversation.id, saved: true };
-    }
-
-    const nextMessages = [
-        { conversationId: activeConversation.id, role: $Enums.MessageRole.USER, content: prompt },
-        { conversationId: activeConversation.id, role: $Enums.MessageRole.ASSISTANT, content: assistantText },
-    ];
-
-    await prisma.aIMessage.createMany({ data: nextMessages });
-
-    if (!activeConversation.title || activeConversation.title === 'Cuộc trò chuyện mới') {
-        await prisma.aIConversation.update({
-            where: { id: activeConversation.id },
-            data: { title: buildConversationTitle(prompt, activeConversation.title || 'Cuộc trò chuyện mới') },
+        console.info('[agent] persistence success:', {
+            conversationId: conversation.id,
+            messageCount: documents.count,
         });
-    }
 
-    return { conversationId: activeConversation.id, saved: true };
+        return { conversationId: conversation.id, saved: true, saveError: null };
+    } catch (error) {
+        const saveError = error instanceof Error ? error.message : 'Không thể lưu lịch sử trò chuyện.';
+        console.error('[agent] persistence failed:', { childId, error: saveError });
+        return { conversationId: null, saved: false, saveError };
+    }
 }
 
 export async function GET(request: Request) {
     try {
+        const userId = await getSessionUserId();
+        if (!userId) {
+            return Response.json({ ok: false, message: 'Cần đăng nhập.' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const childId = searchParams.get('childId');
         if (!childId) {
@@ -127,15 +132,10 @@ export async function GET(request: Request) {
         }
 
         const conversations = await prisma.aIConversation.findMany({
-            where: { childId },
+            where: { userId, ...(childId ? { childId } : {}) },
             orderBy: { updatedAt: 'desc' },
             take: 20,
-            include: {
-                messages: {
-                    orderBy: { createdAt: 'asc' },
-                    select: { id: true, role: true, content: true, createdAt: true },
-                },
-            },
+            include: { messages: { orderBy: { createdAt: 'asc' } } },
         });
 
         return Response.json({
@@ -163,14 +163,17 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json().catch(() => ({}));
+        const userId = await getSessionUserId();
+        if (!userId) {
+            return Response.json({ ok: false, message: 'Cần đăng nhập.' }, { status: 401 });
+        }
         const provider = normalizeProvider(body?.provider ?? process.env.AI_PROVIDER ?? undefined);
         const prompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
         const priorHistory = normalizeHistoryMessages(Array.isArray(body?.history) ? body.history : undefined)
             ?? normalizeMessages(body)
             ?? [];
-        const messages = priorHistory.length > 0
-            ? [...priorHistory, ...(prompt ? [{ role: 'user' as const, content: prompt }] : [])]
-            : (prompt ? [{ role: 'user' as const, content: prompt }] : undefined);
+        const messages = [...priorHistory];
+        if (prompt) messages.push({ role: 'user', content: prompt });
 
         if (!messages || messages.length === 0) {
             return Response.json({ ok: false, message: 'Thiếu prompt hoặc messages.' }, { status: 400 });
@@ -186,14 +189,13 @@ export async function POST(request: Request) {
             apiKey: body?.apiKey,
         });
 
-        const childId = await resolveChildId(body);
-        const conversationId = typeof body?.conversationId === 'string' && body.conversationId.trim() ? body.conversationId.trim() : null;
+        const childId = await resolveChildId(body, userId);
         const persisted = await saveConversationHistory({
+            userId,
             childId,
             historyMessages: priorHistory,
             prompt,
             assistantText: result.text,
-            conversationId,
         });
 
         return Response.json({
@@ -203,6 +205,7 @@ export async function POST(request: Request) {
             text: result.text,
             conversationId: persisted.conversationId,
             saved: persisted.saved,
+            saveError: persisted.saveError,
         });
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Không thể gọi AI agent.';
