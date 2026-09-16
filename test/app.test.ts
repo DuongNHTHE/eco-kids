@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizePronunciationScore, resolveWordModel } from '../app/learn/page';
+import { buildConversationTitle, normalizeHistoryMessages } from '../lib/agent-history';
 import { GET as health } from '../app/api/health/route';
 import { GET as getTopics } from '../app/api/topics/route';
 import { GET as getProducts } from '../app/api/products/route';
@@ -25,6 +26,22 @@ test('uses saved 3d model url when present and falls back to shape icon otherwis
   assert.equal(urlModel.src, 'https://example.com/model.glb');
   assert.equal(iconModel.type, 'emoji');
   assert.equal(iconModel.icon, '🐋');
+});
+
+test('builds friendly conversation titles and normalizes message history', () => {
+  assert.equal(buildConversationTitle('Học từ mới về động vật', undefined), 'Học từ mới về động vật');
+  assert.equal(buildConversationTitle('', undefined), 'Cuộc trò chuyện mới');
+
+  const history = normalizeHistoryMessages([
+    { role: 'user', content: 'Xin chào' },
+    { role: 'assistant', content: 'Chào bé!' },
+    { role: 'system', content: 'Ignored' },
+  ]);
+
+  assert.deepEqual(history, [
+    { role: 'user', content: 'Xin chào' },
+    { role: 'assistant', content: 'Chào bé!' },
+  ]);
 });
 
 test('serves health, topics, and products from Next API routes', async () => {
