@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { callAgent, type AgentMessage, type AgentProvider } from '../../../lib/agent';
 import { buildConversationTitle, normalizeHistoryMessages } from '../../../lib/agent-history';
-import { PrismaClient, $Enums } from '../../../src/generated/prisma/client';
+import { PrismaClient, $Enums } from '@/src/generated/prisma/client';
 
 const globalForPrisma = globalThis as typeof globalThis & { ecoKidsPrisma?: PrismaClient };
 const prisma = globalForPrisma.ecoKidsPrisma ?? new PrismaClient();
@@ -100,12 +100,12 @@ async function saveConversationHistory({
         ];
         const documents = await prisma.aIMessage.createMany({
             data: allMessages
-            .filter((message) => message.content.trim().length > 0)
-            .map((message) => ({
-                conversationId: conversation.id,
-                role: message.role === 'assistant' ? $Enums.MessageRole.ASSISTANT : $Enums.MessageRole.USER,
-                content: message.content,
-            })),
+                .filter((message) => message.content.trim().length > 0)
+                .map((message) => ({
+                    conversationId: conversation.id,
+                    role: message.role === 'assistant' ? $Enums.MessageRole.ASSISTANT : $Enums.MessageRole.USER,
+                    content: message.content,
+                })),
         });
 
         console.info('[agent] persistence success:', {
