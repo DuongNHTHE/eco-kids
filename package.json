@@ -10,7 +10,7 @@
     "start": "next start",
     "test": "tsx --test test/app.test.ts",
     "db:seed": "tsx prisma/seed.ts",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma generate"
   },
   "engines": {
     "node": "22.14.0"

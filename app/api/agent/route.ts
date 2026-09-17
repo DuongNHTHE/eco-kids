@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { callAgent, type AgentMessage, type AgentProvider } from '../../../lib/agent';
 import { buildConversationTitle, normalizeHistoryMessages } from '../../../lib/agent-history';
-import { PrismaClient, $Enums } from '@/src/generated/prisma/client';
+import { PrismaClient, $Enums } from '@prisma/client';
 
 const globalForPrisma = globalThis as typeof globalThis & { ecoKidsPrisma?: PrismaClient };
 const prisma = globalForPrisma.ecoKidsPrisma ?? new PrismaClient();
