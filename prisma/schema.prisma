@@ -18,6 +18,7 @@ model User {
   role UserRole @default(PARENT)
 
   children Child[]
+  aiConversations AIConversation[]
 
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -289,16 +290,14 @@ model PronunciationAttempt {
 model AIConversation {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId              String  @db.ObjectId
-  isChildConversation Boolean @default(false)
-
-  lessonId String? @db.ObjectId
-  childId  String? @db.ObjectId
-
-  type  AIConversationType
-  title String?
-
-  messages AIMessage[]
+  userId              String             @db.ObjectId
+  user                User               @relation(fields: [userId], references: [id])
+  isChildConversation Boolean            @default(false)
+  childId             String?            @db.ObjectId
+  conversationKey     String             @unique
+  type                AIConversationType @default(CHAT)
+  title               String?
+  messages            AIMessage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -307,7 +306,6 @@ model AIConversation {
 
   @@index([userId])
   @@index([childId])
-  @@index([lessonId])
   @@map("ai_conversations")
 }
 

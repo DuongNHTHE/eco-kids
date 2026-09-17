@@ -59,13 +59,11 @@ async function resolveChildId(requestBody: any, userId: string) {
 async function saveConversationHistory({
     userId,
     childId,
-    historyMessages,
     prompt,
     assistantText,
 }: {
     userId: string;
     childId: string | null;
-    historyMessages: AgentMessage[];
     prompt: string;
     assistantText: string;
 }) {
@@ -74,24 +72,29 @@ async function saveConversationHistory({
     }
 
     try {
+        const conversationKey = childId ? `user:${userId}:child:${childId}` : `user:${userId}`;
         console.info('[agent] persistence start:', {
             userId,
             childId,
-            historyCount: historyMessages.length,
+            conversationKey,
         });
 
-        const conversation = await prisma.aIConversation.create({
-            data: {
+        const conversation = await prisma.aIConversation.upsert({
+            where: { conversationKey },
+            create: {
                 userId,
                 childId: childId || undefined,
                 isChildConversation: Boolean(childId),
+                conversationKey,
                 type: $Enums.AIConversationType.CHAT,
+                title: buildConversationTitle(prompt, 'Cuộc trò chuyện mới'),
+            },
+            update: {
                 title: buildConversationTitle(prompt, 'Cuộc trò chuyện mới'),
             },
         });
 
         const allMessages = [
-            ...historyMessages,
             { role: 'user' as const, content: prompt },
             { role: 'assistant' as const, content: assistantText },
         ];
@@ -127,12 +130,9 @@ export async function GET(request: Request) {
 
         const { searchParams } = new URL(request.url);
         const childId = searchParams.get('childId');
-        if (!childId) {
-            return Response.json({ ok: false, message: 'Thiếu childId.' }, { status: 400 });
-        }
 
         const conversations = await prisma.aIConversation.findMany({
-            where: { userId, ...(childId ? { childId } : {}) },
+            where: { userId, childId: childId || null },
             orderBy: { updatedAt: 'desc' },
             take: 20,
             include: { messages: { orderBy: { createdAt: 'asc' } } },
@@ -193,7 +193,6 @@ export async function POST(request: Request) {
         const persisted = await saveConversationHistory({
             userId,
             childId,
-            historyMessages: priorHistory,
             prompt,
             assistantText: result.text,
         });

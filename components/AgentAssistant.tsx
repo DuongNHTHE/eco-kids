@@ -44,6 +44,39 @@ export default function AgentAssistant() {
             .catch(() => undefined);
     }, []);
 
+    useEffect(() => {
+        if (!childId) return;
+
+        let cancelled = false;
+
+        fetch(`/api/agent?childId=${encodeURIComponent(childId)}`)
+            .then((response) => response.ok ? response.json() : null)
+            .then((payload) => {
+                if (cancelled || !payload?.ok || !Array.isArray(payload.conversations)) return;
+
+                const latestConversation = payload.conversations[0];
+                const loadedMessages = latestConversation?.messages
+                    ?.filter((message: { role?: string; content?: string }) => (
+                        (message.role === 'user' || message.role === 'assistant') && typeof message.content === 'string'
+                    ))
+                    .map((message: { id?: string; role: ChatRole; content: string }) => ({
+                        id: message.id || `history-${Date.now()}-${Math.random()}`,
+                        role: message.role,
+                        text: message.content,
+                    })) || [];
+
+                if (loadedMessages.length > 0) {
+                    setMessages(loadedMessages);
+                    setConversationId(latestConversation.id || null);
+                }
+            })
+            .catch(() => undefined);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [childId]);
+
     async function handleSubmit(event: FormEvent) {
         event.preventDefault();
         const trimmed = question.trim();
