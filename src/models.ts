@@ -128,6 +128,13 @@ const model3DSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 }, { collection: 'model_3ds' });
 
+const qrCodeSchema = new mongoose.Schema({
+  code: { type: String, required: true, unique: true, index: true },
+  targetId: { type: String, required: true },
+  isActive: { type: Boolean, default: true },
+  scanCount: { type: Number, default: 0 },
+}, { collection: 'qrcodes', timestamps: true });
+
 const topicSchema = new mongoose.Schema({
   slug: { type: String, unique: true, required: true },
   title: { type: String, required: true },
@@ -173,5 +180,6 @@ const packageSchema = new mongoose.Schema({
 export const Topic = (mongoose.models.Topic || mongoose.model('Topic', topicSchema)) as mongoose.Model<any>;
 export const Vocabulary = (mongoose.models.Vocabulary || mongoose.model('Vocabulary', vocabularyCollectionSchema)) as mongoose.Model<any>;
 export const Model3D = (mongoose.models.Model3D || mongoose.model('Model3D', model3DSchema)) as mongoose.Model<any>;
+export const QRCode = (mongoose.models.QRCode || mongoose.model('QRCode', qrCodeSchema)) as mongoose.Model<any>;
 export const Product = (mongoose.models.Product || mongoose.model('Product', productSchema)) as mongoose.Model<any>;
 export const Package = (mongoose.models.Package || mongoose.model('Package', packageSchema)) as mongoose.Model<any>;

@@ -1,8 +1,9 @@
 import { getTopics } from '../../../src/content';
-import { connectMongo, Model3D, Topic, Vocabulary } from '../../../src/models';
+import { connectMongo, Model3D, QRCode, Topic, Vocabulary } from '../../../src/models';
 import { writeAuditLog } from '../../../src/audit';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
+import QRCodeEncoder from 'qrcode';
 
 function normalizeWord(word: any, fallbackId?: string) {
     const english = String(word?.english || '').trim();
@@ -123,12 +124,15 @@ async function handleMutation(request: Request, requiredAction?: string) {
         if (action === 'create') {
             const createdWord = await Vocabulary.create({ topicId, ...updateResult.word });
             await upsertModelForVocabulary(String(createdWord?.id || updateResult.word.id), updateResult.word);
+            updateResult.qr = await upsertWordQRCode(request, topicId, updateResult.word.id);
         } else if (action === 'update') {
             const updatedWord = await Vocabulary.findOneAndUpdate({ topicId, id: updateResult.wordId }, { ...updateResult.word, updatedAt: new Date() }, { runValidators: true, new: true });
             await upsertModelForVocabulary(String(updatedWord?.id || updateResult.wordId), updateResult.word);
+            updateResult.qr = await upsertWordQRCode(request, topicId, updateResult.wordId);
         } else {
             await Vocabulary.deleteOne({ topicId, id: updateResult.wordId });
             await Model3D.deleteMany({ vocabularyId: updateResult.wordId });
+            await QRCode.deleteOne({ code: `${topicId}:${updateResult.wordId}` });
         }
 
         const wordCount = await Vocabulary.countDocuments({ topicId });
@@ -146,7 +150,7 @@ async function handleMutation(request: Request, requiredAction?: string) {
 
         const messages: Record<string, string> = { create: 'Đã thêm bài học.', update: 'Đã cập nhật bài học.', delete: 'Đã xóa bài học.' };
         const updatedTopic = (await getTopics()).find(item => item.id === topicId);
-        return Response.json({ message: messages[action], topic: updatedTopic });
+        return Response.json({ message: messages[action], topic: updatedTopic, qr: updateResult.qr || null });
     } catch (error) {
         console.error(error);
         return Response.json({ message: 'Không thể cập nhật bài học. Vui lòng thử lại.' }, { status: 500 });
@@ -159,4 +163,21 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     return handleMutation(request);
+}
+
+async function upsertWordQRCode(request: Request, topicId: string, wordId: string) {
+    const code = `${topicId}:${wordId}`;
+    const target = `/learn?topic=${encodeURIComponent(topicId)}&word=${encodeURIComponent(wordId)}`;
+    await QRCode.updateOne(
+        { code },
+        { code, targetId: target, isActive: true },
+        { upsert: true }
+    );
+
+    const scanUrl = new URL(`/api/qr/${encodeURIComponent(code)}`, request.url).toString();
+    return {
+        code,
+        url: scanUrl,
+        image: await QRCodeEncoder.toDataURL(scanUrl, { margin: 2, width: 320 }),
+    };
 }

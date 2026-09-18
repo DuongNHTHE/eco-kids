@@ -16,7 +16,7 @@ model User {
 
   role UserRole @default(PARENT)
 
-  children Child[]
+  children        Child[]
   aiConversations AIConversation[]
 
   createdAt           DateTime             @default(now())
@@ -182,19 +182,12 @@ model Model3D {
 }
 
 model QRCode {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  code String @unique
-
-  targetType QRTargetType
-  targetId   String
-
-  bookId String? @db.ObjectId
-  page   Int?
-
-  isActive Boolean @default(true)
-
-  scanCount Int @default(0)
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  code          String  @unique
+  targetId      String
+  isActive      Boolean @default(true)
+  scanCount     Int     @default(0)
+  vocabulary_id String? @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

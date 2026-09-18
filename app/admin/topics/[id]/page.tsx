@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAPI } from '../../../../lib/hooks/useAPI';
 
-type Word = { id: string; english: string; vietnamese: string; phonetic?: string; prompt?: string; shape?: string; color?: string; modelUrl?: string };
+type Word = { id: string; english: string; vietnamese: string; phonetic?: string; prompt?: string; shape?: string; color?: string; modelUrl?: string; qr?: WordQr };
 type Topic = { id: string; title: string; vietnamese: string; icon: string; color: string; description?: string; words: Word[] };
 type WordDraft = { id: string; english: string; vietnamese: string; phonetic: string; prompt: string; shape: string; modelUrl: string };
+type WordQr = { code: string; url: string; image: string };
 
 const icons: Record<string, string> = { fox: '🦊', whale: '🐋', turtle: '🐢', apple: '🍎', orange: '🍊', pear: '🍐', car: '🚗', bus: '🚌' };
 
@@ -22,6 +23,7 @@ export default function TopicDetailPage() {
     const [saving, setSaving] = useState(false);
     const [sampling, setSampling] = useState(false);
     const [message, setMessage] = useState('');
+    const [lastQr, setLastQr] = useState<WordQr | null>(null);
 
     async function loadTopic() {
         if (!params.id) return;
@@ -56,6 +58,7 @@ export default function TopicDetailPage() {
         const result = await API.put('vocabulary', { topicId: topic.id, action: editingWordId ? 'update' : 'create', wordId: editingWordId, word: draft }, false, false, true);
         if (result.success) {
             setTopic(result.topic);
+            setLastQr(result.qr || null);
             setIsModalOpen(false);
         } else {
             setMessage(result.message || 'Không thể lưu bài học.');
@@ -127,6 +130,16 @@ export default function TopicDetailPage() {
                     <span className="text-sm font-bold text-[#ef7d32]">Nội dung chủ đề</span>
                     <h2 className="mt-2 text-2xl font-extrabold">Các bài tập trong chủ đề</h2>
                 </div>
+                {lastQr &&
+                    <div className="mb-6 flex flex-wrap items-center gap-5 rounded-2xl border border-[#dceadd] bg-white p-5 shadow-soft">
+                        <img src={lastQr.image} alt="QR mở bài học" className="h-32 w-32 rounded-lg border border-[#dceadd]" />
+                        <div>
+                            <p className="font-extrabold text-[#2d6358]">QR bài học đã được tạo</p>
+                            <p className="mt-1 text-sm text-[#71867c]">Quét mã để mở trực tiếp từ vựng trong phần Learn.</p>
+                            <a href={lastQr.url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm font-bold text-[#f47d52] hover:underline">Mở đường dẫn QR</a>
+                        </div>
+                    </div>
+                }
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{topic.words?.map((word, index) =>
                     <article key={word.id || index} className="rounded-[1.5rem] bg-white p-5 shadow-soft">
                         <div className="flex items-start justify-between gap-3">
@@ -143,6 +156,14 @@ export default function TopicDetailPage() {
                                 <small className="mt-2 block font-bold text-[#83968c]">{word.phonetic}</small>
                             }
                         </div>
+                        {word.qr &&
+                            <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#dceadd] bg-white p-3">
+                                <img src={word.qr.image} alt={`QR mở từ ${word.english}`} className="h-20 w-20 rounded-md border border-[#dceadd]" />
+                                <div className="min-w-0 text-xs text-[#71867c]">
+                                    <p className="font-bold text-[#2d6358]">Quét để mở bài học</p>
+                                    <a href={word.qr.url} target="_blank" rel="noreferrer" className="mt-1 block truncate font-bold text-[#f47d52] hover:underline">Mở link</a>
+                                </div>
+                            </div>}
                         <div className="mt-4 flex justify-end gap-3 text-sm font-bold">
                             <button type="button" onClick={() => openEditModal(word)} className="text-[#2d6358] hover:underline">Sửa</button>
                             <button type="button" onClick={() => deleteWord(word)} className="text-[#d45e45] hover:underline">Xóa</button>

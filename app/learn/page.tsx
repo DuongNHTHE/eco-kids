@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { useSession } from 'next-auth/react';
 
@@ -39,6 +40,7 @@ export function resolveWordModel(word: any) {
 
 export default function LearnPage() {
     const { API } = useAPI();
+    const router = useRouter();
     const [topics, setTopics] = useState([]);
     const [topicIndex, setTopicIndex] = useState(0);
     const [wordIndex, setWordIndex] = useState(0);
@@ -57,9 +59,15 @@ export default function LearnPage() {
         API.get('topics', false, true, true).then(data => {
             if (!Array.isArray(data)) return;
             setTopics(data);
-            const requested = new URLSearchParams(window.location.search).get('topic');
-            const index = data.findIndex(item => item.id === requested);
-            if (index >= 0) setTopicIndex(index);
+            const params = new URLSearchParams(window.location.search);
+            const requestedTopic = params.get('topic');
+            const requestedWord = params.get('word');
+            const requestedTopicIndex = data.findIndex(item => item.id === requestedTopic);
+            const nextTopicIndex = requestedTopicIndex >= 0 ? requestedTopicIndex : 0;
+            const requestedWordIndex = data[nextTopicIndex]?.words?.findIndex(item => item.id === requestedWord) ?? -1;
+
+            setTopicIndex(nextTopicIndex);
+            setWordIndex(requestedWordIndex >= 0 ? requestedWordIndex : 0);
         });
     }, [API]);
 
@@ -96,10 +104,20 @@ export default function LearnPage() {
         setTopicIndex(index);
         setWordIndex(0);
         setScore(null);
+        const selectedTopic = topics[index];
+        const selectedWord = selectedTopic?.words?.[0];
+        if (selectedTopic?.id && selectedWord?.id) {
+            router.replace(`/learn?topic=${encodeURIComponent(selectedTopic.id)}&word=${encodeURIComponent(selectedWord.id)}`);
+        }
     };
     const selectWord = index => {
         setWordIndex(index);
         setScore(null);
+        const selectedTopic = topics[topicIndex];
+        const selectedWord = selectedTopic?.words?.[index];
+        if (selectedTopic?.id && selectedWord?.id) {
+            router.replace(`/learn?topic=${encodeURIComponent(selectedTopic.id)}&word=${encodeURIComponent(selectedWord.id)}`);
+        }
     };
 
     const speak = text => {
@@ -197,8 +215,7 @@ export default function LearnPage() {
         setToast('Đã lưu vào hành trình của bé!');
         if (wordIndex < topic.words.length - 1) {
             setTimeout(() => {
-                setWordIndex(value => value + 1);
-                setScore(null);
+                selectWord(wordIndex + 1);
             }, 500);
         }
     };
