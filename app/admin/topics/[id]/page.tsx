@@ -130,16 +130,6 @@ export default function TopicDetailPage() {
                     <span className="text-sm font-bold text-[#ef7d32]">Nội dung chủ đề</span>
                     <h2 className="mt-2 text-2xl font-extrabold">Các bài tập trong chủ đề</h2>
                 </div>
-                {lastQr &&
-                    <div className="mb-6 flex flex-wrap items-center gap-5 rounded-2xl border border-[#dceadd] bg-white p-5 shadow-soft">
-                        <img src={lastQr.image} alt="QR mở bài học" className="h-32 w-32 rounded-lg border border-[#dceadd]" />
-                        <div>
-                            <p className="font-extrabold text-[#2d6358]">QR bài học đã được tạo</p>
-                            <p className="mt-1 text-sm text-[#71867c]">Quét mã để mở trực tiếp từ vựng trong phần Learn.</p>
-                            <a href={lastQr.url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm font-bold text-[#f47d52] hover:underline">Mở đường dẫn QR</a>
-                        </div>
-                    </div>
-                }
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{topic.words?.map((word, index) =>
                     <article key={word.id || index} className="rounded-[1.5rem] bg-white p-5 shadow-soft">
                         <div className="flex items-start justify-between gap-3">
