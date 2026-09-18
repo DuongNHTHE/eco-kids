@@ -31,12 +31,27 @@ function normalizeMessages(payload: any): AgentMessage[] | undefined {
     return messages.length ? messages : undefined;
 }
 
-async function getSessionUserId() {
+async function getSessionContext() {
     const session = await getServerSession(authOptions);
     const userId = session?.user && typeof (session.user as { id?: string }).id === 'string'
         ? (session.user as { id: string }).id.trim()
         : '';
-    return userId || null;
+    return {
+        userId: userId || null,
+        role: String((session?.user as { role?: string } | undefined)?.role || 'PARENT').toUpperCase(),
+    };
+}
+
+function getSystemPrompt(role: string, childId: string | null) {
+    if (role === 'ADMIN') {
+        return 'Bạn là trợ lý quản trị ECO-KIDS. Hãy hỗ trợ quản trị viên về dữ liệu, nội dung bài học, người dùng, báo cáo và vận hành hệ thống. Trả lời ngắn gọn, chính xác, thực tế. Không giả định quyền truy cập hoặc tự thực hiện thao tác thay đổi dữ liệu nếu chưa được yêu cầu.';
+    }
+
+    if (childId) {
+        return 'Bạn là trợ lý học tập ECO-KIDS dành cho trẻ nhỏ. Hãy giải thích đơn giản, vui vẻ, an toàn và phù hợp lứa tuổi; ưu tiên ví dụ tiếng Anh ngắn, khuyến khích bé tự suy nghĩ và không đưa nội dung nguy hiểm hoặc không phù hợp trẻ em.';
+    }
+
+    return 'Bạn là trợ lý dành cho phụ huynh ECO-KIDS. Hãy tư vấn cách đồng hành cùng con học tiếng Anh, theo dõi tiến bộ và sử dụng nội dung học tập. Trả lời rõ ràng, thực tế, thân thiện; không chẩn đoán y khoa hay đưa khẳng định vượt quá thông tin được cung cấp.';
 }
 
 async function resolveChildId(requestBody: any, userId: string) {
@@ -123,7 +138,7 @@ async function saveConversationHistory({
 
 export async function GET(request: Request) {
     try {
-        const userId = await getSessionUserId();
+        const { userId } = await getSessionContext();
         if (!userId) {
             return Response.json({ ok: false, message: 'Cần đăng nhập.' }, { status: 401 });
         }
@@ -163,7 +178,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json().catch(() => ({}));
-        const userId = await getSessionUserId();
+        const { userId, role: sessionRole } = await getSessionContext();
         if (!userId) {
             return Response.json({ ok: false, message: 'Cần đăng nhập.' }, { status: 401 });
         }
@@ -172,10 +187,12 @@ export async function POST(request: Request) {
         const priorHistory = normalizeHistoryMessages(Array.isArray(body?.history) ? body.history : undefined)
             ?? normalizeMessages(body)
             ?? [];
-        const messages = [...priorHistory];
+        const childId = await resolveChildId(body, userId);
+        const systemPrompt = getSystemPrompt(sessionRole, childId);
+        const messages = [{ role: 'system' as const, content: systemPrompt }, ...priorHistory];
         if (prompt) messages.push({ role: 'user', content: prompt });
 
-        if (!messages || messages.length === 0) {
+        if (!prompt && priorHistory.length === 0) {
             return Response.json({ ok: false, message: 'Thiếu prompt hoặc messages.' }, { status: 400 });
         }
 
@@ -189,7 +206,6 @@ export async function POST(request: Request) {
             apiKey: body?.apiKey,
         });
 
-        const childId = await resolveChildId(body, userId);
         const persisted = await saveConversationHistory({
             userId,
             childId,
