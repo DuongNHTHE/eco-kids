@@ -246,7 +246,8 @@ function getOpenAITools(tools: AgentTool[] | undefined) {
 
 function toGeminiSchema(schema: any): any {
     if (!schema || typeof schema !== 'object') return schema;
-    const converted: any = { ...schema };
+    const { additionalProperties: _additionalProperties, ...supportedSchema } = schema;
+    const converted: any = { ...supportedSchema };
     if (typeof converted.type === 'string') converted.type = converted.type.toUpperCase();
     if (converted.properties && typeof converted.properties === 'object') {
         converted.properties = Object.fromEntries(
