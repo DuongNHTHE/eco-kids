@@ -16,6 +16,14 @@ export type CallAgentOptions = {
     timeoutMs?: number;
     signal?: AbortSignal;
     apiKey?: string;
+    tools?: AgentTool[];
+};
+
+export type AgentTool = {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+    execute: (argumentsValue: Record<string, unknown>) => Promise<unknown>;
 };
 
 export type AgentResponse = {
@@ -99,22 +107,49 @@ async function callOpenAI(options: CallAgentOptions, messages: AgentMessage[], s
     const apiKey = options.apiKey || process.env.OPENAI_API_KEY;
     if (!apiKey) throw new AgentError('Thiếu OPENAI_API_KEY.', { provider });
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        signal,
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            model,
-            messages,
-            temperature: options.temperature,
-            max_tokens: options.maxTokens,
-        }),
-    });
-    if (!response.ok) throw new AgentError(await readError(response), { provider, status: response.status });
+    const conversation: any[] = [...messages];
+    const tools = getOpenAITools(options.tools);
+    for (let round = 0; round < 4; round += 1) {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            signal,
+            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model,
+                messages: conversation,
+                ...(tools?.length ? { tools, tool_choice: 'auto' } : {}),
+                temperature: options.temperature,
+                max_tokens: options.maxTokens,
+            }),
+        });
+        if (!response.ok) throw new AgentError(await readError(response), { provider, status: response.status });
 
-    const text = extractOpenAIText(await response.json());
-    if (!text) throw new AgentError('OpenAI không trả về nội dung.', { provider });
-    return { text, provider, model };
+        const payload = await response.json();
+        const message = payload?.choices?.[0]?.message;
+        if (!message) throw new AgentError('OpenAI không trả về nội dung.', { provider });
+        conversation.push(message);
+        const toolCalls = Array.isArray(message.tool_calls) ? message.tool_calls : [];
+        if (!toolCalls.length) {
+            const text = extractOpenAIText(payload);
+            if (!text) throw new AgentError('OpenAI không trả về nội dung.', { provider });
+            return { text, provider, model };
+        }
+
+        for (const toolCall of toolCalls) {
+            const tool = options.tools?.find(item => item.name === toolCall?.function?.name);
+            let result: unknown;
+            try {
+                result = tool
+                    ? await tool.execute(JSON.parse(toolCall.function.arguments || '{}'))
+                    : { error: `Unknown tool: ${toolCall?.function?.name}` };
+            } catch (error) {
+                result = { error: error instanceof Error ? error.message : 'Tool failed.' };
+            }
+            conversation.push({ role: 'tool', tool_call_id: toolCall.id, content: JSON.stringify(result) });
+        }
+    }
+
+    throw new AgentError('AI gọi quá nhiều tool trong một yêu cầu.', { provider });
 }
 
 async function callGemini(options: CallAgentOptions, messages: AgentMessage[], signal: AbortSignal): Promise<AgentResponse> {
@@ -124,27 +159,57 @@ async function callGemini(options: CallAgentOptions, messages: AgentMessage[], s
     if (!apiKey) throw new AgentError('Thiếu GEMINI_API_KEY.', { provider });
 
     const systemInstruction = messages.find(message => message.role === 'system')?.content;
-    const contents = messages
+    const contents: any[] = messages
         .filter(message => message.role !== 'system')
         .map(message => ({ role: message.role === 'assistant' ? 'model' : 'user', parts: [{ text: message.content }] }));
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-        method: 'POST',
-        signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
-            contents,
-            generationConfig: {
-                temperature: options.temperature,
-                maxOutputTokens: options.maxTokens,
-            },
-        }),
-    });
-    if (!response.ok) throw new AgentError(await readError(response), { provider, status: response.status });
+    const functionDeclarations = options.tools?.map(tool => ({
+        name: tool.name,
+        description: tool.description,
+        parameters: toGeminiSchema(tool.parameters),
+    }));
+    for (let round = 0; round < 4; round += 1) {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+            method: 'POST',
+            signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
+                contents,
+                ...(functionDeclarations?.length ? { tools: [{ functionDeclarations }] } : {}),
+                generationConfig: {
+                    temperature: options.temperature,
+                    maxOutputTokens: options.maxTokens,
+                },
+            }),
+        });
+        if (!response.ok) throw new AgentError(await readError(response), { provider, status: response.status });
 
-    const text = extractGeminiText(await response.json());
-    if (!text) throw new AgentError('Gemini không trả về nội dung.', { provider });
-    return { text, provider, model };
+        const payload = await response.json();
+        const parts = payload?.candidates?.[0]?.content?.parts || [];
+        const functionCalls = parts.filter((part: any) => part?.functionCall);
+        if (!functionCalls.length) {
+            const text = extractGeminiText(payload);
+            if (!text) throw new AgentError('Gemini không trả về nội dung.', { provider });
+            return { text, provider, model };
+        }
+
+        contents.push({ role: 'model', parts });
+        const functionResponses = [];
+        for (const part of functionCalls) {
+            const call = part.functionCall;
+            const tool = options.tools?.find(item => item.name === call?.name);
+            let result: unknown;
+            try {
+                result = tool ? await tool.execute(call.args || {}) : { error: `Unknown tool: ${call?.name}` };
+            } catch (error) {
+                result = { error: error instanceof Error ? error.message : 'Tool failed.' };
+            }
+            functionResponses.push({ functionResponse: { name: call.name, response: result } });
+        }
+        contents.push({ role: 'user', parts: functionResponses });
+    }
+
+    throw new AgentError('AI gọi quá nhiều tool trong một yêu cầu.', { provider });
 }
 
 export async function callAgent(options: CallAgentOptions): Promise<AgentResponse>;
@@ -170,4 +235,24 @@ export async function callAgent(input: string | CallAgentOptions, inputOptions: 
     } finally {
         request.cleanup();
     }
+}
+
+function getOpenAITools(tools: AgentTool[] | undefined) {
+    return tools?.map(tool => ({
+        type: 'function' as const,
+        function: { name: tool.name, description: tool.description, parameters: tool.parameters },
+    }));
+}
+
+function toGeminiSchema(schema: any): any {
+    if (!schema || typeof schema !== 'object') return schema;
+    const converted: any = { ...schema };
+    if (typeof converted.type === 'string') converted.type = converted.type.toUpperCase();
+    if (converted.properties && typeof converted.properties === 'object') {
+        converted.properties = Object.fromEntries(
+            Object.entries(converted.properties).map(([key, value]) => [key, toGeminiSchema(value)])
+        );
+    }
+    if (converted.items) converted.items = toGeminiSchema(converted.items);
+    return converted;
 }

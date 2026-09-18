@@ -1,8 +1,9 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
-import { callAgent, type AgentMessage, type AgentProvider } from '../../../lib/agent';
+import { callAgent, type AgentMessage, type AgentProvider, type AgentTool } from '../../../lib/agent';
 import { buildConversationTitle, normalizeHistoryMessages } from '../../../lib/agent-history';
 import { PrismaClient, $Enums } from '@prisma/client';
+import { getTopics } from '../../../src/content';
 
 const globalForPrisma = globalThis as typeof globalThis & { ecoKidsPrisma?: PrismaClient };
 const prisma = globalForPrisma.ecoKidsPrisma ?? new PrismaClient();
@@ -52,6 +53,44 @@ function getSystemPrompt(role: string, childId: string | null) {
     }
 
     return 'Bạn là trợ lý dành cho phụ huynh ECO-KIDS. Hãy tư vấn cách đồng hành cùng con học tiếng Anh, theo dõi tiến bộ và sử dụng nội dung học tập. Trả lời rõ ràng, thực tế, thân thiện; không chẩn đoán y khoa hay đưa khẳng định vượt quá thông tin được cung cấp.';
+}
+
+function createAgentTools(): AgentTool[] {
+    return [
+        {
+            name: 'get_learning_topics',
+            description: 'Lấy danh sách chủ đề và các từ vựng đang có trong ECO-KIDS.',
+            parameters: { type: 'object', properties: {}, additionalProperties: false },
+            execute: async () => {
+                const topics = await getTopics();
+                return topics.map((topic: any) => ({
+                    id: topic.id,
+                    title: topic.title,
+                    vietnamese: topic.vietnamese,
+                    words: (topic.words || []).map((word: any) => ({ id: word.id, english: word.english, vietnamese: word.vietnamese })),
+                }));
+            },
+        },
+        {
+            name: 'get_word_details',
+            description: 'Lấy thông tin chi tiết của một từ vựng trong một chủ đề.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    topicId: { type: 'string', description: 'ID hoặc slug của chủ đề.' },
+                    wordId: { type: 'string', description: 'ID của từ vựng.' },
+                },
+                required: ['topicId', 'wordId'],
+                additionalProperties: false,
+            },
+            execute: async ({ topicId, wordId }) => {
+                const topics = await getTopics();
+                const topic: any = topics.find((item: any) => item.id === topicId);
+                const word = topic?.words?.find((item: any) => item.id === wordId);
+                return word ? { topicId, word } : { error: 'Không tìm thấy từ vựng.' };
+            },
+        },
+    ];
 }
 
 async function resolveChildId(requestBody: any, userId: string) {
@@ -204,6 +243,7 @@ export async function POST(request: Request) {
             maxTokens: typeof body?.maxTokens === 'number' ? body.maxTokens : undefined,
             timeoutMs: typeof body?.timeoutMs === 'number' ? body.timeoutMs : undefined,
             apiKey: body?.apiKey,
+            tools: createAgentTools(),
         });
 
         const persisted = await saveConversationHistory({

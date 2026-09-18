@@ -1,3 +1,5 @@
+import { env } from "process";
+
 type RouteContext = { params: Promise<{ word: string }> };
 
 const QUICK_PRONOUNCE_URL = 'https://api.quickpronounce.site/v1/dictionary/';
@@ -6,6 +8,7 @@ const REQUEST_TIMEOUT_MS = 8000;
 export async function GET(_request: Request, context: RouteContext) {
   const { word } = await context.params;
   const normalizedWord = word.trim();
+  const phonetic_key = env.QUICK_PRONOUNCE_API_KEY || '';
 
   if (!normalizedWord) {
     return Response.json({ message: 'Vui lòng nhập từ tiếng Anh.' }, { status: 400 });
@@ -17,7 +20,10 @@ export async function GET(_request: Request, context: RouteContext) {
   try {
     const response = await fetch(`${QUICK_PRONOUNCE_URL}${encodeURIComponent(normalizedWord)}`, {
       signal: controller.signal,
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        'X-API-Key': phonetic_key,
+      },
       cache: 'no-store',
     });
     const payload = await response.json().catch(() => null);
