@@ -43,13 +43,24 @@ async function getSessionContext() {
     };
 }
 
-function getSystemPrompt(role: string, childId: string | null) {
+async function getSystemPrompt(role: string, childId: string | null) {
     if (role === 'ADMIN') {
         return 'Bạn là trợ lý quản trị ECO-KIDS. Hãy hỗ trợ quản trị viên về dữ liệu, nội dung bài học, người dùng, báo cáo và vận hành hệ thống. Trả lời ngắn gọn, chính xác, thực tế. Không giả định quyền truy cập hoặc tự thực hiện thao tác thay đổi dữ liệu nếu chưa được yêu cầu.';
     }
 
     if (childId) {
-        return 'Bạn là trợ lý học tập ECO-KIDS dành cho trẻ nhỏ. Hãy giải thích đơn giản, vui vẻ, an toàn và phù hợp lứa tuổi; ưu tiên ví dụ tiếng Anh ngắn, khuyến khích bé tự suy nghĩ và không đưa nội dung nguy hiểm hoặc không phù hợp trẻ em.';
+        const child = await prisma.child.findUnique({
+            where: {
+                id: childId,
+            },
+            select: {
+                name: true,
+            },
+        });
+
+        const childName = child?.name;
+
+        return `Bạn là trợ lý học tập ECO-KIDS dành cho trẻ nhỏ. Hãy giải thích đơn giản, vui vẻ, an toàn và phù hợp lứa tuổi; ưu tiên ví dụ tiếng Anh ngắn, khuyến khích bé tự suy nghĩ và không đưa nội dung nguy hiểm hoặc không phù hợp trẻ em. Trẻ tên là ${childName}.`;
     }
 
     return 'Bạn là trợ lý dành cho phụ huynh ECO-KIDS. Hãy tư vấn cách đồng hành cùng con học tiếng Anh, theo dõi tiến bộ và sử dụng nội dung học tập. Trả lời rõ ràng, thực tế, thân thiện; không chẩn đoán y khoa hay đưa khẳng định vượt quá thông tin được cung cấp.';
@@ -227,7 +238,7 @@ export async function POST(request: Request) {
             ?? normalizeMessages(body)
             ?? [];
         const childId = await resolveChildId(body, userId);
-        const systemPrompt = getSystemPrompt(sessionRole, childId);
+        const systemPrompt = await getSystemPrompt(sessionRole, childId);
         const messages = [{ role: 'system' as const, content: systemPrompt }, ...priorHistory];
         if (prompt) messages.push({ role: 'user', content: prompt });
 
