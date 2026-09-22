@@ -21,7 +21,7 @@ const initialMessages: ChatMessage[] = [
     {
         id: 'welcome',
         role: 'assistant',
-        text: 'Xin chào! Mình là trợ lý học tập ECO-KIDS. Mình có thể giải thích từ mới, đưa ví dụ, hoặc gợi ý cách học dễ nhớ cho bé.',
+        text: 'Xin chào! Mình là Lupinh trợ lý học tập của bé. Mình có thể giải thích từ mới, đưa ví dụ, hoặc gợi ý cách học dễ nhớ cho bé.',
     },
 ];
 
@@ -153,7 +153,7 @@ export default function AgentAssistant() {
                         <div className="flex items-center justify-between bg-[#2d6358] px-4 py-3 text-white">
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d9f0de]">Assistant</p>
-                                <h3 className="text-base font-extrabold">ECO-KIDS AI</h3>
+                                <h3 className="text-base font-extrabold">ECO-KIDS Assistant</h3>
                             </div>
                             <button
                                 type="button"
@@ -179,7 +179,7 @@ export default function AgentAssistant() {
                             ))}
                             {loading && (
                                 <div className="max-w-[85%] rounded-2xl bg-white px-3 py-2 text-sm text-[#537267] shadow-sm">
-                                    Đang suy nghĩ...
+                                    Lupinh đang suy nghĩ...
                                 </div>
                             )}
                         </div>

@@ -42,6 +42,7 @@ export function resolveWordModel(word: any) {
 export default function LearnPage() {
     const { API } = useAPI();
     const router = useRouter();
+    const [selectedParams, setSelectedParams] = useState({ topic: '', word: '' });
     const [topics, setTopics] = useState([]);
     const [topicIndex, setTopicIndex] = useState(0);
     const [wordIndex, setWordIndex] = useState(0);
@@ -53,26 +54,34 @@ export default function LearnPage() {
     const [isAssessing, setIsAssessing] = useState(false);
     const [children, setChildren] = useState<{ id: string; name: string; avatar: string }[]>([]);
     const [selectedChildId, setSelectedChildId] = useState('');
+    const [progressRecords, setProgressRecords] = useState<{ topicId: string; wordId: string; practicedAt?: string }[]>([]);
     const topic = topics[topicIndex];
     const word = topic?.words[wordIndex];
     const model = resolveWordModel(word);
     const { data: session } = useSession();
 
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        setSelectedParams({ topic: params.get('topic') || '', word: params.get('word') || '' });
+    }, []);
+
+    useEffect(() => {
         API.get('topics', false, true, true).then(data => {
             if (!Array.isArray(data)) return;
             setTopics(data);
-            const params = new URLSearchParams(window.location.search);
-            const requestedTopic = params.get('topic');
-            const requestedWord = params.get('word');
-            const requestedTopicIndex = data.findIndex(item => item.id === requestedTopic);
-            const nextTopicIndex = requestedTopicIndex >= 0 ? requestedTopicIndex : 0;
-            const requestedWordIndex = data[nextTopicIndex]?.words?.findIndex(item => item.id === requestedWord) ?? -1;
-
-            setTopicIndex(nextTopicIndex);
-            setWordIndex(requestedWordIndex >= 0 ? requestedWordIndex : 0);
         });
     }, [API]);
+
+    useEffect(() => {
+        if (!topics.length) return;
+
+        const requestedTopicIndex = topics.findIndex(item => item.id === selectedParams.topic);
+        const nextTopicIndex = requestedTopicIndex >= 0 ? requestedTopicIndex : 0;
+        const requestedWordIndex = topics[nextTopicIndex]?.words?.findIndex(item => item.id === selectedParams.word) ?? -1;
+
+        setTopicIndex(nextTopicIndex);
+        setWordIndex(requestedWordIndex >= 0 ? requestedWordIndex : 0);
+    }, [topics, selectedParams]);
 
     useEffect(() => {
         API.get('children', false, true, true).then(children => {
@@ -82,6 +91,9 @@ export default function LearnPage() {
             setChildren(children);
             setSelectedChildId(selected.id);
             saveSelectedChild(selected);
+            API.get(`progress/${encodeURIComponent(selected.name)}`, false, true, true).then(progress => {
+                setProgressRecords(Array.isArray(progress?.records) ? progress.records : []);
+            });
         });
     }, [API]);
 
@@ -104,15 +116,94 @@ export default function LearnPage() {
         return () => clearTimeout(timer);
     }, [toast]);
 
+    const hasSelectedLesson = Boolean(selectedParams.topic || selectedParams.word);
+
+    function getTopicStartUrl(topicItem) {
+        const latestProgress = progressRecords.find(record => record.topicId === topicItem.id);
+        const learnedWord = latestProgress && topicItem.words?.find(wordItem => wordItem.id === latestProgress.wordId);
+        const firstWord = learnedWord || topicItem.words?.[0];
+        if (!firstWord) return '#';
+        return `/learn?topic=${encodeURIComponent(topicItem.id)}&word=${encodeURIComponent(firstWord.id)}`;
+    }
+
+    function openLesson(topicId, wordId) {
+        setSelectedParams({ topic: topicId, word: wordId });
+        router.replace(`/learn?topic=${encodeURIComponent(topicId)}&word=${encodeURIComponent(wordId)}`);
+    }
+
+    if (!hasSelectedLesson && topics.length > 0) {
+        return (
+            <div className="min-h-screen bg-[#f4faf4] text-[#203b35]">
+                <header className="flex items-center justify-between border-b border-[#dceadd] bg-white px-5 py-4 lg:px-10">
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                        <span className="text-3xl font-extrabold text-[#f47d52]">e<span className="text-[#6eaa83]">c</span>o</span>
+                        <span className="border-l pl-2 text-xs font-black leading-3 tracking-widest">KIDS<br /><small>English 3D</small></span>
+                    </Link>
+                    <Link href="/dashboard" className="font-bold text-[#2d6358]">👩‍👧 Góc phụ huynh</Link>
+                </header>
+
+                <main className="mx-auto max-w-6xl px-5 py-10 lg:px-8">
+                    <div className="max-w-2xl">
+                        <span className="font-bold text-[#ef7d32]">Lớp học của bé</span>
+                        <h1 className="mt-2 text-4xl font-extrabold sm:text-5xl">Chọn bài học hôm nay</h1>
+                        <p className="mt-3 text-lg text-[#60786e]">Khám phá từng chủ đề, sau đó chọn từ vựng để bắt đầu học.</p>
+                    </div>
+
+                    <section className="mt-8 grid gap-5 md:grid-cols-2">
+                        {topics.map(topicItem => (
+                            <article key={topicItem.id} className="overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-[#e0ece0]">
+                                <Link href={getTopicStartUrl(topicItem)} onClick={() => {
+                                    const lessonUrl = getTopicStartUrl(topicItem);
+                                    const lessonParams = new URL(lessonUrl, window.location.origin).searchParams;
+                                    openLesson(lessonParams.get('topic') || topicItem.id, lessonParams.get('word') || topicItem.words?.[0]?.id || '');
+                                }} className="flex items-start gap-4 p-6 transition hover:brightness-95" style={{ backgroundColor: `${topicItem.color || '#dcefe0'}22` }}>
+                                    <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white text-4xl shadow-sm">{topicItem.icon || '📚'}</span>
+                                    <div>
+                                        <p className="text-sm font-bold text-[#80938a]">Chủ đề</p>
+                                        <h2 className="mt-1 text-2xl font-extrabold">{topicItem.title}</h2>
+                                        <p className="mt-1 text-[#60786e]">{topicItem.vietnamese} · Nhấn để tiếp tục</p>
+                                    </div>
+                                </Link>
+                                {/* <div className="p-5">
+                                    <div className="mb-3 flex items-center justify-between text-sm font-bold text-[#80938a]">
+                                        <span>{topicItem.words?.length || 0} bài nhỏ</span>
+                                        <span>Chọn để học</span>
+                                    </div>
+                                    <div className="grid gap-2 sm:grid-cols-2">
+                                        {(topicItem.words || []).map((wordItem, wordItemIndex) => (
+                                            <Link
+                                                key={wordItem.id}
+                                                href={`/learn?topic=${encodeURIComponent(topicItem.id)}&word=${encodeURIComponent(wordItem.id)}`}
+                                                className="flex items-center gap-3 rounded-xl border border-[#e0ece0] px-3 py-3 transition hover:-translate-y-0.5 hover:border-[#2d6358] hover:bg-[#f4faf4]"
+                                            >
+                                                <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#e8f4e9] text-sm font-black text-[#2d6358]">{wordItemIndex + 1}</span>
+                                                <span className="min-w-0">
+                                                    <b className="block truncate">{wordItem.english}</b>
+                                                    <small className="block truncate text-[#80938a]">{wordItem.vietnamese}</small>
+                                                </span>
+                                                <span className="ml-auto text-[#2d6358]">→</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div> */}
+                            </article>
+                        ))}
+                    </section>
+                </main>
+            </div>
+        );
+    }
+
     if (!word) return <div className="grid min-h-screen place-items-center text-xl">Đang mở phòng khám phá…</div>;
     const selectTopic = index => {
         setTopicIndex(index);
         setWordIndex(0);
         setScore(null);
         const selectedTopic = topics[index];
-        const selectedWord = selectedTopic?.words?.[0];
+        const latestProgress = progressRecords.find(record => record.topicId === selectedTopic?.id);
+        const selectedWord = selectedTopic?.words?.find(item => item.id === latestProgress?.wordId) || selectedTopic?.words?.[0];
         if (selectedTopic?.id && selectedWord?.id) {
-            router.replace(`/learn?topic=${encodeURIComponent(selectedTopic.id)}&word=${encodeURIComponent(selectedWord.id)}`);
+            openLesson(selectedTopic.id, selectedWord.id);
         }
     };
     const selectWord = index => {
@@ -121,7 +212,7 @@ export default function LearnPage() {
         const selectedTopic = topics[topicIndex];
         const selectedWord = selectedTopic?.words?.[index];
         if (selectedTopic?.id && selectedWord?.id) {
-            router.replace(`/learn?topic=${encodeURIComponent(selectedTopic.id)}&word=${encodeURIComponent(selectedWord.id)}`);
+            openLesson(selectedTopic.id, selectedWord.id);
         }
     };
 
@@ -255,6 +346,9 @@ export default function LearnPage() {
                                     if (!selected) return;
                                     saveSelectedChild(selected);
                                     setSelectedChildId(selected.id);
+                                    API.get(`progress/${encodeURIComponent(selected.name)}`, false, true, true).then(progress => {
+                                        setProgressRecords(Array.isArray(progress?.records) ? progress.records : []);
+                                    });
                                 }}
                                 className="rounded-xl border border-[#dceadd] bg-white px-2 py-1 outline-none"
                             >
@@ -268,7 +362,13 @@ export default function LearnPage() {
             <main className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[230px_1fr] lg:px-8">
                 <aside>
                     <Link
-                        href={session ? "/dashboard" : "/"}
+                        href={session ? "/learn" : "/"}
+                        onClick={event => {
+                            if (!session) return;
+                            event.preventDefault();
+                            setSelectedParams({ topic: '', word: '' });
+                            router.replace('/learn');
+                        }}
                         className="font-bold text-[#6c857c]"
                     >
                         ← Về trang chủ
