@@ -106,9 +106,16 @@ function createAgentTools(): AgentTool[] {
 
 async function resolveChildId(requestBody: any, userId: string) {
     const requestedChildId = typeof requestBody?.childId === 'string' ? requestBody.childId.trim() : '';
-    if (requestedChildId) return requestedChildId;
 
     try {
+        if (requestedChildId) {
+            const child = await prisma.child.findFirst({
+                where: { id: requestedChildId, parentId: userId },
+                select: { id: true },
+            });
+            return child?.id ?? null;
+        }
+
         const child = await prisma.child.findFirst({
             where: { parentId: userId },
             orderBy: { createdAt: 'asc' },
@@ -195,6 +202,13 @@ export async function GET(request: Request) {
 
         const { searchParams } = new URL(request.url);
         const childId = searchParams.get('childId');
+
+        const validChild = childId
+            ? await prisma.child.findFirst({ where: { id: childId, parentId: userId }, select: { id: true } })
+            : null;
+        if (childId && !validChild) {
+            return Response.json({ ok: false, message: 'Hồ sơ của bé không thuộc tài khoản này.' }, { status: 403 });
+        }
 
         const conversations = await prisma.aIConversation.findMany({
             where: { userId, childId: childId || null },

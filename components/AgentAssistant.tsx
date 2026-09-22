@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useEffect } from 'react';
+import { getSelectedChildId, saveSelectedChild } from '../lib/child-session';
 
 type ChatRole = 'user' | 'assistant';
 
@@ -37,8 +38,9 @@ export default function AgentAssistant() {
             .then((response) => response.ok ? response.json() : [])
             .then((children: ChildProfile[]) => {
                 if (!Array.isArray(children) || children.length === 0) return;
-                const selectedName = localStorage.getItem('eco-child');
-                const selectedChild = children.find((child) => child.name === selectedName) || children[0];
+                const selectedId = getSelectedChildId();
+                const selectedChild = children.find((child) => child.id === selectedId) || children[0];
+                saveSelectedChild(selectedChild);
                 setChildId(selectedChild.id);
             })
             .catch(() => undefined);

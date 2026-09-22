@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { useSession } from 'next-auth/react';
+import { getSelectedChildId, saveSelectedChild } from '../../lib/child-session';
 
 declare global {
     interface Window {
@@ -50,6 +51,8 @@ export default function LearnPage() {
     const [breakOpen, setBreakOpen] = useState(false);
     const [toast, setToast] = useState('');
     const [isAssessing, setIsAssessing] = useState(false);
+    const [children, setChildren] = useState<{ id: string; name: string; avatar: string }[]>([]);
+    const [selectedChildId, setSelectedChildId] = useState('');
     const topic = topics[topicIndex];
     const word = topic?.words[wordIndex];
     const model = resolveWordModel(word);
@@ -72,11 +75,13 @@ export default function LearnPage() {
     }, [API]);
 
     useEffect(() => {
-        if (localStorage.getItem('eco-child')) return;
         API.get('children', false, true, true).then(children => {
-            if (Array.isArray(children) && children[0]?.name) {
-                localStorage.setItem('eco-child', children[0].name);
-            }
+            if (!Array.isArray(children) || children.length === 0) return;
+            const selectedId = getSelectedChildId();
+            const selected = children.find(child => child.id === selectedId) || children[0];
+            setChildren(children);
+            setSelectedChildId(selected.id);
+            saveSelectedChild(selected);
         });
     }, [API]);
 
@@ -206,7 +211,7 @@ export default function LearnPage() {
 
     const complete = async () => {
         const response = await API.post('progress', {
-            childName: localStorage.getItem('eco-child') || 'Bé Heo',
+            childName: children.find(child => child.id === selectedChildId)?.name || 'Bé Heo',
             topicId: topic.id,
             wordId: word.id,
             score: score ?? 0, minutes: 1
@@ -240,6 +245,23 @@ export default function LearnPage() {
                 </div>
                 <div className="flex items-center gap-4 text-sm">👀
                     <b>{time}</b>
+                    {children.length > 0 && (
+                        <label className="hidden items-center gap-2 font-bold sm:flex">
+                            Bé đang học
+                            <select
+                                value={selectedChildId}
+                                onChange={event => {
+                                    const selected = children.find(child => child.id === event.target.value);
+                                    if (!selected) return;
+                                    saveSelectedChild(selected);
+                                    setSelectedChildId(selected.id);
+                                }}
+                                className="rounded-xl border border-[#dceadd] bg-white px-2 py-1 outline-none"
+                            >
+                                {children.map(child => <option key={child.id} value={child.id}>{child.avatar} {child.name}</option>)}
+                            </select>
+                        </label>
+                    )}
                     <Link href="/dashboard" className="font-bold">👩‍👧 Góc phụ huynh</Link>
                 </div>
             </header>

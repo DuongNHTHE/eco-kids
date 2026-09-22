@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
-import AdminLayout from '../admin/layout';
+import { saveSelectedChild } from '../../lib/child-session';
 
 type ChildProfile = {
     id: string;
@@ -21,7 +21,7 @@ const avatars = ['🧒', '👧', '👦', '🐰', '🦊', '🐼'];
 
 export default function ChildrenPage() {
     const router = useRouter();
-    const { status } = useSession();
+    const { data: session, status } = useSession();
     const [children, setChildren] = useState<ChildProfile[]>([]);
     const [form, setForm] = useState({ name: '', nickname: '', birthDate: '', gender: '', avatar: avatars[0] });
     const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ export default function ChildrenPage() {
             if (!response.ok || !response.data) throw new Error(response.message || 'Không thể tạo tài khoản.');
             const child = response.data as ChildProfile;
             setChildren(current => [...current, child]);
-            localStorage.setItem('eco-child', child.name);
+            saveSelectedChild(child);
             setForm({ name: '', nickname: '', birthDate: '', gender: '', avatar: avatars[0] });
             setMessage(`Đã tạo tài khoản cho ${child.name}.`);
         } catch (error) {
@@ -59,15 +59,15 @@ export default function ChildrenPage() {
     }
 
     function chooseChild(child: ChildProfile) {
-        localStorage.setItem('eco-child', child.name);
+        saveSelectedChild(child);
         router.push('/dashboard');
     }
 
-    if (status !== 'authenticated' || loading) return <div className="grid min-h-screen place-items-center text-xl text-[#203b35]">Đang tải...</div>;
+    const role = (session?.user as { role?: string } | undefined)?.role || '';
+    if (status !== 'authenticated' || role !== 'PARENT' || loading) return <div className="grid min-h-screen place-items-center text-xl text-[#203b35]">Đang tải...</div>;
 
     return (
-        <AdminLayout>
-            <main className="min-h-screen bg-[#f4faf4] px-5 py-8 text-[#203b35] lg:px-10">
+        <main className="min-h-screen bg-[#f4faf4] px-5 py-8 text-[#203b35] lg:px-10">
                 <div className="mx-auto max-w-5xl">
                     <Link href="/dashboard" className="font-bold text-[#2d6358]">← Về dashboard</Link>
                     <p className="mt-8 font-bold text-[#80938a]">Khu vực phụ huynh</p>
@@ -94,7 +94,6 @@ export default function ChildrenPage() {
                         </section>
                     </div>
                 </div>
-            </main>
-        </AdminLayout>
+        </main>
     );
 }

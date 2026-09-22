@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { useLocale } from '../../context/LocaleContext';
 import { clearSession, resolveRoleHome } from '../../lib/auth';
+import { getSelectedChildId, saveSelectedChild } from '../../lib/child-session';
 
 type ChildProfile = {
   id: string;
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const [data, setData] = useState(null);
   const [topics, setTopics] = useState([]);
   const [children, setChildren] = useState<ChildProfile[]>([]);
+  const [selectedChildId, setSelectedChildId] = useState('');
   const [selectedChildName, setSelectedChildName] = useState('');
   const [done, setDone] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -45,10 +47,15 @@ export default function DashboardPage() {
       API.get('topics', false, true, true),
     ]).then(([nextChildren, nextTopics]) => {
       if (!Array.isArray(nextChildren)) return;
+      const savedId = getSelectedChildId();
       const savedName = localStorage.getItem('eco-child');
-      const selectedChild = nextChildren.find(child => child.name === savedName) || nextChildren[0];
+      const selectedChild = nextChildren.find(child => child.id === savedId)
+        || nextChildren.find(child => child.name === savedName)
+        || nextChildren[0];
       setChildren(nextChildren);
       setTopics(nextTopics);
+      if (selectedChild) saveSelectedChild(selectedChild);
+      setSelectedChildId(selectedChild?.id || '');
       setSelectedChildName(selectedChild?.name || savedName || 'Bé Heo');
     });
   }, [API, status]);
@@ -63,7 +70,8 @@ export default function DashboardPage() {
   }, [API, selectedChildName, status]);
 
   function chooseChild(child: ChildProfile) {
-    localStorage.setItem('eco-child', child.name);
+    saveSelectedChild(child);
+    setSelectedChildId(child.id);
     setSelectedChildName(child.name);
     setData(null);
   }
@@ -217,15 +225,15 @@ export default function DashboardPage() {
                 <label htmlFor="dashboard-child" className="text-sm font-bold text-[#60786e]">Đang xem tiến độ của:</label>
                 <select
                   id="dashboard-child"
-                  value={selectedChildName}
+                  value={selectedChildId}
                   onChange={event => {
-                    const child = children.find(item => item.name === event.target.value);
+                    const child = children.find(item => item.id === event.target.value);
                     if (child) chooseChild(child);
                   }}
                   className="rounded-xl border border-[#d9eadc] bg-white px-3 py-2 font-bold shadow-sm outline-none focus:border-[#2d6358]"
                 >
                   {children.map(child => (
-                    <option key={child.id} value={child.name}>{child.avatar} {child.name}</option>
+                    <option key={child.id} value={child.id}>{child.avatar} {child.name}</option>
                   ))}
                 </select>
                 <Link href="/children" className="font-bold text-[#2d6358]">+ Thêm bé</Link>
