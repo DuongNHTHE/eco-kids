@@ -25,7 +25,6 @@ export default function DashboardPage() {
   const [topics, setTopics] = useState([]);
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [selectedChildId, setSelectedChildId] = useState('');
-  const [selectedChildName, setSelectedChildName] = useState('');
   const [done, setDone] = useState(false);
   const [menu, setMenu] = useState(false);
   const { data: session, status } = useSession();
@@ -56,23 +55,21 @@ export default function DashboardPage() {
       setTopics(nextTopics);
       if (selectedChild) saveSelectedChild(selectedChild);
       setSelectedChildId(selectedChild?.id || '');
-      setSelectedChildName(selectedChild?.name || savedName || 'Bé Heo');
     });
   }, [API, status]);
 
   useEffect(() => {
-    if (status !== 'authenticated' || !selectedChildName) return;
+    if (status !== 'authenticated' || !selectedChildId) return;
 
-    API.get(`progress/${encodeURIComponent(selectedChildName)}`, false, true, true).then(progress => {
+    API.get(`progress/${encodeURIComponent(selectedChildId)}`, false, true, true).then(progress => {
       if (!progress.success && progress.message) return;
-      setData({ ...progress, shortName: selectedChildName.replace(/^Bé\s*/i, '') });
+      setData({ ...progress, shortName: progress.childName?.replace(/^Bé\s*/i, '') || 'Bé' });
     });
-  }, [API, selectedChildName, status]);
+  }, [API, selectedChildId, status]);
 
   function chooseChild(child: ChildProfile) {
     saveSelectedChild(child);
     setSelectedChildId(child.id);
-    setSelectedChildName(child.name);
     setData(null);
   }
 

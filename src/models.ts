@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema({
 }, { collection: 'users' });
 
 const progressSchema = new mongoose.Schema({
-  childName: { type: String, required: true, trim: true, index: true },
+  childId: { type: mongoose.Schema.Types.ObjectId, ref: 'Child', index: true },
+  childName: { type: String, trim: true, index: true },
   topicId: { type: String, required: true },
   wordId: { type: String, required: true },
   score: { type: Number, min: 0, max: 100, default: 0 },
@@ -41,7 +42,20 @@ const childSchema = new mongoose.Schema({
   level: { type: Number, default: 1 },
 }, { timestamps: true, collection: 'children' });
 
-progressSchema.index({ childName: 1, topicId: 1, wordId: 1 }, { unique: true });
+progressSchema.index({ childId: 1, topicId: 1, wordId: 1 }, { unique: true, sparse: true });
+
+const reviewExerciseSchema = new mongoose.Schema({
+  topicId: { type: String, required: true, index: true },
+  type: { type: String, enum: ['PRONUNCIATION', 'FILL_BLANK'], required: true },
+  title: { type: String, required: true, trim: true, maxlength: 120 },
+  prompt: { type: String, required: true, trim: true, maxlength: 500 },
+  answer: { type: String, required: true, trim: true, maxlength: 120 },
+  hint: { type: String, trim: true, maxlength: 240 },
+  wordId: { type: String, trim: true },
+  isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+}, { collection: 'review_exercises' });
 
 const orderSchema = new mongoose.Schema({
   user_id: { type: String, index: true },
@@ -86,6 +100,7 @@ auditLogSchema.index({ action: 1, createdAt: -1 });
 export const User = (mongoose.models.User || mongoose.model('User', userSchema)) as mongoose.Model<any>;
 export const Child = (mongoose.models.Child || mongoose.model('Child', childSchema)) as mongoose.Model<any>;
 export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
+export const ReviewExercise = (mongoose.models.ReviewExercise || mongoose.model('ReviewExercise', reviewExerciseSchema)) as mongoose.Model<any>;
 export const Order = (mongoose.models.Order || mongoose.model('Order', orderSchema)) as mongoose.Model<any>;
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;
 export const AuditLog = (mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema)) as mongoose.Model<any>;

@@ -91,7 +91,7 @@ export default function LearnPage() {
             setChildren(children);
             setSelectedChildId(selected.id);
             saveSelectedChild(selected);
-            API.get(`progress/${encodeURIComponent(selected.name)}`, false, true, true).then(progress => {
+            API.get(`progress/${encodeURIComponent(selected.id)}`, false, true, true).then(progress => {
                 setProgressRecords(Array.isArray(progress?.records) ? progress.records : []);
             });
         });
@@ -140,6 +140,7 @@ export default function LearnPage() {
                         <span className="border-l pl-2 text-xs font-black leading-3 tracking-widest">KIDS<br /><small>English 3D</small></span>
                     </Link>
                     <Link href="/dashboard" className="font-bold text-[#2d6358]">👩‍👧 Góc phụ huynh</Link>
+                    <Link href="/learn/review" className="font-bold text-[#f47d52]">📝 Ôn luyện</Link>
                 </header>
 
                 <main className="mx-auto max-w-6xl px-5 py-10 lg:px-8">
@@ -302,7 +303,7 @@ export default function LearnPage() {
 
     const complete = async () => {
         const response = await API.post('progress', {
-            childName: children.find(child => child.id === selectedChildId)?.name || 'Bé Heo',
+            childId: selectedChildId,
             topicId: topic.id,
             wordId: word.id,
             score: score ?? 0, minutes: 1
@@ -346,7 +347,7 @@ export default function LearnPage() {
                                     if (!selected) return;
                                     saveSelectedChild(selected);
                                     setSelectedChildId(selected.id);
-                                    API.get(`progress/${encodeURIComponent(selected.name)}`, false, true, true).then(progress => {
+                                    API.get(`progress/${encodeURIComponent(selected.id)}`, false, true, true).then(progress => {
                                         setProgressRecords(Array.isArray(progress?.records) ? progress.records : []);
                                     });
                                 }}

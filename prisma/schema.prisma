@@ -93,7 +93,8 @@ model Topic {
   order    Int     @default(0)
   isActive Boolean @default(true)
 
-  lessons Lesson[]
+  lessons         Lesson[]
+  reviewExercises ReviewExercise[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -134,14 +135,15 @@ model Vocabulary {
   lessonId String @db.ObjectId
   lesson   Lesson @relation(fields: [lessonId], references: [id])
 
-  word        String
-  translation String?
-  phonetic    String?
-  description String?
-  prompt      String?
-  shape       String?
-  color       String?
-  models      Model3D[]
+  word            String
+  translation     String?
+  phonetic        String?
+  description     String?
+  prompt          String?
+  shape           String?
+  color           String?
+  models          Model3D[]
+  reviewExercises ReviewExercise[]
 
   image String?
   audio String?
@@ -161,8 +163,9 @@ model Vocabulary {
 model Model3D {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  vocabulary   Vocabulary @relation(fields: [vocabularyId], references: [id])
-  vocabularyId String     @db.ObjectId
+  vocabulary      Vocabulary       @relation(fields: [vocabularyId], references: [id])
+  vocabularyId    String           @db.ObjectId
+  reviewExercises ReviewExercise[]
 
   name       String
   modelUrl   String
@@ -179,6 +182,38 @@ model Model3D {
   updatedAt DateTime @updatedAt
 
   @@map("model_3ds")
+}
+
+model ReviewExercise {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  topicId      String  @db.ObjectId
+  vocabularyId String? @db.ObjectId
+  model3dId    String? @db.ObjectId
+
+  topic      Topic       @relation(fields: [topicId], references: [id])
+  vocabulary Vocabulary? @relation(fields: [vocabularyId], references: [id])
+  model3d    Model3D?    @relation(fields: [model3dId], references: [id])
+
+  type     ReviewExerciseType
+  title    String
+  prompt   String
+  answer   String
+  hint     String?
+  // order   Int     @default(0)
+  isActive Boolean            @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([topicId, isActive])
+  @@index([vocabularyId])
+  @@map("review_exercises")
+}
+
+enum ReviewExerciseType {
+  PRONUNCIATION
+  FILL_BLANK
 }
 
 model QRCode {
@@ -227,7 +262,7 @@ model LearningProgress {
   child Child @relation(fields: [childId], references: [id])
 
   @@unique([childId, lessonId])
-  @@map("learning_progress")
+  @@map("prisma_learning_progress")
 }
 
 enum ProgressStatus {

@@ -4,18 +4,18 @@ export function usingMongo() {
   return Boolean(process.env.DATABASE_URL ?? process.env.MONGODB_URI);
 }
 
-export async function saveProgress(data: { childName: string; topicId: string; wordId: string; score: number; minutes: number }) {
+export async function saveProgress(data: { childId: string; topicId: string; wordId: string; score: number; minutes: number }) {
   await connectMongo();
   return Progress.findOneAndUpdate(
-    { childName: data.childName, topicId: data.topicId, wordId: data.wordId },
+    { childId: data.childId, topicId: data.topicId, wordId: data.wordId },
     { ...data, practicedAt: new Date() },
     { upsert: true, new: true, runValidators: true }
   ).lean();
 }
 
-export async function getProgress(childName: string) {
+export async function getProgress(childId: string) {
   await connectMongo();
-  return Progress.find({ childName }).sort({ practicedAt: -1 }).lean();
+  return Progress.find({ childId }).sort({ practicedAt: -1 }).lean();
 }
 
 export async function createOrder(data: { user_id: string; customer: unknown; items: unknown; total: number }) {
