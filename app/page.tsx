@@ -751,7 +751,77 @@ export default function HomePage() {
             </section>
         </main>
 
-        <footer className="bg-[#203b35] px-5 py-10 text-white lg:px-8"><div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-8"><div><div className="text-4xl font-extrabold text-[#f47d52]">eco<span className="text-[#b7e0bd]">kids</span></div><p className="mt-3 max-w-xs text-sm text-[#c2d7c5]">Nuôi dưỡng tình yêu ngôn ngữ qua những trải nghiệm bé có thể nhìn, nghe và chạm.</p></div><div className="flex gap-8 text-sm"><div><b>Khám phá</b><a href="#how" className="mt-3 block text-[#c2d7c5]">Cách học</a><a href="#topics" className="mt-2 block text-[#c2d7c5]">Chủ đề</a></div><div><b>Đồng hành</b><Link href="/dashboard" className="mt-3 block text-[#c2d7c5]">Phụ huynh</Link><a href="#schools" className="mt-2 block text-[#c2d7c5]">Trường học</a></div></div></div><div className="mx-auto mt-8 max-w-7xl border-t border-white/15 pt-5 text-xs text-[#a8c3ac]">© 2026 ECO-KIDS. Made with love for little explorers.</div></footer>
+        <footer className="bg-[#203b35] px-5 py-10 text-white lg:px-8">
+            <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-[1.2fr_.8fr_1fr]">
+                <div>
+                    <div className="text-4xl font-extrabold text-[#f47d52]">
+                        eco
+                        <span className="text-[#b7e0bd]">kids</span>
+                    </div>
+
+                    <p className="mt-3 max-w-xs text-sm text-[#c2d7c5]">
+                        Nuôi dưỡng tình yêu ngôn ngữ qua những trải nghiệm bé có thể
+                        nhìn, nghe và chạm.
+                    </p>
+                </div>
+
+                <div className="flex gap-8 text-sm">
+                    <div>
+                        <b>Khám phá</b>
+
+                        <a
+                            href="#how"
+                            className="mt-3 block text-[#c2d7c5]"
+                        >
+                            Cách học
+                        </a>
+
+                        <a
+                            href="#topics"
+                            className="mt-2 block text-[#c2d7c5]"
+                        >
+                            Chủ đề
+                        </a>
+                    </div>
+
+                    <div>
+                        <b>Đồng hành</b>
+
+                        <Link
+                            href="/dashboard"
+                            className="mt-3 block text-[#c2d7c5]"
+                        >
+                            Phụ huynh
+                        </Link>
+
+                        <a
+                            href="#schools"
+                            className="mt-2 block text-[#c2d7c5]"
+                        >
+                            Trường học
+                        </a>
+                    </div>
+                </div>
+
+                <div className="text-sm">
+                    <b>Liên hệ với ECO-KIDS</b>
+
+                    <div className="mt-3 space-y-2 text-[#c2d7c5]">
+                        <a href="tel:0777278085" className="block transition hover:text-white">
+                            Hotline: 0777 278 085
+                        </a>
+                        <a href="mailto:tungduongnguyenhuu11@gmail.com" className="block transition hover:text-white">
+                            Email: tungduongnguyenhuu11@gmail.com
+                        </a>
+                        <p>TP. Hà Tĩnh, Việt Nam</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mx-auto mt-8 max-w-7xl border-t border-white/15 pt-5 text-xs text-[#a8c3ac] text-center">
+                © 2026 ECO-KIDS. Made with love for little explorers.
+            </div>
+        </footer>
         {cartOpen && (
             <div className="fixed inset-0 z-30">
                 <button
