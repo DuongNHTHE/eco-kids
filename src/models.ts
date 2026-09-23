@@ -45,7 +45,8 @@ const childSchema = new mongoose.Schema({
 progressSchema.index({ childId: 1, topicId: 1, wordId: 1 }, { unique: true, sparse: true });
 
 const reviewExerciseSchema = new mongoose.Schema({
-  topicId: { type: String, required: true, index: true },
+  scope: { type: String, enum: ['TOPIC', 'GENERAL'], default: 'TOPIC', index: true },
+  topicId: { type: String, index: true },
   type: { type: String, enum: ['PRONUNCIATION', 'FILL_BLANK'], required: true },
   title: { type: String, required: true, trim: true, maxlength: 120 },
   prompt: { type: String, required: true, trim: true, maxlength: 500 },

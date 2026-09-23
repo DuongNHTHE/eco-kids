@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 import { useAPI } from '../../../lib/hooks/useAPI';
 
 type Topic = { id: string; title: string; vietnamese: string; words: { id: string; english: string }[] };
-type Exercise = { id: string; topicId: string; type: 'PRONUNCIATION' | 'FILL_BLANK'; title: string; prompt: string; answer: string; hint: string; wordId: string; isActive: boolean };
+type Exercise = { id: string; scope: 'TOPIC' | 'GENERAL'; topicId: string; type: 'PRONUNCIATION' | 'FILL_BLANK'; title: string; prompt: string; answer: string; hint: string; wordId: string; isActive: boolean };
 
-const emptyForm = { topicId: '', type: 'PRONUNCIATION', title: '', prompt: '', answer: '', hint: '', wordId: '' };
+const emptyForm = { scope: 'TOPIC', topicId: '', type: 'PRONUNCIATION', title: '', prompt: '', answer: '', hint: '', wordId: '' };
 
 export default function ExercisesAdminPage() {
     const { API } = useAPI();
@@ -89,6 +89,18 @@ export default function ExercisesAdminPage() {
                     </h2>
 
                     <label className="mt-5 block text-sm font-bold">
+                        Phạm vi ôn luyện
+                        <select
+                            value={form.scope}
+                            onChange={(event) => setForm(current => ({ ...current, scope: event.target.value, topicId: '', wordId: '' }))}
+                            className="mt-2 w-full rounded-xl border border-[#dceadd] bg-white px-3 py-3 font-normal"
+                        >
+                            <option value="TOPIC">Củng cố theo chủ đề</option>
+                            <option value="GENERAL">Ôn luyện tổng hợp</option>
+                        </select>
+                    </label>
+
+                    {form.scope === 'TOPIC' && <label className="mt-4 block text-sm font-bold">
                         Chủ đề
 
                         <select
@@ -111,7 +123,7 @@ export default function ExercisesAdminPage() {
                                 </option>
                             ))}
                         </select>
-                    </label>
+                    </label>}
 
                     <label className="mt-4 block text-sm font-bold">
                         Loại bài
@@ -135,7 +147,7 @@ export default function ExercisesAdminPage() {
                         </select>
                     </label>
 
-                    {selectedTopic && (
+                    {form.scope === 'TOPIC' && selectedTopic && (
                         <label className="mt-4 block text-sm font-bold">
                             Từ liên quan
 
@@ -291,10 +303,11 @@ export default function ExercisesAdminPage() {
                                         <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div>
                                                 <span className="text-xs font-bold text-[#ef7d32]">
-                                                    {exercise.type ===
-                                                        "PRONUNCIATION"
-                                                        ? "LUYỆN PHÁT ÂM"
-                                                        : "ĐIỀN TỪ"}
+                                                    {exercise.scope === "GENERAL"
+                                                        ? "ÔN LUYỆN TỔNG HỢP"
+                                                        : exercise.type === "PRONUNCIATION"
+                                                            ? "LUYỆN PHÁT ÂM"
+                                                            : "ĐIỀN TỪ"}
                                                 </span>
 
                                                 <h3 className="mt-1 text-lg font-extrabold">
@@ -302,8 +315,9 @@ export default function ExercisesAdminPage() {
                                                 </h3>
 
                                                 <p className="mt-1 text-sm text-[#71867c]">
-                                                    {topic?.vietnamese ||
-                                                        exercise.topicId}
+                                                    {exercise.scope === "GENERAL"
+                                                        ? "Nhiều chủ đề"
+                                                        : topic?.vietnamese || exercise.topicId}
                                                 </p>
                                             </div>
 

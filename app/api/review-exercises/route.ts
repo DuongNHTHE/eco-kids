@@ -20,6 +20,7 @@ function serializeExercise(exercise: any, topics: any[] = []) {
     const word = topic?.words?.find((item: any) => item.id === exercise.wordId);
     return {
         id: String(exercise._id),
+        scope: exercise.scope || 'TOPIC',
         topicId: exercise.topicId,
         type: exercise.type,
         title: exercise.title,
@@ -38,21 +39,24 @@ function serializeExercise(exercise: any, topics: any[] = []) {
 
 function normalizeExercise(body: any) {
     const type = String(body?.type || '').trim().toUpperCase();
+    const scope = String(body?.scope || 'TOPIC').trim().toUpperCase();
     const title = String(body?.title || '').trim();
     const prompt = String(body?.prompt || '').trim();
     const answer = String(body?.answer || '').trim();
     const topicId = String(body?.topicId || '').trim();
+    if (!['TOPIC', 'GENERAL'].includes(scope)) return { error: 'Phạm vi bài tập không hợp lệ.' };
     if (!['PRONUNCIATION', 'FILL_BLANK'].includes(type)) return { error: 'Loại bài tập không hợp lệ.' };
-    if (!topicId || !title || !prompt || !answer) return { error: 'Cần chọn chủ đề và nhập đủ nội dung bài tập.' };
+    if ((scope === 'TOPIC' && !topicId) || !title || !prompt || !answer) return { error: 'Cần chọn phạm vi và nhập đủ nội dung bài tập.' };
     return {
         value: {
             type,
+            scope,
             title: title.slice(0, 120),
             prompt: prompt.slice(0, 500),
             answer: answer.slice(0, 120),
             hint: String(body?.hint || '').trim().slice(0, 240),
             wordId: String(body?.wordId || '').trim(),
-            topicId,
+            topicId: scope === 'GENERAL' ? '' : topicId,
         },
     };
 }
@@ -63,11 +67,12 @@ export async function GET(request: Request) {
         const params = new URL(request.url).searchParams;
         const childId = params.get('childId')?.trim();
         const topicId = params.get('topicId')?.trim();
+        const scope = params.get('scope')?.trim().toUpperCase();
         await connectMongo();
         const topics = await getTopics();
 
         if (isAdmin(user)) {
-            const query = topicId ? { topicId } : {};
+            const query = { ...(topicId ? { topicId } : {}), ...(scope ? { scope } : {}) };
             const exercises = await ReviewExercise.find(query).sort({ createdAt: -1 }).lean();
             return Response.json(exercises.map(exercise => serializeExercise(exercise, topics)));
         }
@@ -97,8 +102,20 @@ export async function GET(request: Request) {
                 })
                 .map(topic => topic.id)
         );
-        const exercises = await ReviewExercise.find({ topicId: { $in: [...completedTopicIds] }, isActive: true }).sort({ createdAt: 1 }).lean();
-        return Response.json({ exercises: exercises.map(exercise => serializeExercise(exercise, topics)), completedTopicIds: [...completedTopicIds] });
+        const exercises = completedTopicIds.size === 0
+            ? []
+            : await ReviewExercise.find(
+                scope === 'GENERAL'
+                    ? { scope: 'GENERAL', isActive: true }
+                    : { scope: { $ne: 'GENERAL' }, topicId: { $in: [...completedTopicIds] }, isActive: true }
+            ).sort({ createdAt: 1 }).lean();
+        const topicOptions = topics.map((topic: any) => ({
+            id: topic.id,
+            title: topic.title,
+            vietnamese: topic.vietnamese,
+            isCompleted: completedTopicIds.has(topic.id),
+        }));
+        return Response.json({ exercises: exercises.map(exercise => serializeExercise(exercise, topics)), completedTopicIds: [...completedTopicIds], topics: topicOptions });
     } catch (error) {
         console.error(error);
         return Response.json({ message: 'Không thể tải bài tập ôn luyện.' }, { status: 500 });

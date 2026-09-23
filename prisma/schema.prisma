@@ -187,9 +187,10 @@ model Model3D {
 model ReviewExercise {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  topicId      String  @db.ObjectId
-  vocabularyId String? @db.ObjectId
-  model3dId    String? @db.ObjectId
+  scope        ReviewExerciseScope
+  topicId      String              @db.ObjectId
+  vocabularyId String?             @db.ObjectId
+  model3dId    String?             @db.ObjectId
 
   topic      Topic       @relation(fields: [topicId], references: [id])
   vocabulary Vocabulary? @relation(fields: [vocabularyId], references: [id])
@@ -214,6 +215,11 @@ model ReviewExercise {
 enum ReviewExerciseType {
   PRONUNCIATION
   FILL_BLANK
+}
+
+enum ReviewExerciseScope {
+  TOPIC
+  GENERAL
 }
 
 model QRCode {

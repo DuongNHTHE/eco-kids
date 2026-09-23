@@ -7,6 +7,7 @@ import { getSelectedChildId, saveSelectedChild } from '../../../lib/child-sessio
 
 type Child = { id: string; name: string; avatar: string };
 type Exercise = { id: string; topicId: string; type: 'PRONUNCIATION' | 'FILL_BLANK'; title: string; prompt: string; answer: string; hint: string; word?: string; vietnamese?: string; phonetic?: string; shape?: string; modelUrl?: string };
+type ReviewTopic = { id: string; title: string; vietnamese: string; isCompleted: boolean };
 
 declare global { interface Window { SpeechRecognition?: new () => any; webkitSpeechRecognition?: new () => any } }
 
@@ -24,11 +25,17 @@ export default function ReviewPage() {
     const [feedback, setFeedback] = useState('');
     const [loading, setLoading] = useState(true);
     const [recording, setRecording] = useState(false);
+    const [mode, setMode] = useState<'TOPIC' | 'GENERAL'>('TOPIC');
+    const [reviewTopics, setReviewTopics] = useState<ReviewTopic[]>([]);
+    const [selectedTopicId, setSelectedTopicId] = useState('');
 
-    async function loadExercises(childId: string) {
+    async function loadExercises(childId: string, nextMode = mode, topicId = selectedTopicId) {
         setLoading(true);
-        const result = await API.get(`review-exercises?childId=${encodeURIComponent(childId)}`, false, false, true);
+        const query = new URLSearchParams({ childId, scope: nextMode });
+        if (nextMode === 'TOPIC' && topicId) query.set('topicId', topicId);
+        const result = await API.get(`review-exercises?${query.toString()}`, false, false, true);
         setExercises(Array.isArray(result?.exercises) ? result.exercises : []);
+        if (Array.isArray(result?.topics)) setReviewTopics(result.topics);
         setIndex(0);
         setAnswer('');
         setFeedback(result?.exercises?.length ? '' : 'Bé hãy hoàn thành toàn bộ từ vựng trong một chủ đề để mở bài ôn luyện nhé.');
@@ -46,7 +53,7 @@ export default function ReviewPage() {
             setChildren(nextChildren);
             setSelectedChildId(selected.id);
             saveSelectedChild(selected);
-            loadExercises(selected.id);
+            loadExercises(selected.id, 'TOPIC', '');
         });
     }, [API]);
 
@@ -88,7 +95,7 @@ export default function ReviewPage() {
         <main className="min-h-screen bg-[#f4faf4] px-5 py-8 text-[#203b35] lg:px-10">
             <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
                 <Link href="/learn" className="flex items-center gap-2"><span className="text-3xl font-extrabold text-[#f47d52]">e<span className="text-[#6eaa83]">c</span>o</span><span className="border-l pl-2 text-xs font-black tracking-widest">KIDS<br /><small>ÔN LUYỆN</small></span></Link>
-                <div className="flex items-center gap-3 text-sm font-bold"><span>Bé đang học</span><select value={selectedChildId} onChange={event => { const selected = children.find(child => child.id === event.target.value); if (!selected) return; setSelectedChildId(selected.id); saveSelectedChild(selected); loadExercises(selected.id); }} className="rounded-xl border border-[#dceadd] bg-white px-3 py-2"><option value="">Chọn bé</option>{children.map(child => <option key={child.id} value={child.id}>{child.avatar} {child.name}</option>)}</select></div>
+                <div className="flex items-center gap-3 text-sm font-bold"><span>Bé đang học</span><select value={selectedChildId} onChange={event => { const selected = children.find(child => child.id === event.target.value); if (!selected) return; setSelectedChildId(selected.id); saveSelectedChild(selected); loadExercises(selected.id, mode, selectedTopicId); }} className="rounded-xl border border-[#dceadd] bg-white px-3 py-2"><option value="">Chọn bé</option>{children.map(child => <option key={child.id} value={child.id}>{child.avatar} {child.name}</option>)}</select></div>
             </header>
             <section className="mx-auto max-w-3xl py-12">
                 <span className="font-bold text-[#ef7d32]">
@@ -98,6 +105,13 @@ export default function ReviewPage() {
                 <h1 className="mt-2 text-4xl font-extrabold sm:text-5xl">
                     Bài tập ôn luyện
                 </h1>
+
+                <div className="mt-6 flex flex-wrap gap-2 rounded-2xl bg-white p-2 shadow-sm">
+                    <button type="button" onClick={() => { setMode('TOPIC'); setSelectedTopicId(''); loadExercises(selectedChildId, 'TOPIC', ''); }} className={`rounded-xl px-4 py-3 font-bold ${mode === 'TOPIC' ? 'bg-[#2d6358] text-white' : 'text-[#60786e]'}`}>Củng cố theo chủ đề</button>
+                    <button type="button" onClick={() => { setMode('GENERAL'); setSelectedTopicId(''); loadExercises(selectedChildId, 'GENERAL', ''); }} className={`rounded-xl px-4 py-3 font-bold ${mode === 'GENERAL' ? 'bg-[#2d6358] text-white' : 'text-[#60786e]'}`}>Ôn luyện tổng hợp</button>
+                </div>
+
+                {mode === 'TOPIC' && reviewTopics.length > 0 && <select value={selectedTopicId} onChange={event => { setSelectedTopicId(event.target.value); loadExercises(selectedChildId, 'TOPIC', event.target.value); }} className="mt-4 w-full rounded-xl border border-[#dceadd] bg-white px-4 py-3 font-bold"><option value="">Tất cả chủ đề</option>{reviewTopics.map(topic => <option key={topic.id} value={topic.id}>{topic.isCompleted ? '✓' : '🔒'} {topic.vietnamese} · {topic.title}</option>)}</select>}
 
                 {loading ? (
                     <div className="mt-8 rounded-[2rem] bg-white p-8 text-center shadow-soft">
