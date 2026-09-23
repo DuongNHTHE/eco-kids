@@ -185,7 +185,10 @@ export default function AdminProductsPage() {
 
                 <section>
                     <div className="mb-4 flex items-end justify-between gap-4">
-                        <div><span className="text-sm font-bold text-[#83968c]">Danh mục hiện tại</span><h2 className="mt-1 text-2xl font-extrabold">{products.length} sản phẩm</h2></div>
+                        <div>
+                            <span className="text-sm font-bold text-[#83968c]">Danh mục hiện tại</span>
+                            <h2 className="mt-1 text-2xl font-extrabold">{products.length} sản phẩm</h2>
+                        </div>
                         <button type="button" onClick={loadProducts} className="text-sm font-bold text-[#2d6358]">Làm mới</button>
                     </div>
                     {loading ? <div className="rounded-[2rem] bg-white p-8 text-center font-bold text-[#71867c]">Đang tải sản phẩm...</div> : (
@@ -195,14 +198,35 @@ export default function AdminProductsPage() {
                                     <div className="flex flex-wrap items-start justify-between gap-4">
                                         <div className="flex min-w-0 items-start gap-4">
                                             <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#eef8ef] text-2xl">🧸</span>
-                                            <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="text-xl font-extrabold">{product.name}</h3>{!product.isActive && <span className="rounded-full bg-[#f0f0f0] px-2 py-1 text-[11px] font-bold text-[#71867c]">Đã ẩn</span>}</div><p className="mt-1 text-sm text-[#71867c]">{product.sku} · /{product.slug} · {product.description || 'Chưa có mô tả'}</p></div>
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <h3 className="text-xl font-extrabold">{product.name}</h3>
+                                                    {!product.isActive &&
+                                                        <span className="rounded-full bg-[#f0f0f0] px-2 py-1 text-[11px] font-bold text-[#71867c]">Đã ẩn</span>
+                                                    }
+                                                </div>
+                                                <p className="mt-1 text-sm text-[#71867c]">{product.sku} · /{product.slug} · {product.description || 'Chưa có mô tả'}</p>
+                                            </div>
                                         </div>
-                                        <div className="text-right"><strong className="text-xl">{formatPrice(product.price)}</strong><small className="block text-[#71867c]">Tồn kho: {product.stock}</small></div>
+                                        <div className="text-right">
+                                            <strong className="text-xl">{formatPrice(product.price)}</strong>
+                                            <small className="block text-[#71867c]">Tồn kho: {product.stock}</small>
+                                        </div>
                                     </div>
-                                    <div className="mt-5 flex justify-end gap-2 border-t border-[#edf3ed] pt-4"><button type="button" onClick={() => startEdit(product)} className="rounded-full bg-[#eef8ef] px-4 py-2 text-sm font-bold text-[#2d6358]">Sửa</button><button type="button" onClick={() => remove(product)} className="rounded-full bg-[#fff0e8] px-4 py-2 text-sm font-bold text-[#d45e45]">Xóa</button></div>
+                                    <div className="mt-5 flex justify-end gap-2 border-t border-[#edf3ed] pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => startEdit(product)}
+                                            className="rounded-full bg-[#eef8ef] px-4 py-2 text-sm font-bold text-[#2d6358]"
+                                        >Sửa
+                                        </button>
+                                        <button type="button" onClick={() => remove(product)} className="rounded-full bg-[#fff0e8] px-4 py-2 text-sm font-bold text-[#d45e45]">Xóa</button>
+                                    </div>
                                 </article>
                             ))}
-                            {!products.length && <div className="rounded-[2rem] bg-white p-10 text-center text-[#71867c]">Chưa có sản phẩm nào.</div>}
+                            {!products.length &&
+                                <div className="rounded-[2rem] bg-white p-10 text-center text-[#71867c]">Chưa có sản phẩm nào.</div>
+                            }
                         </div>
                     )}
                 </section>

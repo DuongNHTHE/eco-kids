@@ -144,32 +144,151 @@ export default function ParentShopPage() {
             <div className="mx-auto max-w-7xl px-5 py-8 lg:px-10">
                 {loading ? <div className="rounded-3xl bg-white p-10 text-center font-bold text-[#71867c]">Đang tải sản phẩm...</div> : (
                     <>
-                        <section><div className="mb-5"><span className="text-sm font-bold uppercase tracking-[0.2em] text-[#ef7d32]">Mô hình vật lý</span><h2 className="mt-2 text-2xl font-extrabold">Mua thêm cho bộ sưu tập của bé</h2></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{products.map(product => <article key={product.id} className="rounded-3xl bg-white p-5 shadow-sm"><div className="flex h-44 items-center justify-center rounded-2xl bg-[#eef8ef] text-7xl">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full rounded-2xl object-cover" /> : '🧸'}</div><div className="mt-5 flex items-start justify-between gap-3"><div><h3 className="text-xl font-extrabold">{product.name}</h3><p className="mt-1 text-sm text-[#71867c]">{product.description || product.sku}</p></div><strong>{money(product.price)}</strong></div><div className="mt-4 flex items-center justify-between text-sm text-[#71867c]"><span>Còn {product.stock}</span><button disabled={!product.stock} type="button" onClick={() => addToCart({ id: product.slug, kind: 'product', name: product.name, price: product.price })} className="rounded-full bg-[#f47d52] px-4 py-2 font-bold text-white disabled:opacity-50">Thêm giỏ</button></div></article>)}</div></section>
+                        <section>
+                            <div className="mb-5">
+                                <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#ef7d32]">Mô hình vật lý</span>
+                                <h2 className="mt-2 text-2xl font-extrabold">Mua thêm cho bộ sưu tập của bé</h2>
+                            </div>
+                            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                                {products.map(product =>
+                                    <article key={product.id} className="rounded-3xl bg-white p-5 shadow-sm">
+                                        <div className="flex h-44 items-center justify-center rounded-2xl bg-[#eef8ef] text-7xl">
+                                            {product.imageUrl ?
+                                                <img src={product.imageUrl} alt={product.name} className="h-full w-full rounded-2xl object-cover" /> : '🧸'
+                                            }
+                                        </div>
+                                        <div className="mt-5 flex items-start justify-between gap-3">
+                                            <div>
+                                                <h3 className="text-xl font-extrabold">{product.name}</h3>
+                                                <p className="mt-1 text-sm text-[#71867c]">{product.description || product.sku}</p>
+                                            </div>
+                                            <strong>{money(product.price)}</strong>
+                                        </div>
+                                        <div className="mt-4 flex items-center justify-between text-sm text-[#71867c]">
+                                            <span>Còn {product.stock}</span>
+                                            <button disabled={!product.stock} type="button" onClick={() => addToCart({ id: product.slug, kind: 'product', name: product.name, price: product.price })} className="rounded-full bg-[#f47d52] px-4 py-2 font-bold text-white disabled:opacity-50">Thêm giỏ</button>
+                                        </div>
+                                    </article>
+                                )}
+                            </div>
+                        </section>
 
-                        <section className="mt-12"><div className="mb-5"><span className="text-sm font-bold uppercase tracking-[0.2em] text-[#ef7d32]">Package tiết kiệm</span><h2 className="mt-2 text-2xl font-extrabold">Chọn trọn bộ cho bé</h2></div><div className="grid gap-5 md:grid-cols-2">{packages.map(pack => <article key={pack.id} className={`rounded-3xl border-2 p-6 ${pack.featured ? 'border-[#f47d52] bg-[#fff6e8]' : 'border-[#e3ece4] bg-white'}`}><div className="flex items-start justify-between gap-3"><div><span className="rounded-full bg-[#203b35] px-3 py-1 text-xs font-bold text-white">{pack.badge || 'Package'}</span><h3 className="mt-4 text-3xl font-extrabold">{pack.name}</h3><p className="mt-1 text-[#71867c]">{pack.subtitle}</p></div><strong className="text-2xl">{money(pack.price)}</strong></div><div className="my-5 flex flex-wrap gap-2">{pack.items.map(item => <span key={item.product?.id || item.productId} className="rounded-full bg-white px-3 py-2 text-sm font-bold text-[#527067]">{item.quantity} × {item.product?.name || 'Mô hình'}</span>)}</div><button type="button" onClick={() => addToCart({ id: pack.slug, kind: 'package', name: pack.name, price: pack.price })} className="w-full rounded-full bg-[#203b35] px-5 py-3 font-bold text-white">Thêm package vào giỏ</button></article>)}</div></section>
+                        <section className="mt-12">
+                            <div className="mb-5">
+                                <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#ef7d32]">Package tiết kiệm</span>
+                                <h2 className="mt-2 text-2xl font-extrabold">Chọn trọn bộ cho bé</h2>
+                            </div>
+                            <div className="grid gap-5 md:grid-cols-2">{packages.map(pack =>
+                                <article
+                                    key={pack.id}
+                                    className={`rounded-3xl border-2 p-6 ${pack.featured ? 'border-[#f47d52] bg-[#fff6e8]' : 'border-[#e3ece4] bg-white'}`}
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <span className="rounded-full bg-[#203b35] px-3 py-1 text-xs font-bold text-white">{pack.badge || 'Package'}</span>
+                                            <h3 className="mt-4 text-3xl font-extrabold">{pack.name}</h3>
+                                            <p className="mt-1 text-[#71867c]">{pack.subtitle}</p>
+                                        </div>
+                                        <strong className="text-2xl">{money(pack.price)}</strong>
+                                    </div>
+                                    <div className="my-5 flex flex-wrap gap-2">{pack.items.map(item =>
+                                        <span
+                                            key={item.product?.id || item.productId}
+                                            className="rounded-full bg-white px-3 py-2 text-sm font-bold text-[#527067]">{item.quantity} × {item.product?.name || 'Mô hình'}</span>
+                                    )}
+                                    </div>
+                                    <button type="button" onClick={() => addToCart({ id: pack.slug, kind: 'package', name: pack.name, price: pack.price })} className="w-full rounded-full bg-[#203b35] px-5 py-3 font-bold text-white">Thêm package vào giỏ</button>
+                                </article>
+                            )}
+                            </div>
+                        </section>
 
                     </>
                 )}
             </div>
+            {ordersOpen && (
+                <div className="fixed inset-0 z-40">
+                    <button
+                        aria-label="Đóng lịch sử đơn hàng"
+                        className="absolute inset-0 bg-[#203b35]/40"
+                        onClick={() => setOrdersOpen(false)}
+                    />
 
-            {ordersOpen && <div className="fixed inset-0 z-40">
-                <button aria-label="Đóng lịch sử đơn hàng" className="absolute inset-0 bg-[#203b35]/40" onClick={() => setOrdersOpen(false)} /><section className="absolute left-1/2 top-1/2 flex max-h-[85vh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl bg-[#fffdf8] shadow-2xl"><header className="flex items-center justify-between border-b border-[#dceadd] p-6">
-                    <div>
-                        <span className="text-sm font-bold text-[#80938a]">TẤT CẢ TRẠNG THÁI</span>
-                        <h2 className="mt-1 text-2xl font-extrabold">Đơn hàng đã đặt</h2>
-                    </div>
-                    <button aria-label="Đóng" type="button" onClick={() => setOrdersOpen(false)} className="text-3xl">×</button>
-                </header>
-                    <div className="overflow-y-auto p-6">
-                        {orders.length ?
-                            <div className="space-y-4">
-                                {orders.map(order =>
-                                    <article key={order.id} className="rounded-2xl border border-[#e4eee3] bg-white p-4">
-                                        <div className="flex flex-wrap items-start justify-between gap-3">
-                                            <div>
-                                                <h3 className="font-extrabold">Đơn #{order.id.slice(-8).toUpperCase()}</h3>
-                                                <p className="mt-1 text-sm text-[#71867c]">{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(order.createdAt))}</p></div><div className="text-right"><strong>{money(order.total)}</strong><span className="mt-1 block rounded-full bg-[#fff2d5] px-3 py-1 text-xs font-bold text-[#9a7d3a]">{statusLabels[order.status] || order.status}</span></div></div><div className="mt-4 flex flex-wrap gap-2">{order.items.map((item, index) => <span key={`${item.name}-${index}`} className="rounded-full bg-[#f4faf4] px-3 py-2 text-sm font-bold text-[#527067]">{item.name} × {item.quantity}</span>)}</div></article>)}</div> : <div className="p-8 text-center text-[#71867c]">Bạn chưa có đơn hàng nào.</div>}</div></section></div>}
+                    <section className="absolute left-1/2 top-1/2 flex max-h-[85vh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl bg-[#fffdf8] shadow-2xl">
+                        <header className="flex items-center justify-between border-b border-[#dceadd] p-6">
+                            <div>
+                                <span className="text-sm font-bold text-[#80938a]">
+                                    TẤT CẢ TRẠNG THÁI
+                                </span>
 
+                                <h2 className="mt-1 text-2xl font-extrabold">
+                                    Đơn hàng đã đặt
+                                </h2>
+                            </div>
+
+                            <button
+                                aria-label="Đóng"
+                                type="button"
+                                onClick={() => setOrdersOpen(false)}
+                                className="text-3xl"
+                            >
+                                ×
+                            </button>
+                        </header>
+
+                        <div className="overflow-y-auto p-6">
+                            {orders.length ? (
+                                <div className="space-y-4">
+                                    {orders.map((order) => (
+                                        <article
+                                            key={order.id}
+                                            className="rounded-2xl border border-[#e4eee3] bg-white p-4"
+                                        >
+                                            <div className="flex flex-wrap items-start justify-between gap-3">
+                                                <div>
+                                                    <h3 className="font-extrabold">
+                                                        Đơn #{order.id.slice(-8).toUpperCase()}
+                                                    </h3>
+
+                                                    <p className="mt-1 text-sm text-[#71867c]">
+                                                        {new Intl.DateTimeFormat("vi-VN", {
+                                                            dateStyle: "medium",
+                                                            timeStyle: "short",
+                                                        }).format(new Date(order.createdAt))}
+                                                    </p>
+                                                </div>
+
+                                                <div className="text-right">
+                                                    <strong>{money(order.total)}</strong>
+
+                                                    <span className="mt-1 block rounded-full bg-[#fff2d5] px-3 py-1 text-xs font-bold text-[#9a7d3a]">
+                                                        {statusLabels[order.status] || order.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 flex flex-wrap gap-2">
+                                                {order.items.map((item, index) => (
+                                                    <span
+                                                        key={`${item.name}-${index}`}
+                                                        className="rounded-full bg-[#f4faf4] px-3 py-2 text-sm font-bold text-[#527067]"
+                                                    >
+                                                        {item.name} × {item.quantity}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center text-[#71867c]">
+                                    Bạn chưa có đơn hàng nào.
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                </div>
+            )}
             {cartOpen &&
                 <div className="fixed inset-0 z-30">
                     <button aria-label="Đóng giỏ hàng" className="absolute inset-0 bg-[#203b35]/40" onClick={() => setCartOpen(false)} />
