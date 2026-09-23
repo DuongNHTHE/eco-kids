@@ -54,10 +54,17 @@ export default function LearnPage() {
     const [isAssessing, setIsAssessing] = useState(false);
     const [children, setChildren] = useState<{ id: string; name: string; avatar: string }[]>([]);
     const [selectedChildId, setSelectedChildId] = useState('');
-    const [progressRecords, setProgressRecords] = useState<{ topicId: string; wordId: string; practicedAt?: string }[]>([]);
+    const [progressRecords, setProgressRecords] = useState<Array<{
+        topicId: string;
+        wordId: string;
+        score?: number;
+        minutes?: number;
+        practicedAt?: string;
+    }>>([]);
     const topic = topics[topicIndex];
     const word = topic?.words[wordIndex];
     const model = resolveWordModel(word);
+    const currentWordProgress = word ? progressRecords.find(record => record.topicId === topic?.id && record.wordId === word.id) : undefined;
     const { data: session } = useSession();
 
     useEffect(() => {
@@ -77,11 +84,27 @@ export default function LearnPage() {
 
         const requestedTopicIndex = topics.findIndex(item => item.id === selectedParams.topic);
         const nextTopicIndex = requestedTopicIndex >= 0 ? requestedTopicIndex : 0;
-        const requestedWordIndex = topics[nextTopicIndex]?.words?.findIndex(item => item.id === selectedParams.word) ?? -1;
+        const topicForSelection = topics[nextTopicIndex];
+        const previousWordId = selectedParams.word;
+        const firstUnlearnedWord = topicForSelection ? getFirstUnlearnedWord(topicForSelection) : null;
+        const fallbackWord = topicForSelection?.words?.[0] || null;
+        const targetWord = firstUnlearnedWord || fallbackWord;
+
+        if (selectedParams.topic && previousWordId && topicForSelection?.words?.some(item => item.id === previousWordId)) {
+            const currentWord = topicForSelection.words.find(item => item.id === previousWordId);
+            const learnedIds = new Set(progressRecords.filter(record => record.topicId === topicForSelection.id).map(record => record.wordId));
+            const hasUnfinishedWord = topicForSelection.words.some(item => !learnedIds.has(item.id));
+            if (hasUnfinishedWord && currentWord && learnedIds.has(currentWord.id)) {
+                const nextWordIndex = topicForSelection.words.findIndex(item => item.id === currentWord.id);
+                setTopicIndex(nextTopicIndex);
+                setWordIndex(nextWordIndex >= 0 ? nextWordIndex : 0);
+                return;
+            }
+        }
 
         setTopicIndex(nextTopicIndex);
-        setWordIndex(requestedWordIndex >= 0 ? requestedWordIndex : 0);
-    }, [topics, selectedParams]);
+        setWordIndex(targetWord ? (topicForSelection?.words?.findIndex(item => item.id === targetWord.id) ?? 0) : 0);
+    }, [topics, selectedParams, progressRecords]);
 
     useEffect(() => {
         API.get('children', false, true, true).then(children => {
@@ -116,6 +139,12 @@ export default function LearnPage() {
         return () => clearTimeout(timer);
     }, [toast]);
 
+    useEffect(() => {
+        if (!word) return;
+        const lastScore = currentWordProgress?.score;
+        setScore(lastScore !== undefined && lastScore !== null ? Number(lastScore) : null);
+    }, [word, currentWordProgress]);
+
     const hasSelectedLesson = Boolean(selectedParams.topic || selectedParams.word);
 
     function getTopicStartUrl(topicItem) {
@@ -124,6 +153,12 @@ export default function LearnPage() {
         const firstWord = learnedWord || topicItem.words?.[0];
         if (!firstWord) return '#';
         return `/learn?topic=${encodeURIComponent(topicItem.id)}&word=${encodeURIComponent(firstWord.id)}`;
+    }
+
+    function getFirstUnlearnedWord(topicItem) {
+        if (!topicItem?.words?.length) return null;
+        const learnedWordIds = new Set(progressRecords.filter(record => record.topicId === topicItem.id).map(record => record.wordId));
+        return topicItem.words.find(item => !learnedWordIds.has(item.id)) || topicItem.words[0];
     }
 
     function openLesson(topicId, wordId) {
@@ -197,22 +232,24 @@ export default function LearnPage() {
 
     if (!word) return <div className="grid min-h-screen place-items-center text-xl">Đang mở phòng khám phá…</div>;
     const selectTopic = index => {
-        setTopicIndex(index);
-        setWordIndex(0);
-        setScore(null);
         const selectedTopic = topics[index];
-        const latestProgress = progressRecords.find(record => record.topicId === selectedTopic?.id);
-        const selectedWord = selectedTopic?.words?.find(item => item.id === latestProgress?.wordId) || selectedTopic?.words?.[0];
-        if (selectedTopic?.id && selectedWord?.id) {
-            openLesson(selectedTopic.id, selectedWord.id);
+        if (!selectedTopic) return;
+
+        const nextWord = getFirstUnlearnedWord(selectedTopic) || selectedTopic.words?.[0];
+        setTopicIndex(index);
+        setWordIndex(nextWord ? (selectedTopic.words?.findIndex(item => item.id === nextWord.id) ?? 0) : 0);
+        setScore(null);
+
+        if (selectedTopic?.id && nextWord?.id) {
+            openLesson(selectedTopic.id, nextWord.id);
         }
     };
     const selectWord = index => {
         setWordIndex(index);
-        setScore(null);
         const selectedTopic = topics[topicIndex];
         const selectedWord = selectedTopic?.words?.[index];
         if (selectedTopic?.id && selectedWord?.id) {
+            setScore(null);
             openLesson(selectedTopic.id, selectedWord.id);
         }
     };
@@ -417,7 +454,14 @@ export default function LearnPage() {
                             <button onClick={() => setRotation(value => value + 360)} className="absolute right-5 top-5 rounded-full bg-white px-3 py-2 text-xl shadow">✦</button>
                         </div>
                         <div className="rounded-[2rem] bg-white p-6 shadow-soft">
-                            <span className="text-sm font-bold text-[#83968c]">Từ mới của bé</span>
+                            <div className="flex justify-between">
+                                <span className="flex flex-col justify-content text-sm font-bold text-[#83968c]">Từ mới của bé</span>
+                                {currentWordProgress && typeof currentWordProgress.score === 'number' && (
+                                    <div className="inline-flex rounded-full bg-[#eef8ef] px-3 py-1.5 text-sm font-bold text-[#2d6358]">
+                                        Điểm lần trước: {Math.round(currentWordProgress.score)}/100
+                                    </div>
+                                )}
+                            </div>
                             <h2 className="mt-2 text-6xl font-extrabold">{word.english}</h2>
                             <div className="mt-2 flex items-center gap-3 text-[#6c857c]">{word.phonetic}
                                 <button onClick={() => speak(word.english)} className="rounded-full bg-[#eaf5ed] px-4 py-2 font-bold">🔊 Nghe từ</button>
