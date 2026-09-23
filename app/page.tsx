@@ -273,8 +273,16 @@ export default function HomePage() {
                         </div>
                     </div>
                     <div className="relative flex min-h-[390px] items-center justify-center">
-                        <div className="animate-float flex h-72 w-72 items-center justify-center rounded-[44%_56%_61%_39%] bg-[#f7c6a6] text-[9rem] shadow-soft sm:h-[390px] sm:w-[390px]">
-                            🧒📖
+                        <div className="relative flex items-center justify-center">
+                            <div className="absolute inset-8 rounded-full bg-[#f7c6a6]/40 blur-3xl" />
+
+                            <div className="animate-float relative w-[300px] sm:w-[390px] lg:w-[450px]">
+                                <img
+                                    src="/img/banner-logo.png"
+                                    alt="Bé học tiếng Anh cùng ECO-KIDS"
+                                    className="h-auto w-full object-contain drop-shadow-[0_25px_35px_rgba(32,59,53,0.15)]"
+                                />
+                            </div>
                         </div>
 
                         <div className="absolute right-0 top-6 rounded-2xl bg-white px-5 py-3 shadow-soft">
