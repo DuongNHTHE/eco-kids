@@ -85,22 +85,10 @@ export default function LearnPage() {
         const requestedTopicIndex = topics.findIndex(item => item.id === selectedParams.topic);
         const nextTopicIndex = requestedTopicIndex >= 0 ? requestedTopicIndex : 0;
         const topicForSelection = topics[nextTopicIndex];
-        const previousWordId = selectedParams.word;
         const firstUnlearnedWord = topicForSelection ? getFirstUnlearnedWord(topicForSelection) : null;
         const fallbackWord = topicForSelection?.words?.[0] || null;
-        const targetWord = firstUnlearnedWord || fallbackWord;
-
-        if (selectedParams.topic && previousWordId && topicForSelection?.words?.some(item => item.id === previousWordId)) {
-            const currentWord = topicForSelection.words.find(item => item.id === previousWordId);
-            const learnedIds = new Set(progressRecords.filter(record => record.topicId === topicForSelection.id).map(record => record.wordId));
-            const hasUnfinishedWord = topicForSelection.words.some(item => !learnedIds.has(item.id));
-            if (hasUnfinishedWord && currentWord && learnedIds.has(currentWord.id)) {
-                const nextWordIndex = topicForSelection.words.findIndex(item => item.id === currentWord.id);
-                setTopicIndex(nextTopicIndex);
-                setWordIndex(nextWordIndex >= 0 ? nextWordIndex : 0);
-                return;
-            }
-        }
+        const requestedWord = topicForSelection?.words?.find(item => item.id === selectedParams.word);
+        const targetWord = requestedWord || firstUnlearnedWord || fallbackWord;
 
         setTopicIndex(nextTopicIndex);
         setWordIndex(targetWord ? (topicForSelection?.words?.findIndex(item => item.id === targetWord.id) ?? 0) : 0);
@@ -148,9 +136,7 @@ export default function LearnPage() {
     const hasSelectedLesson = Boolean(selectedParams.topic || selectedParams.word);
 
     function getTopicStartUrl(topicItem) {
-        const latestProgress = progressRecords.find(record => record.topicId === topicItem.id);
-        const learnedWord = latestProgress && topicItem.words?.find(wordItem => wordItem.id === latestProgress.wordId);
-        const firstWord = learnedWord || topicItem.words?.[0];
+        const firstWord = getFirstUnlearnedWord(topicItem);
         if (!firstWord) return '#';
         return `/learn?topic=${encodeURIComponent(topicItem.id)}&word=${encodeURIComponent(firstWord.id)}`;
     }
@@ -346,12 +332,21 @@ export default function LearnPage() {
             score: score ?? 0, minutes: 1
         }, true, true, false);
         if (!response.success) return;
+        setProgressRecords(current => [
+            ...current.filter(record => !(record.topicId === topic.id && record.wordId === word.id)),
+            {
+                topicId: topic.id,
+                wordId: word.id,
+                score: score ?? 0,
+                minutes: 1,
+                practicedAt: new Date().toISOString(),
+            },
+        ]);
         setToast('Đã lưu vào hành trình của bé!');
-        if (wordIndex < topic.words.length - 1) {
-            setTimeout(() => {
-                selectWord(wordIndex + 1);
-            }, 500);
-        }
+        setTimeout(() => {
+            const nextIndex = wordIndex < topic.words.length - 1 ? wordIndex + 1 : 0;
+            selectWord(nextIndex);
+        }, 500);
     };
     const time = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 
