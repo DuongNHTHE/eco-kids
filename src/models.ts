@@ -71,13 +71,13 @@ const orderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const partnerSchema = new mongoose.Schema({
-  organization: { type: String, required: true },
-  contactName: { type: String, required: true },
-  phone: { type: String, required: true },
-  email: String,
-  studentCount: Number,
-  note: String,
-  status: { type: String, default: 'new' }
+  organization: { type: String, required: true, trim: true, maxlength: 160 },
+  contactName: { type: String, required: true, trim: true, maxlength: 100 },
+  phone: { type: String, required: true, trim: true, maxlength: 30 },
+  email: { type: String, trim: true, lowercase: true, maxlength: 160 },
+  studentCount: { type: Number, min: 1, max: 100000 },
+  note: { type: String, trim: true, maxlength: 1000 },
+  status: { type: String, enum: ['new', 'contacted', 'qualified', 'closed'], default: 'new' }
 }, { timestamps: true });
 
 const auditLogSchema = new mongoose.Schema({

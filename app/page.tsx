@@ -681,6 +681,12 @@ export default function HomePage() {
                         <span>✓ LMS quản lý lớp</span>
                         <span>✓ Học liệu cập nhật</span>
                     </div>
+
+                    <img
+                        src="/img/schools.png"
+                        alt="Trường học"
+                        className="mt-6 rounded-2xl"
+                    />
                 </div>
 
                 <form
@@ -730,6 +736,29 @@ export default function HomePage() {
                         <input
                             name="email"
                             type="email"
+                            className="mt-1 w-full rounded-xl border border-[#dbe7dc] p-3"
+                        />
+                    </label>
+
+                    <label className="mt-3 block text-sm font-bold">
+                        Số học sinh dự kiến
+
+                        <input
+                            name="studentCount"
+                            type="number"
+                            min="1"
+                            placeholder="Ví dụ: 120"
+                            className="mt-1 w-full rounded-xl border border-[#dbe7dc] p-3"
+                        />
+                    </label>
+
+                    <label className="mt-3 block text-sm font-bold">
+                        Nhu cầu cần tư vấn
+
+                        <textarea
+                            name="note"
+                            rows={3}
+                            placeholder="Thời gian mong muốn, nhu cầu học liệu hoặc đào tạo giáo viên..."
                             className="mt-1 w-full rounded-xl border border-[#dbe7dc] p-3"
                         />
                     </label>
