@@ -100,32 +100,66 @@ export default function AgentAssistant() {
     }, []);
 
     useEffect(() => {
-        if (!childId) return;
+        const syncSelectedChild = () => {
+            const selectedId = getSelectedChildId();
+            if (selectedId) setChildId(selectedId);
+        };
+
+        window.addEventListener('eco-child-changed', syncSelectedChild);
+        return () => window.removeEventListener('eco-child-changed', syncSelectedChild);
+    }, []);
+
+    useEffect(() => {
+        if (!childId) {
+            setMessages(initialMessages);
+            setQuestion('');
+            setConversationId(null);
+            return;
+        }
 
         let cancelled = false;
+
+        setMessages(initialMessages);
+        setQuestion('');
+        setConversationId(null);
+        setLoading(false);
 
         fetch(`/api/agent?childId=${encodeURIComponent(childId)}`)
             .then((response) => response.ok ? response.json() : null)
             .then((payload) => {
-                if (cancelled || !payload?.ok || !Array.isArray(payload.conversations)) return;
+                if (cancelled) return;
+
+                if (!payload?.ok || !Array.isArray(payload.conversations)) {
+                    setMessages(initialMessages);
+                    setConversationId(null);
+                    return;
+                }
 
                 const latestConversation = payload.conversations[0];
                 const loadedMessages = latestConversation?.messages
                     ?.filter((message: { role?: string; content?: string }) => (
-                        (message.role === 'user' || message.role === 'assistant') && typeof message.content === 'string'
+                        (message.role?.toLowerCase() === 'user' || message.role?.toLowerCase() === 'assistant') && typeof message.content === 'string'
                     ))
                     .map((message: { id?: string; role: ChatRole; content: string }) => ({
                         id: message.id || `history-${Date.now()}-${Math.random()}`,
-                        role: message.role,
+                        role: message.role.toLowerCase() as ChatRole,
                         text: message.content,
                     })) || [];
 
                 if (loadedMessages.length > 0) {
                     setMessages(loadedMessages);
                     setConversationId(latestConversation.id || null);
+                } else {
+                    setMessages(initialMessages);
+                    setConversationId(null);
                 }
             })
-            .catch(() => undefined);
+            .catch(() => {
+                if (!cancelled) {
+                    setMessages(initialMessages);
+                    setConversationId(null);
+                }
+            });
 
         return () => {
             cancelled = true;

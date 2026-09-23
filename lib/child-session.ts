@@ -14,6 +14,7 @@ export function saveSelectedChild(child: SelectedChild) {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(CHILD_SESSION_KEY, child.id);
     window.localStorage.setItem('eco-child', child.name);
+    window.dispatchEvent(new Event('eco-child-changed'));
 }
 
 export function clearSelectedChild() {
