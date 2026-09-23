@@ -1,4 +1,4 @@
-import { connectMongo, Order, Partner, Progress } from '../../../../src/models';
+import { Child, connectMongo, Order, Partner, Progress } from '../../../../src/models';
 import { getTopics } from '../../../../src/content';
 
 function startOfMonth(date = new Date()) {
@@ -16,21 +16,42 @@ function formatTime(value: Date | string) {
 export async function GET() {
     try {
         await connectMongo();
-        const [progress, orders, partners, topics] = await Promise.all([
+        const [rawProgress, orders, partners, topics] = await Promise.all([
             Progress.find().sort({ practicedAt: -1 }).lean(),
             Order.find().sort({ createdAt: -1 }).lean(),
             Partner.find().sort({ createdAt: -1 }).lean(),
             getTopics(),
         ]);
 
+        const progress = rawProgress as Array<{
+            _id?: string | object;
+            childId?: string | object;
+            childName?: string;
+            topicId?: string;
+            wordId?: string;
+            score?: number;
+            practicedAt?: Date | string;
+            createdAt?: Date | string;
+        }>;
+
+        const childIds = [...new Set(progress.map(item => String(item.childId)).filter(Boolean))];
+        const children = childIds.length > 0
+            ? await Child.find({ _id: { $in: childIds } }).select('_id name').lean()
+            : [];
+        const childNameMap = new Map((children as Array<{ _id?: string | object; name?: string }>).map(child => [String(child._id), child.name || 'Không xác định']));
+        const progressWithChildNames = progress.map(item => ({
+            ...item,
+            childName: item.childName || childNameMap.get(String(item.childId)) || 'Không xác định',
+        }));
+
         const monthStart = startOfMonth();
         const monthOrders = orders.filter(order => new Date(order.createdAt || 0) >= monthStart);
         const revenue = monthOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-        const students = new Set(progress.map(item => item.childName).filter(Boolean)).size;
-        const completed = progress.filter(item => Number(item.score || 0) >= 80).length;
+        const students = new Set(progressWithChildNames.map(item => item.childName).filter(Boolean)).size;
+        const completed = progressWithChildNames.filter(item => Number(item.score || 0) >= 80).length;
 
         const lessons = (topics as any[]).map(topic => {
-            const topicProgress = progress.filter(item => item.topicId === topic.id);
+            const topicProgress = progressWithChildNames.filter(item => item.topicId === topic.id);
             const progressPercent = topic.words?.length
                 ? Math.min(100, Math.round((new Set(topicProgress.map(item => item.wordId)).size / topic.words.length) * 100))
                 : 0;
@@ -51,7 +72,7 @@ export async function GET() {
             nextDay.setDate(day.getDate() + 1);
             return {
                 label: `T${index + 1}`,
-                value: progress.filter(item => {
+                value: progressWithChildNames.filter(item => {
                     const practicedAt = new Date(item.practicedAt || item.createdAt || 0);
                     return practicedAt >= day && practicedAt < nextDay;
                 }).length,
@@ -79,18 +100,18 @@ export async function GET() {
                 title: 'Khách hàng đăng ký tư vấn',
                 detail: `${partner.organization} · ${partner.contactName}`,
             })),
-            ...progress.slice(0, 3).map(item => ({
+            ...progressWithChildNames.slice(0, 3).map(item => ({
                 id: `progress-${item._id}`,
                 time: formatTime(item.practicedAt || item.createdAt),
                 title: 'Cập nhật tiến độ học tập',
-                detail: `${item.childName} · ${item.topicId}`,
+                detail: `${item.childName} · ${item.topicId} . ${item.wordId} · ${item.score || 0}%`,
             })),
         ].sort((left, right) => right.time.localeCompare(left.time)).slice(0, 6);
 
         return Response.json({
             stats: [
-                { label: 'Học sinh đang học', value: students.toLocaleString('vi-VN'), delta: `${progress.length} lượt học`, accent: '#f47d52', icon: '👧' },
-                { label: 'Bài học hoàn tất', value: completed.toLocaleString('vi-VN'), delta: `${progress.length} lượt ghi nhận`, accent: '#6eaa83', icon: '✅' },
+                { label: 'Học sinh đang học', value: students.toLocaleString('vi-VN'), delta: `${progressWithChildNames.length} lượt học`, accent: '#f47d52', icon: '👧' },
+                { label: 'Bài học hoàn tất', value: completed.toLocaleString('vi-VN'), delta: `${progressWithChildNames.length} lượt ghi nhận`, accent: '#6eaa83', icon: '✅' },
                 { label: 'Doanh thu tháng', value: formatCurrency(revenue), delta: `${monthOrders.length} đơn hàng`, accent: '#f5b83d', icon: '💰' },
                 { label: 'Trường hợp tác', value: partners.length.toLocaleString('vi-VN'), delta: 'Tổng đăng ký', accent: '#2d6358', icon: '🏫' },
             ],
