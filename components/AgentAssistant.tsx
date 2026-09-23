@@ -1,7 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import { useEffect } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { getSelectedChildId, saveSelectedChild } from '../lib/child-session';
 
 type ChatRole = 'user' | 'assistant';
@@ -32,6 +31,60 @@ export default function AgentAssistant() {
     const [loading, setLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [childId, setChildId] = useState<string | null>(null);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const dragState = useRef<{ pointerId: number; startX: number; startY: number; startPosX: number; startPosY: number } | null>(null);
+    const dragMovedRef = useRef(false);
+
+    const clampPosition = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+    const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+        dragState.current = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            startPosX: position.x,
+            startPosY: position.y,
+        };
+        dragMovedRef.current = false;
+
+        event.currentTarget.setPointerCapture(event.pointerId);
+    };
+
+    const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+        if (!dragState.current || dragState.current.pointerId !== event.pointerId) return;
+
+        const deltaX = event.clientX - dragState.current.startX;
+        const deltaY = event.clientY - dragState.current.startY;
+
+        if (Math.abs(deltaX) + Math.abs(deltaY) > 6) {
+            dragMovedRef.current = true;
+        }
+
+        const maxX = 220;
+        const minX = -Math.max(window.innerWidth - 120, 120);
+        const maxY = 260;
+        const minY = -Math.max(window.innerHeight - 170, 140);
+
+        setPosition({
+            x: clampPosition(dragState.current.startPosX + deltaX, minX, maxX),
+            y: clampPosition(dragState.current.startPosY + deltaY, minY, maxY),
+        });
+    };
+
+    const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+        if (dragState.current?.pointerId === event.pointerId) {
+            dragState.current = null;
+        }
+    };
+
+    const handleToggleOpen = () => {
+        if (dragMovedRef.current) {
+            dragMovedRef.current = false;
+            return;
+        }
+
+        setOpen((current) => !current);
+    };
 
     useEffect(() => {
         fetch('/api/children')
@@ -147,7 +200,10 @@ export default function AgentAssistant() {
 
     return (
         <>
-            <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+            <div
+                className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6"
+                style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
+            >
                 {open && (
                     <div className="w-[min(92vw,22rem)] overflow-hidden rounded-[1.5rem] border border-[#dfe9e1] bg-white shadow-[0_20px_50px_rgba(31,62,55,0.18)]">
                         <div className="flex items-center justify-between bg-[#2d6358] px-4 py-3 text-white">
@@ -206,11 +262,21 @@ export default function AgentAssistant() {
 
                 <button
                     type="button"
-                    onClick={() => setOpen((current) => !current)}
+                    onClick={handleToggleOpen}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerLeave={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
                     aria-label="Mở trợ lý AI"
-                    className="grid h-16 w-16 place-items-center rounded-full bg-[#f47d52] text-3xl shadow-[0_16px_32px_rgba(244,125,82,0.35)] transition hover:-translate-y-0.5"
+                    style={{ touchAction: 'none' }}
+                    className="grid h-16 w-16 place-items-center rounded-full bg-[#f47d52] text-3xl shadow-[0_16px_32px_rgba(244,125,82,0.35)] transition hover:-translate-y-0.5 cursor-grab active:cursor-grabbing"
                 >
-                    🤖
+                    <img
+                        src="/img/agent/agent-icon.png"
+                        alt="Trợ lý AI"
+                        className="pointer-events-none h-14 w-14 object-contain drop-shadow-[0_25px_35px_rgba(32,59,53,0.15)]"
+                    />
                 </button>
             </div>
         </>

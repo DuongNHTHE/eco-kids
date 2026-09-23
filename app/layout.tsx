@@ -5,7 +5,12 @@ import './globals.css';
 
 export const metadata = {
   title: 'ECO-KIDS | Chạm để học, chơi để lớn',
-  description: 'Hệ sinh thái tiếng Anh đa giác quan cho trẻ 3-8 tuổi'
+  description: 'Hệ sinh thái tiếng Anh đa giác quan cho trẻ 3-8 tuổi',
+  icons: {
+    icon: '/img/banner-logo.png',
+    shortcut: '/img/banner-logo.png',
+    apple: '/img/banner-logo.png'
+  }
 };
 
 export default function RootLayout({ children }) {

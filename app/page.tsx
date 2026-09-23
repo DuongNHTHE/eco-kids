@@ -337,7 +337,7 @@ export default function HomePage() {
                     </span>
 
                     <h2 className="mt-2 text-5xl font-extrabold">
-                        4 bước nhỏ, một thế giới{" "}
+                        4 bước nhỏ, một thế giới{" "} <br />
                         <em className="text-[#f47d52]">thật lớn</em>
                     </h2>
 
@@ -427,7 +427,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="mt-10 grid gap-5 md:grid-cols-3">
-                        {topics.map((topic) => (
+                        {topics.slice(0, 3).map((topic) => (
                             <Link
                                 key={topic.id}
                                 href={`/learn?topic=${topic.id}`}
@@ -648,12 +648,12 @@ export default function HomePage() {
                             ))}
                         </ul>
 
-                        <Link
+                        {/* <Link
                             href="/dashboard"
                             className="inline-block rounded-full bg-[#203b35] px-6 py-3 font-bold text-white"
                         >
                             Xem dashboard demo →
-                        </Link>
+                        </Link> */}
                     </div>
                 </div>
             </section>
