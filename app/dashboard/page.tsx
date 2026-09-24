@@ -18,6 +18,17 @@ type ChildProfile = {
   level: number;
 };
 
+const emptyDashboardData = {
+  records: [],
+  stats: {
+    wordsLearned: 0,
+    streak: 0,
+    averageScore: 0,
+    totalMinutes: 0,
+  },
+  shortName: 'Bé',
+};
+
 export default function DashboardPage() {
   const { API } = useAPI();
   const router = useRouter();
@@ -62,7 +73,10 @@ export default function DashboardPage() {
     if (status !== 'authenticated' || !selectedChildId) return;
 
     API.get(`progress/${encodeURIComponent(selectedChildId)}`, false, true, true).then(progress => {
-      if (!progress.success && progress.message) return;
+      if (!progress || (progress.message && !progress.records)) {
+        setData(emptyDashboardData);
+        return;
+      }
       setData({ ...progress, shortName: progress.childName?.replace(/^Bé\s*/i, '') || 'Bé' });
     });
   }, [API, selectedChildId, status]);
@@ -74,9 +88,10 @@ export default function DashboardPage() {
   }
 
   const role = (session?.user as { role?: string } | undefined)?.role || 'PARENT';
-  if (status !== 'authenticated' || role !== 'PARENT' || !data) return <div className="grid min-h-screen place-items-center text-xl">Đang tải dashboard...</div>;
+  if (status !== 'authenticated' || role !== 'PARENT') return <div className="grid min-h-screen place-items-center text-xl">Đang tải dashboard...</div>;
 
-  const recent = data.records.slice(0, 3);
+  const dashboardData = data || emptyDashboardData;
+  const recent = dashboardData.records.slice(0, 3);
   const words = topics.flatMap(topic => topic.words.map(word => ({ ...word, topic })));
   const parentName = session?.user?.name || 'Phụ huynh';
   const parentEmail = session?.user?.email || 'Chưa cập nhật email';
@@ -94,7 +109,7 @@ export default function DashboardPage() {
     day.setDate(day.getDate() - (6 - index));
     const nextDay = new Date(day);
     nextDay.setDate(day.getDate() + 1);
-    const count = data.records.filter(record => {
+    const count = dashboardData.records.filter(record => {
       const practicedAt = new Date(record.practicedAt || record.createdAt || 0);
       return practicedAt >= day && practicedAt < nextDay;
     }).length;
@@ -261,7 +276,7 @@ export default function DashboardPage() {
               </span>
 
               <h2 className="mt-2 text-4xl font-extrabold">
-                {data.shortName} đang tiến bộ thật tuyệt!
+                {dashboardData.shortName} đang tiến bộ thật tuyệt!
               </h2>
 
               <p className="mt-3 max-w-xl text-[#d1e4d4]">
@@ -287,10 +302,10 @@ export default function DashboardPage() {
             className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
           >
             {[
-              ['Aa', t('Words Learned'), data.stats.wordsLearned, 'green'],
-              ['🔥', t('Study Streak'), `${data.stats.streak} days`, 'orange'],
-              ['🎙', t('Pronunciation Score'), `${data.stats.averageScore}%`, 'blue'],
-              ['◷', t('Total Time'), `${data.stats.totalMinutes} minutes`, 'yellow'],
+              ['Aa', t('Words Learned'), dashboardData.stats.wordsLearned, 'green'],
+              ['🔥', t('Study Streak'), `${dashboardData.stats.streak} days`, 'orange'],
+              ['🎙', t('Pronunciation Score'), `${dashboardData.stats.averageScore}%`, 'blue'],
+              ['◷', t('Total Time'), `${dashboardData.stats.totalMinutes} minutes`, 'yellow'],
             ].map(([icon, label, value, color]) => (
               <article
                 key={label}
@@ -374,7 +389,7 @@ export default function DashboardPage() {
               <div className="mt-5 space-y-4">
                 {topics.map((topic) => {
                   const learned = new Set(
-                    data.records
+                    dashboardData.records
                       .filter((record) => record.topicId === topic.id)
                       .map((record) => record.wordId)
                   ).size

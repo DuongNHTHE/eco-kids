@@ -10,8 +10,11 @@ type Order = {
     items: OrderItem[];
     total: number;
     status: string;
+    isRead: boolean;
     createdAt: string;
 };
+
+type OrderCounts = Record<string, number>;
 
 const statuses = [
     { value: 'new', label: 'Mới' },
@@ -28,6 +31,7 @@ export default function AdminOrdersPage() {
     const { API } = useAPI();
     const [orders, setOrders] = useState<Order[]>([]);
     const [filter, setFilter] = useState('all');
+    const [counts, setCounts] = useState<OrderCounts>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -35,7 +39,9 @@ export default function AdminOrdersPage() {
         setLoading(true);
         const query = filter === 'all' ? '' : `?status=${filter}`;
         const result = await API.get(`admin/orders${query}`, false, true, true);
-        if (Array.isArray(result)) setOrders(result);
+        if (Array.isArray(result?.orders)) setOrders(result.orders);
+        else if (Array.isArray(result)) setOrders(result);
+        if (result?.counts) setCounts(result.counts);
         else setError(result?.message || 'Không thể tải đơn hàng.');
         setLoading(false);
     }
@@ -44,7 +50,17 @@ export default function AdminOrdersPage() {
 
     async function updateStatus(orderId: string, status: string) {
         const result = await API.put('admin/orders', { orderId, status }, true, true, true);
-        if (result?.order) setOrders(current => current.map(order => order.id === orderId ? result.order : order));
+        if (result?.order) {
+            const previousOrder = orders.find(order => order.id === orderId);
+            setOrders(current => current.map(order => order.id === orderId ? result.order : order));
+            if (previousOrder && previousOrder.status !== status) {
+                setCounts(current => ({
+                    ...current,
+                    [previousOrder.status]: Math.max(0, (current[previousOrder.status] || 0) - 1),
+                    [status]: (current[status] || 0) + 1,
+                }));
+            }
+        }
     }
 
     return (
@@ -85,7 +101,7 @@ export default function AdminOrdersPage() {
                             : "bg-white text-[#527067]"
                             }`}
                     >
-                        Tất cả
+                        Tất cả ({Object.values(counts).reduce((total, count) => total + count, 0)})
                     </button>
 
                     {statuses.map((status) => (
@@ -98,7 +114,7 @@ export default function AdminOrdersPage() {
                                 : "bg-white text-[#527067]"
                                 }`}
                         >
-                            {status.label}
+                            {status.label} ({counts[status.value] || 0})
                         </button>
                     ))}
                 </div>
@@ -122,7 +138,7 @@ export default function AdminOrdersPage() {
                         {orders.map((order) => (
                             <article
                                 key={order.id}
-                                className="rounded-[2rem] bg-white p-6 shadow-soft"
+                                className={`cursor-pointer rounded-[2rem] bg-white p-6 shadow-soft ${!order.isRead ? 'border-l-4 border-[#f47d52]' : ''}`}
                             >
                                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#edf3ed] pb-5">
                                     <div>
