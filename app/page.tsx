@@ -660,9 +660,19 @@ export default function HomePage() {
 
             <section
                 id="schools"
-                className="grid gap-10 bg-[#2d6358] px-5 py-20 text-white lg:grid-cols-2 lg:px-[max(2rem,calc((100vw-80rem)/2))]"
+                className="
+                grid
+                gap-10
+                bg-[#2d6358]
+                px-5
+                py-20
+                text-white
+                lg:grid-cols-2
+                lg:items-stretch
+                lg:px-[max(2rem,calc((100vw-80rem)/2))]
+                "
             >
-                <div>
+                <div className="min-w-0 lg:flex lg:min-h-0 lg:flex-col">
                     <span className="font-bold text-[#b7e0bd]">
                         Dành cho trường học & trung tâm
                     </span>
@@ -682,16 +692,20 @@ export default function HomePage() {
                         <span>✓ Học liệu cập nhật</span>
                     </div>
 
-                    <img
-                        src="/img/schools.png"
-                        alt="Trường học"
-                        className="mt-6 rounded-2xl"
-                    />
+                    <div
+                        className=" mt-6 overflow-hidden rounded-3xl lg:relative lg:min-h-0 lg:flex-1"
+                    >
+                        <img
+                            src="/img/schools.png"
+                            alt="Trường học"
+                            className=" block h-auto w-full lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-cover"
+                        />
+                    </div>
                 </div>
 
                 <form
                     onSubmit={submitPartner}
-                    className="rounded-3xl bg-white p-6 text-[#203b35] shadow-soft"
+                    className=" h-max self-start rounded-3xl bg-white p-6 text-[#203b35] shadow-soft"
                 >
                     <h3 className="text-3xl font-extrabold">
                         Đăng ký buổi trải nghiệm
