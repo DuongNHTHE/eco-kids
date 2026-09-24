@@ -1,4 +1,4 @@
-import { Order, Package, Product } from '../../../src/models';
+import { Notification, Order, Package, Product } from '../../../src/models';
 import { connectMongo } from '../../../src/models';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
@@ -73,6 +73,23 @@ export async function POST(request: Request) {
       throw error;
     } finally {
       await dbSession.endSession();
+    }
+    try {
+      await Notification.create({
+        type: 'ORDER_CREATE',
+        title: 'Đơn hàng mới',
+        message: `${customer.name} vừa đặt đơn hàng ${String(order._id || order.id)}.`,
+        resourceId: String(order._id || order.id),
+        data: {
+          customerName: customer.name,
+          phone: customer.phone,
+          address: customer.address,
+          itemCount: normalizedItems.length,
+          total,
+        },
+      });
+    } catch (error) {
+      console.error('order notification error', error);
     }
     await writeAuditLog({
       action: 'ORDER_CREATE',

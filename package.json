@@ -17,11 +17,13 @@
   },
   "dependencies": {
     "@prisma/client": "6.19.0",
+    "@types/nodemailer": "^8.0.2",
     "dotenv": "^16.4.7",
     "microsoft-cognitiveservices-speech-sdk": "^1.51.0",
     "mongoose": "^8.9.5",
     "next": "^16.3.3",
     "next-auth": "^4.24.15",
+    "nodemailer": "^7.0.13",
     "qrcode": "^1.5.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

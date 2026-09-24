@@ -91,7 +91,8 @@ export default function NotificationsPage() {
             <article key={notification.id} onClick={() => markAsViewed(notification.id)} className={`cursor-pointer rounded-2xl bg-white p-5 shadow-soft ${!notification.isRead ? 'border-l-4 border-[#f47d52]' : ''}`}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <div className="flex flex-wrap items-center gap-2"><h2 className="text-xl font-extrabold">{notification.organization}</h2><span className="rounded-full bg-[#eef8ef] px-3 py-1 text-xs font-bold text-[#2d6358]">{statusLabels[notification.status]}</span></div>
+                        <span className="text-sm font-bold uppercase tracking-[0.15em] text-[#ef7d32]">{notification.title}</span>
+                        <div className="mt-1 flex flex-wrap items-center gap-2"><h2 className="text-xl font-extrabold">{notification.organization || notification.message}</h2><span className="rounded-full bg-[#eef8ef] px-3 py-1 text-xs font-bold text-[#2d6358]">{statusLabels[notification.status]}</span></div>
                         <p className="mt-1 text-sm text-[#71867c]">{formatDate(notification.createdAt)}</p>
                     </div>
                     <select value={notification.status} onChange={event => updateStatus(notification.id, event.target.value as Notification['status'])} className="rounded-xl border border-[#dceadd] bg-[#f8fcf8] px-3 py-2 text-sm font-bold outline-none">
