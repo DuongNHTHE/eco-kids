@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAPI } from '../../../lib/hooks/useAPI';
 
@@ -23,6 +22,9 @@ export default function TopicsListPage() {
     const router = useRouter();
     const [topics, setTopics] = useState<Topic[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
+    const [editForm, setEditForm] = useState({ title: '', vietnamese: '', icon: '', color: '#6eaa83', description: '' });
     const [form, setForm] = useState(emptyForm);
     const [words, setWords] = useState<WordDraft[]>([createWord()]);
     const [message, setMessage] = useState('');
@@ -38,6 +40,35 @@ export default function TopicsListPage() {
     const updateForm = (field: keyof typeof emptyForm, value: string) => setForm(current => ({ ...current, [field]: value }));
     const updateWord = (index: number, field: keyof WordDraft, value: string) => setWords(current => current.map((word, wordIndex) => wordIndex === index ? { ...word, [field]: value } : word));
 
+    function openEditModal(topic: Topic) {
+        setEditingTopic(topic);
+        setEditForm({ title: topic.title, vietnamese: topic.vietnamese, icon: topic.icon, color: topic.color || '#6eaa83', description: topic.description || '' });
+        setMessage('');
+        setIsEditModalOpen(true);
+    }
+
+    function closeEditModal() {
+        if (saving) return;
+        setIsEditModalOpen(false);
+        setEditingTopic(null);
+        setMessage('');
+    }
+
+    async function submitEdit(event: { preventDefault: () => void }) {
+        event.preventDefault();
+        if (!editingTopic) return;
+        setSaving(true);
+        setMessage('');
+        const result = await API.put(`topics/${encodeURIComponent(editingTopic.id)}`, editForm, false, false, true);
+        if (result.success) {
+            setTopics(current => current.map(topic => topic.id === editingTopic.id ? { ...topic, ...result.topic } : topic));
+            closeEditModal();
+        } else {
+            setMessage(result.message || 'Không thể cập nhật chủ đề.');
+        }
+        setSaving(false);
+    }
+
     function closeModal() {
         if (saving) return;
         setIsModalOpen(false);
@@ -46,7 +77,7 @@ export default function TopicsListPage() {
         setWords([createWord()]);
     }
 
-    async function submit(event: FormEvent<HTMLFormElement>) {
+    async function submit(event: { preventDefault: () => void }) {
         event.preventDefault();
         setSaving(true);
         setMessage('');
@@ -89,23 +120,60 @@ export default function TopicsListPage() {
                     :
                     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                         {topics.map(topic =>
-                            <button type="button" key={topic.id} onClick={() => router.push(`/admin/topics/${topic.id}`)} className="group rounded-[2rem] bg-white p-6 text-left shadow-soft transition hover:-translate-y-1 hover:shadow-lg">
+                            <article key={topic.id} className="group rounded-[2rem] bg-white p-6 text-left shadow-soft transition hover:-translate-y-1 hover:shadow-lg">
                                 <div className="flex items-start justify-between gap-4">
                                     <span className="grid h-16 w-16 place-items-center rounded-2xl text-4xl" style={{ backgroundColor: `${topic.color || '#6eaa83'}22` }}>{topic.icon}</span>
-                                    <span className="rounded-full bg-[#eef8ef] px-3 py-1 text-xs font-bold text-[#2d6358]">{topic.words?.length || 0} bài tập</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="rounded-full bg-[#eef8ef] px-3 py-1 text-xs font-bold text-[#2d6358]">{topic.words?.length || 0} bài tập</span>
+                                        <button type="button" onClick={event => { event.stopPropagation(); openEditModal(topic); }} className="rounded-full border border-[#c8d9cb] px-3 py-1 text-xs font-bold text-[#2d6358] hover:bg-[#f4faf4]">Sửa</button>
+                                    </div>
                                 </div>
                                 <h3 className="mt-5 text-2xl font-extrabold">{topic.vietnamese}</h3>
                                 <p className="mt-1 font-bold text-[#6eaa83]">{topic.title}</p>
                                 <p className="mt-4 line-clamp-2 min-h-10 text-sm text-[#71867c]">{topic.description || 'Khám phá bài học và luyện tập từ vựng.'}</p>
-                                <span className="mt-5 block font-bold text-[#f47d52] group-hover:underline">Mở chủ đề →</span>
-                            </button>
+                                <button type="button" onClick={() => router.push(`/admin/topics/${topic.id}`)} className="mt-5 font-bold text-[#f47d52] group-hover:underline">Mở chủ đề →</button>
+                            </article>
                         )}
                     </div>
                 }
             </div>
 
+            {isEditModalOpen && editingTopic &&
+                <dialog open aria-labelledby="edit-topic-title" className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none overflow-y-auto border-0 bg-[#203b35]/60 p-4 sm:p-8">
+                    <div className="mx-auto max-w-2xl rounded-[2rem] bg-[#f8fcf8] shadow-2xl">
+                        <div className="flex items-start justify-between gap-4 rounded-t-[2rem] border-b border-[#dceadd] bg-white p-6">
+                            <div>
+                                <span className="text-sm font-bold text-[#ef7d32]">Thông tin chủ đề</span>
+                                <h2 id="edit-topic-title" className="mt-1 text-2xl font-extrabold">Chỉnh sửa chủ đề</h2>
+                            </div>
+                            <button type="button" aria-label="Đóng" onClick={closeEditModal} className="grid h-10 w-10 place-items-center rounded-full bg-[#f4faf4] text-2xl">×</button>
+                        </div>
+                        <form onSubmit={submitEdit} className="space-y-5 p-6">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                {([['title', 'Tên tiếng Anh', 'Amazing Nature'], ['vietnamese', 'Tên tiếng Việt', 'Thiên nhiên kỳ thú'], ['icon', 'Biểu tượng', '🌿']] as const).map(([field, label, placeholder]) =>
+                                    <label key={field} className="text-sm font-bold">{label}
+                                        <input required value={editForm[field]} onChange={event => setEditForm(current => ({ ...current, [field]: event.target.value }))} placeholder={placeholder} className="mt-2 w-full rounded-xl border border-[#dceadd] bg-white px-3 py-2.5 font-normal outline-none focus:border-[#6eaa83]" />
+                                    </label>
+                                )}
+                                <label className="text-sm font-bold">Màu chủ đề{' '}
+                                    <input aria-label="Màu chủ đề" type="color" value={editForm.color} onChange={event => setEditForm(current => ({ ...current, color: event.target.value }))} className="mt-2 block h-11 w-16 cursor-pointer rounded-lg border-0 bg-transparent p-0" />
+                                </label>
+                            </div>
+                            <label className="mt-4 block text-sm font-bold">Mô tả{' '}
+                                <textarea value={editForm.description} onChange={event => setEditForm(current => ({ ...current, description: event.target.value }))} rows={3} className="mt-2 w-full resize-y rounded-xl border border-[#dceadd] bg-white px-3 py-2.5 font-normal outline-none focus:border-[#6eaa83]" />
+                            </label>
+                            <div className="flex flex-wrap items-center justify-end gap-3">
+                                <span className="mr-auto text-sm font-bold text-[#d45e45]">{message}</span>
+                                <button type="button" onClick={closeEditModal} className="rounded-full border border-[#c8d9cb] px-5 py-3 font-bold">Hủy</button>
+                                <button type="submit" disabled={saving} className="rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white disabled:opacity-60">{saving ? 'Đang lưu...' : 'Lưu chủ đề'}</button>
+                            </div>
+                        </form>
+                    </div>
+                </dialog>
+            }
+
             {isModalOpen &&
-                <div role="dialog" aria-modal="true" aria-labelledby="add-topic-title" className="fixed inset-0 z-50 overflow-y-auto bg-[#203b35]/60 p-4 sm:p-8">
+                <dialog open aria-labelledby="add-topic-title" className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none overflow-y-auto border-0 bg-[#203b35]/60 p-4 sm:p-8">
                     <div className="mx-auto max-w-3xl rounded-[2rem] bg-[#f8fcf8] shadow-2xl">
                         <div className="top-0 z-10 flex items-start justify-between gap-4 rounded-t-[2rem] border-b border-[#dceadd] bg-white p-6">
                             <div>
@@ -122,11 +190,11 @@ export default function TopicsListPage() {
                                         <input required value={form[field]} onChange={event => updateForm(field, event.target.value)} placeholder={placeholder} className="mt-2 w-full rounded-xl border border-[#dceadd] bg-[#f8fcf8] px-3 py-2.5 font-normal outline-none focus:border-[#6eaa83]" />
                                     </label>
                                 )}
-                                    <label className="text-sm font-bold">Màu chủ đề
+                                    <label className="text-sm font-bold">Màu chủ đề{' '}
                                         <input aria-label="Màu chủ đề" type="color" value={form.color} onChange={event => updateForm('color', event.target.value)} className="mt-2 block h-11 w-16 cursor-pointer rounded-lg border-0 bg-transparent p-0" />
                                     </label>
                                 </div>
-                                <label className="mt-4 block text-sm font-bold">Mô tả
+                                <label className="mt-4 block text-sm font-bold">Mô tả{' '}
                                     <textarea value={form.description} onChange={event => updateForm('description', event.target.value)} rows={2} className="mt-2 w-full resize-y rounded-xl border border-[#dceadd] bg-[#f8fcf8] px-3 py-2.5 font-normal outline-none focus:border-[#6eaa83]" />
                                 </label>
                             </section>
@@ -137,7 +205,7 @@ export default function TopicsListPage() {
                                 </div>
                                 <div className="mt-4 space-y-4">
                                     {words.map((word, index) =>
-                                        <div key={index} className="rounded-xl bg-[#f4faf4] p-4">
+                                        <div key={word.id || index} className="rounded-xl bg-[#f4faf4] p-4">
                                             <div className="mb-3 flex items-center justify-between">
                                                 <b>Bài tập {index + 1}</b>
                                                 {words.length > 1 &&
@@ -158,11 +226,11 @@ export default function TopicsListPage() {
                             <div className="flex flex-wrap items-center justify-end gap-3">
                                 <span className="mr-auto text-sm font-bold text-[#d45e45]">{message}</span>
                                 <button type="button" onClick={closeModal} className="rounded-full border border-[#c8d9cb] px-5 py-3 font-bold">Hủy</button>
-                                <button disabled={saving} className="rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white disabled:opacity-60">{saving ? 'Đang lưu...' : 'Lưu chủ đề'}</button>
+                                <button type="submit" disabled={saving} className="rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white disabled:opacity-60">{saving ? 'Đang lưu...' : 'Lưu chủ đề'}</button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </dialog>
             }
         </main>
     );
