@@ -40,7 +40,7 @@ export function AppSidebar({
         let connected = false;
 
         async function loadUnreadCount() {
-            const response = await fetch('/api/admin/notifications?status=new', { cache: 'no-store' });
+            const response = await fetch('/api/admin/notifications?isRead=false', { cache: 'no-store' });
             if (!response.ok) return;
             const payload = await response.json();
             if (mounted && Array.isArray(payload.notifications)) setUnreadNotifications(payload.notifications.length);
@@ -97,10 +97,13 @@ export function AppSidebar({
         source.addEventListener('ready', () => { connected = true; });
         source.addEventListener('notification', event => {
             if (!connected) return;
-            const notification = JSON.parse((event as MessageEvent).data) as { organization?: string };
+            const notification = JSON.parse((event as MessageEvent).data) as { organization?: string | null; type?: string; };
+            console.log("check notification", notification);
             loadUnreadCount();
             playNotificationSound();
-            toast.success('Thông báo mới', { description: `${notification.organization || 'Khách hàng'} vừa đăng ký tư vấn.` });
+            if (notification.type == 'PARTNER_LEAD_CREATE') {
+                toast.success('Thông báo mới', { description: `${notification.organization || 'Khách hàng'} vừa đăng ký tư vấn.` });
+            }
         });
 
         return () => {

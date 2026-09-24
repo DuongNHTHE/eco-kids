@@ -16,8 +16,11 @@ type Notification = {
     studentCount: number | null;
     note: string;
     status: 'new' | 'contacted' | 'qualified' | 'closed';
+    isRead: boolean;
     createdAt?: string;
 };
+
+type NotificationCounts = Record<Notification['status'], number>;
 
 const statusLabels: Record<Notification['status'], string> = {
     new: 'Mới',
@@ -35,6 +38,7 @@ export default function NotificationsPage() {
     const { API } = useAPI();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [filter, setFilter] = useState<'all' | Notification['status']>('all');
+    const [counts, setCounts] = useState<NotificationCounts>({ new: 0, contacted: 0, qualified: 0, closed: 0 });
     const [loading, setLoading] = useState(true);
 
     async function loadNotifications() {
@@ -42,6 +46,7 @@ export default function NotificationsPage() {
         const query = filter === 'all' ? '' : `?status=${filter}`;
         const result = await API.get(`admin/notifications${query}`, false, false, true);
         if (Array.isArray(result?.notifications)) setNotifications(result.notifications);
+        if (result?.counts) setCounts(result.counts);
         setLoading(false);
     }
 
@@ -59,10 +64,23 @@ export default function NotificationsPage() {
 
     async function updateStatus(notificationId: string, status: Notification['status']) {
         const result = await API.patch?.('admin/notifications', { notificationId, status }, false, true, true);
+        if (result?.success) {
+            setNotifications(current => current.map(item => item.id === notificationId ? result.notification : item));
+            setCounts(current => {
+                const previousStatus = notifications.find(item => item.id === notificationId)?.status;
+                if (!previousStatus || previousStatus === status) return current;
+                return { ...current, [previousStatus]: current[previousStatus] - 1, [status]: current[status] + 1 };
+            });
+        }
+    }
+
+    async function markAsViewed(notificationId: string) {
+        const notification = notifications.find(item => item.id === notificationId);
+        if (!notification || notification.isRead) return;
+        const result = await API.patch?.('admin/notifications', { notificationId, isRead: true }, false, false, false);
         if (result?.success) setNotifications(current => current.map(item => item.id === notificationId ? result.notification : item));
     }
 
-    const newCount = notifications.filter(item => item.status === 'new').length;
     let notificationContent;
     if (loading) {
         notificationContent = <div className="rounded-2xl bg-white p-8 text-center font-bold text-[#71867c]">Đang tải thông báo...</div>;
@@ -70,7 +88,7 @@ export default function NotificationsPage() {
         notificationContent = <div className="rounded-2xl bg-white p-12 text-center shadow-soft"><p className="font-bold">Chưa có thông báo phù hợp</p><p className="mt-2 text-sm text-[#71867c]">Các đăng ký tư vấn mới sẽ xuất hiện tại đây.</p></div>;
     } else {
         notificationContent = notifications.map(notification =>
-            <article key={notification.id} className={`rounded-2xl bg-white p-5 shadow-soft ${notification.status === 'new' ? 'border-l-4 border-[#f47d52]' : ''}`}>
+            <article key={notification.id} onClick={() => markAsViewed(notification.id)} className={`cursor-pointer rounded-2xl bg-white p-5 shadow-soft ${!notification.isRead ? 'border-l-4 border-[#f47d52]' : ''}`}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <div className="flex flex-wrap items-center gap-2"><h2 className="text-xl font-extrabold">{notification.organization}</h2><span className="rounded-full bg-[#eef8ef] px-3 py-1 text-xs font-bold text-[#2d6358]">{statusLabels[notification.status]}</span></div>
@@ -100,7 +118,7 @@ export default function NotificationsPage() {
                         <p className="mt-2 text-[#71867c]">Theo dõi các khách hàng vừa đăng ký tư vấn.</p>
                     </div>
                     <div className="rounded-2xl bg-white px-5 py-4 text-right shadow-soft">
-                        <strong className="block text-3xl text-[#f47d52]">{newCount}</strong>
+                        <strong className="block text-3xl text-[#f47d52]">{counts.new}</strong>
                         <span className="text-sm font-bold text-[#71867c]">thông báo mới</span>
                     </div>
                 </div>
@@ -108,7 +126,7 @@ export default function NotificationsPage() {
                 <div className="mt-8 flex flex-wrap gap-2">
                     {(['all', 'new', 'contacted', 'qualified', 'closed'] as const).map(value =>
                         <button key={value} type="button" onClick={() => setFilter(value)} className={`rounded-full px-4 py-2 text-sm font-bold ${filter === value ? 'bg-[#203b35] text-white' : 'bg-white text-[#637970] hover:bg-[#eef8ef]'}`}>
-                            {value === 'all' ? 'Tất cả' : statusLabels[value]}
+                            {value === 'all' ? `Tất cả (${Object.values(counts).reduce((total, count) => total + count, 0)})` : `${statusLabels[value]} (${counts[value]})`}
                         </button>
                     )}
                 </div>

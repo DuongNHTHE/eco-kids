@@ -37,11 +37,42 @@ export async function GET(request: Request) {
   if (!user) return Response.json({ message: 'Bạn không có quyền xem thông báo.' }, { status: 403 });
 
   try {
-    const status = new URL(request.url).searchParams.get('status');
-    const query = status && statuses.includes(status as typeof statuses[number]) ? { status } : {};
+    const searchParams = new URL(request.url).searchParams;
+    const status = searchParams.get('status');
+    const isReadParam = searchParams.get('isRead');
+    const query: Record<string, unknown> = {};
+    if (status && statuses.includes(status as typeof statuses[number])) query.status = status;
+    if (isReadParam === 'true' || isReadParam === 'false') query.isRead = isReadParam === 'true';
+
     await connectMongo();
-    const notifications = await Notification.find(query).sort({ createdAt: -1 }).limit(100).lean();
-    return Response.json({ notifications: notifications.map(serializePartner) });
+
+    const notifications = await Notification.aggregate([
+      { $match: query },
+
+      {
+        $addFields: {
+          readPriority: { $cond: [{ $eq: ['$isRead', true] }, 1, 0] },
+        },
+      },
+
+      {
+        $sort: {
+          readPriority: 1,
+          createdAt: -1,
+        },
+      },
+
+      { $limit: 100 },
+    ]);
+
+    const countEntries = await Promise.all(
+      statuses.map(async currentStatus => [currentStatus, await Notification.countDocuments({ status: currentStatus })] as const),
+    );
+
+    return Response.json({
+      notifications: notifications.map(serializePartner),
+      counts: Object.fromEntries(countEntries),
+    });
   } catch (error) {
     console.error('admin notifications query error', error);
     return Response.json({ message: 'Không thể tải thông báo.' }, { status: 500 });
@@ -55,15 +86,22 @@ export async function PATCH(request: Request) {
   try {
     const body = await request.json();
     const notificationId = String(body.notificationId || '').trim();
-    const status = String(body.status || '').trim();
-    if (!notificationId || !statuses.includes(status as typeof statuses[number])) {
+    const status = body.status === undefined ? undefined : String(body.status || '').trim();
+    const isRead = body.isRead === undefined ? undefined : Boolean(body.isRead);
+    if (!notificationId || (status !== undefined && !statuses.includes(status as typeof statuses[number])) || (status === undefined && isRead === undefined)) {
       return Response.json({ message: 'Thông báo hoặc trạng thái không hợp lệ.' }, { status: 400 });
     }
 
     await connectMongo();
+    const update: Record<string, unknown> = { updatedAt: new Date() };
+    if (status !== undefined) {
+      update.status = status;
+      update.isRead = true;
+    }
+    if (isRead !== undefined) update.isRead = isRead;
     const notification: any = await Notification.findByIdAndUpdate(
       notificationId,
-      { status, isRead: status !== 'new', updatedAt: new Date() },
+      update,
       { new: true, runValidators: true },
     ).lean();
     if (!notification) return Response.json({ message: 'Không tìm thấy thông báo.' }, { status: 404 });
