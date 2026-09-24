@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { clearSession } from '../lib/auth';
@@ -15,21 +14,27 @@ export type SidebarItem = {
     accent?: 'default' | 'muted' | 'highlight';
 };
 
+async function handleLogout() {
+    clearSession();
+    await signOut({ callbackUrl: '/login' });
+}
+
 export function AppSidebar({
     brand = 'KIDS',
     role = 'Admin',
     items,
     footerTitle,
     footerText,
-}: {
+}: Readonly<{
     brand?: string;
     role?: string;
     items: SidebarItem[];
     footerTitle?: string;
     footerText?: string;
-}) {
+}>) {
     const { data: session } = useSession();
     const [unreadNotifications, setUnreadNotifications] = useState(0);
+    const [isOpen, setIsOpen] = useState(false);
     const userName = session?.user?.name || 'Tài khoản';
     const userEmail = session?.user?.email || 'Chưa cập nhật email';
     const avatar = session?.user?.image;
@@ -112,15 +117,32 @@ export function AppSidebar({
         };
     }, []);
 
-    async function handleLogout() {
-        clearSession();
-        await signOut({ callbackUrl: '/login' });
-    }
+    const sidebarTransform = isOpen ? 'translate-x-0' : '-translate-x-full';
 
     return (
-        <aside className="fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-[#203b35] p-6 text-white transition-transform lg:translate-x-0">
+        <>
+            <button
+                type="button"
+                aria-label={isOpen ? 'Đóng menu' : 'Mở menu'}
+                aria-expanded={isOpen}
+                onClick={() => setIsOpen(current => !current)}
+                className="fixed left-4 top-4 z-40 grid h-11 w-11 place-items-center rounded-xl bg-[#203b35] text-xl text-white shadow-lg lg:hidden"
+            >
+                {isOpen ? '×' : '☰'}
+            </button>
 
-            <Link href="/" className="flex shrink-0 items-center gap-2 text-white">
+            {isOpen && (
+                <button
+                    type="button"
+                    aria-label="Đóng menu"
+                    onClick={() => setIsOpen(false)}
+                    className="fixed inset-0 z-20 bg-[#203b35]/45 lg:hidden"
+                />
+            )}
+
+            <aside className={`fixed inset-y-0 left-0 z-30 flex w-72 max-w-[85vw] flex-col bg-[#203b35] p-6 text-white transition-transform duration-200 lg:w-64 lg:translate-x-0 ${sidebarTransform}`}>
+
+            <Link href="/" className="flex shrink-0 items-center gap-2 text-white justify-center">
                 <span className="text-4xl font-extrabold leading-none text-[#f47d52]">
                     e<span className="text-[#6eaa83]">c</span>o
                 </span>
@@ -132,17 +154,15 @@ export function AppSidebar({
                 </span>
             </Link>
 
-            <nav className="mt-12 min-h-0 flex-1 space-y-2 overflow-y-auto">
+            <nav className="mt-6 min-h-0 flex-1 space-y-2 overflow-y-auto">
                 {items.map(item => {
+                    let accentClass = '';
+                    if (item.accent === 'highlight') accentClass = 'text-[#f4c8a9]';
+                    if (item.accent === 'muted') accentClass = 'text-[#bfe8c6]';
                     const classes = `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-bold transition ${item.active
                         ? 'bg-white/15 text-white'
                         : 'text-white/80 hover:bg-white/5'
-                        } ${item.accent === 'highlight'
-                            ? 'text-[#f4c8a9]'
-                            : item.accent === 'muted'
-                                ? 'text-[#bfe8c6]'
-                                : ''
-                        }`;
+                        } ${accentClass}`;
 
                     if (item.href) {
                         return (
@@ -150,6 +170,7 @@ export function AppSidebar({
                                 key={item.label}
                                 href={item.href}
                                 className={classes}
+                                onClick={() => setIsOpen(false)}
                             >
                                 <span>{item.icon}</span>
                                 {item.label}
@@ -185,6 +206,7 @@ export function AppSidebar({
                 <Link
                     href="/admin/profile"
                     className="flex items-center gap-3 rounded-2xl bg-white/10 p-3 transition hover:bg-white/15"
+                    onClick={() => setIsOpen(false)}
                 >
                     {avatar ? (
                         <img
@@ -214,6 +236,7 @@ export function AppSidebar({
                     <Link
                         href="/admin/settings"
                         className="font-bold text-white/75 transition hover:text-white"
+                        onClick={() => setIsOpen(false)}
                     >
                         ⚙ Cài đặt
                     </Link>
@@ -227,6 +250,7 @@ export function AppSidebar({
                     </button>
                 </div>
             </div>
-        </aside>
+            </aside>
+        </>
     );
 }
