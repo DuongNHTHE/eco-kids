@@ -1,9 +1,9 @@
-import { createOrder } from '../../../src/store';
 import { Order, Package, Product } from '../../../src/models';
 import { connectMongo } from '../../../src/models';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { writeAuditLog } from '../../../src/audit';
+import mongoose from 'mongoose';
 
 export async function POST(request: Request) {
   try {
@@ -11,11 +11,12 @@ export async function POST(request: Request) {
     if (!customer?.name || !customer?.phone || !customer?.address || !Array.isArray(items) || !items.length) {
       return Response.json({ message: 'Vui lòng nhập đủ thông tin giao hàng.' }, { status: 400 });
     }
-    const session = await getServerSession(authOptions);
-    const user = session?.user as { id?: string; email?: string | null; role?: string } | undefined;
+    const authSession = await getServerSession(authOptions);
+    const user = authSession?.user as { id?: string; email?: string | null; role?: string } | undefined;
     if (user?.role !== 'PARENT' || !user.id) return Response.json({ message: 'Vui lòng đăng nhập bằng tài khoản phụ huynh.' }, { status: 401 });
     console.log(user);
     await connectMongo();
+    const stockRequirements = new Map<string, number>();
     const normalizedItems = (await Promise.all(items.map(async item => {
       const itemId = String(item.packageId || item.productId || '');
       const pack: any = item.packageId
@@ -27,6 +28,18 @@ export async function POST(request: Request) {
       const catalogItem = pack || product;
       if (!catalogItem) return null;
       const quantity = Math.max(1, Math.min(10, Number(item.quantity) || 1));
+      if (pack) {
+        pack.items?.forEach((packItem: { productId?: string; quantity?: number }) => {
+          if (packItem.productId) {
+            stockRequirements.set(
+              packItem.productId,
+              (stockRequirements.get(packItem.productId) || 0) + quantity * Math.max(1, Number(packItem.quantity) || 1),
+            );
+          }
+        });
+      } else {
+        stockRequirements.set(itemId, (stockRequirements.get(itemId) || 0) + quantity);
+      }
       return {
         ...(pack ? { packageId: pack.slug } : { productId: product.slug }),
         name: catalogItem.name,
@@ -36,7 +49,31 @@ export async function POST(request: Request) {
     }))).filter(Boolean);
     if (!normalizedItems.length) return Response.json({ message: 'Sản phẩm không hợp lệ.' }, { status: 400 });
     const total = normalizedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const order = await createOrder({ user_id: user.id, customer, items: normalizedItems, total });
+    const dbSession = await mongoose.connection.startSession();
+    let order: any;
+    try {
+      await dbSession.withTransaction(async () => {
+        for (const [slug, quantity] of stockRequirements) {
+          const updated = await Product.findOneAndUpdate(
+            { slug, isActive: true, stock: { $gte: quantity } },
+            { $inc: { stock: -quantity } },
+            { new: true, session: dbSession },
+          ).lean();
+          if (!updated) {
+            const error = new Error(`Sản phẩm ${slug} không đủ tồn kho.`) as Error & { status?: number };
+            error.status = 409;
+            throw error;
+          }
+        }
+        const created = await Order.create([{ user_id: user.id, customer, items: normalizedItems, total }], { session: dbSession });
+        order = created[0];
+      });
+    } catch (error: any) {
+      if (error?.status === 409) return Response.json({ message: error.message }, { status: 409 });
+      throw error;
+    } finally {
+      await dbSession.endSession();
+    }
     await writeAuditLog({
       action: 'ORDER_CREATE',
       resource: 'ORDER',
