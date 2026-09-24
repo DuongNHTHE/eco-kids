@@ -1,5 +1,6 @@
 import { createPartner } from '../../../src/store';
 import { writeAuditLog } from '../../../src/audit';
+import { connectMongo, Notification } from '../../../src/models';
 
 export async function POST(request: Request) {
   try {
@@ -19,6 +20,14 @@ export async function POST(request: Request) {
     }
 
     const partner = await createPartner({ organization, contactName, phone, email, studentCount, note });
+    await connectMongo();
+    await Notification.create({
+      type: 'PARTNER_LEAD_CREATE',
+      title: 'Khách hàng đăng ký tư vấn',
+      message: `${organization} vừa đăng ký tư vấn.`,
+      resourceId: String(partner._id || partner.id),
+      data: { organization, contactName, phone, email, studentCount, note },
+    });
     await writeAuditLog({
       action: 'PARTNER_LEAD_CREATE',
       resource: 'PARTNER_LEAD',

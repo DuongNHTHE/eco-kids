@@ -80,6 +80,16 @@ const partnerSchema = new mongoose.Schema({
   status: { type: String, enum: ['new', 'contacted', 'qualified', 'closed'], default: 'new' }
 }, { timestamps: true });
 
+const notificationSchema = new mongoose.Schema({
+  type: { type: String, required: true, index: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  resourceId: { type: String, required: true, index: true },
+  data: { type: mongoose.Schema.Types.Mixed, default: {} },
+  status: { type: String, enum: ['new', 'contacted', 'qualified', 'closed'], default: 'new', index: true },
+  isRead: { type: Boolean, default: false, index: true },
+}, { timestamps: true, collection: 'notifications' });
+
 const auditLogSchema = new mongoose.Schema({
   user_id: { type: String, index: true },
   actorEmail: { type: String, index: true },
@@ -104,6 +114,7 @@ export const Progress = (mongoose.models.Progress || mongoose.model('Progress', 
 export const ReviewExercise = (mongoose.models.ReviewExercise || mongoose.model('ReviewExercise', reviewExerciseSchema)) as mongoose.Model<any>;
 export const Order = (mongoose.models.Order || mongoose.model('Order', orderSchema)) as mongoose.Model<any>;
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;
+export const Notification = (mongoose.models.Notification || mongoose.model('Notification', notificationSchema)) as mongoose.Model<any>;
 export const AuditLog = (mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema)) as mongoose.Model<any>;
 
 const vocabularySchema = new mongoose.Schema({

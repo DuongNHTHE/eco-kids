@@ -46,6 +46,23 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model Notification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  type       String
+  title      String
+  message    String
+  resourceId String
+  data       Json?
+  status     String   @default("new")
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([isRead, createdAt])
+  @@map("notifications")
+}
+
 enum UserRole {
   ADMIN
   PARENT

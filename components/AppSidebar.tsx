@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 import { clearSession } from '../lib/auth';
 
 export type SidebarItem = {
@@ -27,10 +29,85 @@ export function AppSidebar({
     footerText?: string;
 }) {
     const { data: session } = useSession();
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
     const userName = session?.user?.name || 'Tài khoản';
     const userEmail = session?.user?.email || 'Chưa cập nhật email';
     const avatar = session?.user?.image;
     const initials = userName.trim().charAt(0).toUpperCase() || 'U';
+
+    useEffect(() => {
+        let mounted = true;
+        let connected = false;
+
+        async function loadUnreadCount() {
+            const response = await fetch('/api/admin/notifications?status=new', { cache: 'no-store' });
+            if (!response.ok) return;
+            const payload = await response.json();
+            if (mounted && Array.isArray(payload.notifications)) setUnreadNotifications(payload.notifications.length);
+        }
+
+        function playNotificationSound() {
+            try {
+                const audioContext = new AudioContext();
+                const oscillator = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                const now = audioContext.currentTime;
+                const duration = 3;
+
+                oscillator.frequency.setValueAtTime(740, now);
+                oscillator.frequency.exponentialRampToValueAtTime(
+                    1040,
+                    now + 0.5
+                );
+
+                gain.gain.setValueAtTime(0.0001, now);
+
+                // Fade in
+                gain.gain.exponentialRampToValueAtTime(
+                    0.12,
+                    now + 0.05
+                );
+
+                gain.gain.setValueAtTime(
+                    0.12,
+                    now + 0.5
+                );
+
+                gain.gain.exponentialRampToValueAtTime(
+                    0.0001,
+                    now + duration
+                );
+
+                oscillator.connect(gain);
+                gain.connect(audioContext.destination);
+
+                oscillator.start(now);
+                oscillator.stop(now + duration);
+
+                oscillator.addEventListener('ended', () => {
+                    audioContext.close();
+                });
+            } catch {
+            }
+        }
+
+        loadUnreadCount();
+        const source = new EventSource('/api/admin/notifications/stream');
+        source.addEventListener('ready', () => { connected = true; });
+        source.addEventListener('notification', event => {
+            if (!connected) return;
+            const notification = JSON.parse((event as MessageEvent).data) as { organization?: string };
+            loadUnreadCount();
+            playNotificationSound();
+            toast.success('Thông báo mới', { description: `${notification.organization || 'Khách hàng'} vừa đăng ký tư vấn.` });
+        });
+
+        return () => {
+            mounted = false;
+            source.close();
+        };
+    }, []);
 
     async function handleLogout() {
         clearSession();
@@ -52,12 +129,11 @@ export function AppSidebar({
                 </span>
             </Link>
 
-            {/* Menu - phần này được phép scroll */}
             <nav className="mt-12 min-h-0 flex-1 space-y-2 overflow-y-auto">
                 {items.map(item => {
                     const classes = `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-bold transition ${item.active
-                            ? 'bg-white/15 text-white'
-                            : 'text-white/80 hover:bg-white/5'
+                        ? 'bg-white/15 text-white'
+                        : 'text-white/80 hover:bg-white/5'
                         } ${item.accent === 'highlight'
                             ? 'text-[#f4c8a9]'
                             : item.accent === 'muted'
@@ -74,6 +150,7 @@ export function AppSidebar({
                             >
                                 <span>{item.icon}</span>
                                 {item.label}
+                                {item.href === '/admin/notifications' && unreadNotifications > 0 && <span className="ml-auto min-w-6 rounded-full bg-[#f47d52] px-1.5 py-0.5 text-center text-xs font-black text-white">{unreadNotifications > 99 ? '99+' : unreadNotifications}</span>}
                             </Link>
                         );
                     }

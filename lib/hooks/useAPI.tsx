@@ -146,6 +146,8 @@ export function useAPI() {
                 request('POST', url, data, showToastSuccess, showToastError, showLoading),
             put: (url: string, data: any = {}, showToastSuccess = true, showToastError = true, showLoading = true): Promise<any> =>
                 request('PUT', url, data, showToastSuccess, showToastError, showLoading),
+            patch: (url: string, data: any = {}, showToastSuccess = true, showToastError = true, showLoading = true): Promise<any> =>
+                request('PATCH', url, data, showToastSuccess, showToastError, showLoading),
             delete: (url: string, data: any = {}, showToastSuccess = true, showToastError = true, showLoading = true): Promise<any> =>
                 request('DELETE', url, data, showToastSuccess, showToastError, showLoading),
         };
