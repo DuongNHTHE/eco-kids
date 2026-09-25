@@ -138,7 +138,7 @@ export default function TopicDetailPage() {
                                 <h3 className="mt-2 text-2xl font-extrabold">{word.english}</h3>
                                 <p className="mt-1 font-bold text-[#f47d52]">{word.vietnamese}</p>
                             </div>
-                            <span className="text-4xl">{word.shape || '🚀'}</span>
+                            {/* <span className="text-4xl">{word.shape || '🚀'}</span> */}
                         </div>
                         <div className="mt-5 rounded-xl bg-[#f4faf4] p-3">
                             <p className="text-sm text-[#637970]">{word.prompt || 'Chưa có câu ví dụ.'}</p>

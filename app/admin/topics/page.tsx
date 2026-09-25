@@ -10,7 +10,6 @@ type Topic = { id: string; title: string; vietnamese: string; icon: string; colo
 
 let wordsCounter = 0;
 const createWord = (): WordDraft => ({ id: `draft-${Date.now()}-${wordsCounter++}`, english: '', vietnamese: '', phonetic: '', prompt: '', shape: 'rocket', modelUrl: '' });
-const emptyWord: WordDraft = { id: 'draft-template', english: '', vietnamese: '', phonetic: '', prompt: '', shape: 'rocket', modelUrl: '' };
 const emptyForm = { slug: '', title: '', vietnamese: '', icon: '📚', color: '#6eaa83', description: '' };
 
 // function modelIcon(shape: string) {
@@ -26,9 +25,10 @@ export default function TopicsListPage() {
     const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
     const [editForm, setEditForm] = useState({ title: '', vietnamese: '', icon: '', color: '#6eaa83', description: '' });
     const [form, setForm] = useState(emptyForm);
-    const [words, setWords] = useState<WordDraft[]>([createWord()]);
+    const [words, setWords] = useState<WordDraft[]>([]);
     const [message, setMessage] = useState('');
     const [saving, setSaving] = useState(false);
+    const [samplingIndex, setSamplingIndex] = useState<number | null>(null);
 
     async function loadTopics() {
         const result = await API.get('topics', false, false, true);
@@ -39,6 +39,37 @@ export default function TopicsListPage() {
 
     const updateForm = (field: keyof typeof emptyForm, value: string) => setForm(current => ({ ...current, [field]: value }));
     const updateWord = (index: number, field: keyof WordDraft, value: string) => setWords(current => current.map((word, wordIndex) => wordIndex === index ? { ...word, [field]: value } : word));
+
+    async function sampleWord(index: number) {
+        const english = words[index]?.english.trim();
+        if (!english) {
+            setMessage('Hãy nhập từ tiếng Anh trước khi lấy mẫu.');
+            return;
+        }
+
+        setSamplingIndex(index);
+        setMessage('');
+        try {
+            const response = await fetch(`/api/dictionary/${encodeURIComponent(english)}`, { cache: 'no-store' });
+            const payload = await response.json().catch(() => null);
+            if (!response.ok) throw new Error(payload?.message || 'Không thể lấy dữ liệu từ điển.');
+
+            const entry = payload?.[0];
+            const phonetic = entry?.phonetics?.find((item: { text?: string }) => item.text)?.text || entry?.phonetic || '';
+            const example = entry?.meanings?.flatMap((meaning: { definitions?: { example?: string }[] }) => meaning.definitions || [])
+                .map((definition: { example?: string }) => definition.example)
+                .find(Boolean) || '';
+            setWords(current => current.map((word, wordIndex) => wordIndex === index ? {
+                ...word,
+                phonetic: phonetic || word.phonetic,
+                prompt: example || word.prompt,
+            } : word));
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : 'Không thể lấy dữ liệu mẫu.');
+        } finally {
+            setSamplingIndex(null);
+        }
+    }
 
     function openEditModal(topic: Topic) {
         setEditingTopic(topic);
@@ -69,12 +100,18 @@ export default function TopicsListPage() {
         setSaving(false);
     }
 
+    async function deleteTopic(topic: Topic) {
+        if (!window.confirm(`Xóa chủ đề "${topic.vietnamese}" và toàn bộ bài tập bên trong?`)) return;
+        const result = await API.delete(`topics/${encodeURIComponent(topic.id)}`, {}, false, false, true);
+        if (result.success) setTopics(current => current.filter(item => item.id !== topic.id));
+    }
+
     function closeModal() {
         if (saving) return;
         setIsModalOpen(false);
         setMessage('');
         setForm({ ...emptyForm });
-        setWords([createWord()]);
+        setWords([]);
     }
 
     async function submit(event: { preventDefault: () => void }) {
@@ -126,6 +163,7 @@ export default function TopicsListPage() {
                                     <div className="flex items-center gap-2">
                                         <span className="rounded-full bg-[#eef8ef] px-3 py-1 text-xs font-bold text-[#2d6358]">{topic.words?.length || 0} bài tập</span>
                                         <button type="button" onClick={event => { event.stopPropagation(); openEditModal(topic); }} className="rounded-full border border-[#c8d9cb] px-3 py-1 text-xs font-bold text-[#2d6358] hover:bg-[#f4faf4]">Sửa</button>
+                                        <button type="button" onClick={event => { event.stopPropagation(); deleteTopic(topic); }} className="rounded-full border border-[#edb9ae] px-3 py-1 text-xs font-bold text-[#d45e45] hover:bg-[#fff4f1]">Xóa</button>
                                     </div>
                                 </div>
                                 <h3 className="mt-5 text-2xl font-extrabold">{topic.vietnamese}</h3>
@@ -201,7 +239,7 @@ export default function TopicsListPage() {
                             <section className="rounded-2xl bg-white p-5">
                                 <div className="flex items-center justify-between gap-3">
                                     <h3 className="font-extrabold">Bài tập ({words.length})</h3>
-                                    <button type="button" onClick={() => setWords(current => [...current, { ...emptyWord }])} className="rounded-full bg-[#eef8ef] px-3 py-2 text-sm font-bold text-[#2d6358]">＋ Thêm bài</button>
+                                    <button type="button" onClick={() => setWords(current => [...current, createWord()])} className="rounded-full bg-[#eef8ef] px-3 py-2 text-sm font-bold text-[#2d6358]">＋ Thêm bài</button>
                                 </div>
                                 <div className="mt-4 space-y-4">
                                     {words.map((word, index) =>
@@ -219,6 +257,9 @@ export default function TopicsListPage() {
                                                     </label>
                                                 )}
                                             </div>
+                                            <button type="button" onClick={() => sampleWord(index)} disabled={samplingIndex !== null} className="mt-3 rounded-full bg-[#eef8ef] px-4 py-2 text-sm font-bold text-[#2d6358] disabled:opacity-60">
+                                                {samplingIndex === index ? 'Đang lấy mẫu...' : '✦ Sample phiên âm & ví dụ'}
+                                            </button>
                                         </div>
                                     )}
                                 </div>

@@ -13,8 +13,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { slug, title, vietnamese, icon, color, description, words } = body;
 
-    if (!slug || !title || !vietnamese || !Array.isArray(words) || !words.length) {
-      return Response.json({ message: 'Vui lòng nhập tên, slug và ít nhất một từ vựng.' }, { status: 400 });
+    if (!slug || !title || !vietnamese || !Array.isArray(words)) {
+      return Response.json({ message: 'Vui lòng nhập tên và slug chủ đề.' }, { status: 400 });
     }
 
     const normalizedSlug = String(slug).trim().toLowerCase();
@@ -54,25 +54,27 @@ export async function POST(request: Request) {
       lessonCount: 1,
     });
 
-    const savedWords = await Vocabulary.insertMany(normalizedWords.map(word => ({ topicId: topic.slug, ...word })));
-    for (const word of savedWords) {
-      const modelUrl = String(word.modelUrl || '').trim();
-      if (!modelUrl) continue;
-      await Model3D.updateOne(
-        { vocabularyId: String(word.id) },
-        {
-          vocabularyId: String(word.id),
-          name: String(word.english || 'model').trim() || 'model',
-          modelUrl,
-          previewUrl: '',
-          animation: null,
-          scale: 1,
-          rotation: { x: 0, y: 0, z: 0 },
-          isActive: true,
-          updatedAt: new Date(),
-        },
-        { upsert: true }
-      );
+    if (normalizedWords.length) {
+      const savedWords = await Vocabulary.insertMany(normalizedWords.map(word => ({ topicId: topic.slug, ...word })));
+      for (const word of savedWords) {
+        const modelUrl = String(word.modelUrl || '').trim();
+        if (!modelUrl) continue;
+        await Model3D.updateOne(
+          { vocabularyId: String(word.id) },
+          {
+            vocabularyId: String(word.id),
+            name: String(word.english || 'model').trim() || 'model',
+            modelUrl,
+            previewUrl: '',
+            animation: null,
+            scale: 1,
+            rotation: { x: 0, y: 0, z: 0 },
+            isActive: true,
+            updatedAt: new Date(),
+          },
+          { upsert: true }
+        );
+      }
     }
     await Topic.updateOne({ _id: topic._id }, { lessonCount: normalizedWords.length });
     const session = await getServerSession(authOptions);

@@ -1,5 +1,8 @@
 import { getTopics } from '../../../../src/content';
-import { connectMongo, QRCode, Topic } from '../../../../src/models';
+import { connectMongo, Model3D, QRCode, Topic, Vocabulary } from '../../../../src/models';
+import { writeAuditLog } from '../../../../src/audit';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../../lib/next-auth';
 import QRCodeEncoder from 'qrcode';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -59,6 +62,41 @@ export async function PUT(request: Request, context: RouteContext) {
   } catch (error) {
     console.error(error);
     return Response.json({ message: 'Không thể cập nhật chủ đề. Vui lòng thử lại.' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+    await connectMongo();
+
+    const topic = await Topic.findOne({ slug: id }).lean();
+    if (!topic) return Response.json({ message: 'Không tìm thấy chủ đề.' }, { status: 404 });
+
+    const words = await Vocabulary.find({ topicId: id }, { id: 1 }).lean();
+    const wordIds = words.map(word => String(word.id));
+    await Promise.all([
+      Topic.deleteOne({ slug: id }),
+      Vocabulary.deleteMany({ topicId: id }),
+      Model3D.deleteMany({ vocabularyId: { $in: wordIds } }),
+      QRCode.deleteMany({ code: new RegExp(`^${id.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}:`) }),
+    ]);
+
+    const session = await getServerSession(authOptions);
+    const user = session?.user as { id?: string; email?: string | null; role?: string | null } | undefined;
+    await writeAuditLog({
+      action: 'TOPIC_DELETE',
+      resource: 'TOPIC',
+      resourceId: id,
+      actor: user?.id ? { userId: user.id, email: user.email, role: user.role } : undefined,
+      request,
+      metadata: { wordCount: wordIds.length },
+    });
+
+    return Response.json({ message: 'Đã xóa chủ đề.' });
+  } catch (error) {
+    console.error(error);
+    return Response.json({ message: 'Không thể xóa chủ đề. Vui lòng thử lại.' }, { status: 500 });
   }
 }
 
