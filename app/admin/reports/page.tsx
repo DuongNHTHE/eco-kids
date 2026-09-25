@@ -1,85 +1,33 @@
-const summary = [
-    { label: 'Tổng số bé', value: '1,284', change: '+12.4%', tone: 'bg-[#f47d52]' },
-    { label: 'Đang học', value: '842', change: '+8.1%', tone: 'bg-[#6eaa83]' },
-    { label: 'Hoàn thành khóa', value: '397', change: '+14.7%', tone: 'bg-[#f5b83d]' },
-    { label: 'Điểm trung bình', value: '91/100', change: '+4.2%', tone: 'bg-[#2d6358]' },
-];
+'use client';
 
-const trend = [52, 58, 64, 72, 79, 84, 92];
+import { useEffect, useState } from 'react';
+import { useAPI } from '../../../lib/hooks/useAPI';
 
-const students = [
-    {
-        name: 'Bé An',
-        age: '5 tuổi',
-        avatar: 'A',
-        level: 'Level 3',
-        weeklyProgress: 82,
-        avgScore: 94,
-        completedLessons: 14,
-        streak: 6,
-        status: 'Đang tiến bộ tốt',
-        focus: 'Animals Adventure',
-        accent: '#f47d52',
-    },
-    {
-        name: 'Bé Mai',
-        age: '6 tuổi',
-        avatar: 'M',
-        level: 'Level 4',
-        weeklyProgress: 76,
-        avgScore: 89,
-        completedLessons: 12,
-        streak: 4,
-        status: 'Cần nhắc thêm',
-        focus: 'Daily Routine',
-        accent: '#6eaa83',
-    },
-    {
-        name: 'Bé Quỳnh',
-        age: '4 tuổi',
-        avatar: 'Q',
-        level: 'Level 2',
-        weeklyProgress: 68,
-        avgScore: 84,
-        completedLessons: 9,
-        streak: 3,
-        status: 'Học đều',
-        focus: 'Food & Fruits',
-        accent: '#f5b83d',
-    },
-    {
-        name: 'Bé Hân',
-        age: '7 tuổi',
-        avatar: 'H',
-        level: 'Level 5',
-        weeklyProgress: 91,
-        avgScore: 96,
-        completedLessons: 18,
-        streak: 7,
-        status: 'Xuất sắc',
-        focus: 'Travel & Transport',
-        accent: '#2d6358',
-    },
-];
-
-const topicPerformance = [
-    { topic: 'Animals Adventure', progress: 85, score: 94, lessons: 14 },
-    { topic: 'Daily Routine', progress: 75, score: 88, lessons: 11 },
-    { topic: 'Food & Fruits', progress: 68, score: 82, lessons: 9 },
-    { topic: 'Travel & Transport', progress: 91, score: 97, lessons: 18 },
-];
-
-const weeklyActivity = [
-    { day: 'T2', minutes: 28 },
-    { day: 'T3', minutes: 37 },
-    { day: 'T4', minutes: 31 },
-    { day: 'T5', minutes: 44 },
-    { day: 'T6', minutes: 36 },
-    { day: 'T7', minutes: 59 },
-    { day: 'CN', minutes: 42 },
-];
+type ReportData = {
+    summary: { label: string; value: string; change: string; tone: string }[];
+    trend: number[];
+    students: { name: string; age: string; avatar: string; level: string; weeklyProgress: number; avgScore: number; completedLessons: number; streak: number; status: string; focus: string; accent: string }[];
+    topicPerformance: { topic: string; progress: number; score: number; lessons: number }[];
+    weeklyActivity: { day: string; minutes: number }[];
+};
 
 export default function AdminReportsPage() {
+    const { API } = useAPI();
+    const [report, setReport] = useState<ReportData | null>(null);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        API.get('admin/reports', false, false, true).then(result => {
+            if (result?.summary) setReport(result);
+            else setError(result?.message || 'Không thể tải báo cáo.');
+        });
+    }, [API]);
+
+    if (error) return <div className="grid min-h-screen place-items-center p-6 text-center font-bold text-[#d45e45]">{error}</div>;
+    if (!report) return <div className="grid min-h-screen place-items-center p-6 text-lg font-bold text-[#71867c]">Đang tải báo cáo...</div>;
+
+    const { summary, trend, students, topicPerformance, weeklyActivity } = report;
+
     return (
         <main className="min-h-screen bg-[#f4faf4] text-[#203b35]">
             <header className="border-b border-[#dceadd] bg-white/80 backdrop-blur-sm">
