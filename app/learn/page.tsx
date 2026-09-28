@@ -283,6 +283,9 @@ export default function LearnPage() {
                     const payloadJson = event.result.properties.getProperty(speechSDK.PropertyId.SpeechServiceResponse_JsonResult);
                     try {
                         const parsedPayload = JSON.parse(payloadJson || '{}');
+                        if (process.env.NODE_ENV === 'development') {
+                            console.log('Azure Speech response:', parsedPayload);
+                        }
                         recognizer.stopContinuousRecognitionAsync(() => {
                             recognizer.close();
                             resolve(parsedPayload);
