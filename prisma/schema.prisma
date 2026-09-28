@@ -584,12 +584,16 @@ enum OrganizationRole {
 }
 
 model ActiveEveryDay {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  childId     String?  @db.ObjectId
-  date        DateTime
-  isActive    Boolean  @default(false)
-  isPerformed Boolean  @default(false)
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String   @db.ObjectId
+  childId             String?  @db.ObjectId
+  date                DateTime
+  activityTitle       String?
+  activityDescription String?
+  activityType        String?
+  durationMinutes     Int?
+  isActive            Boolean  @default(false)
+  isPerformed         Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

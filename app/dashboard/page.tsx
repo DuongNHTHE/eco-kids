@@ -18,6 +18,15 @@ type ChildProfile = {
   level: number;
 };
 
+type DailyActivity = {
+  id: string;
+  activityTitle: string;
+  activityDescription: string;
+  activityType: string;
+  durationMinutes: number;
+  isPerformed: boolean;
+};
+
 const emptyDashboardData = {
   records: [],
   stats: {
@@ -36,7 +45,8 @@ export default function DashboardPage() {
   const [topics, setTopics] = useState([]);
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [selectedChildId, setSelectedChildId] = useState('');
-  const [done, setDone] = useState(false);
+  const [dailyActivity, setDailyActivity] = useState<DailyActivity | null>(null);
+  const [activityLoading, setActivityLoading] = useState(false);
   const [menu, setMenu] = useState(false);
   const { data: session, status } = useSession();
   const { t } = useLocale();
@@ -81,10 +91,32 @@ export default function DashboardPage() {
     });
   }, [API, selectedChildId, status]);
 
+  useEffect(() => {
+    if (status !== 'authenticated' || !selectedChildId) return;
+
+    setActivityLoading(true);
+    API.get(`active-every-day?childId=${encodeURIComponent(selectedChildId)}`, false, false, false)
+      .then(activity => {
+        if (activity?.id && activity.activityTitle) setDailyActivity(activity);
+        else setDailyActivity(null);
+      })
+      .finally(() => setActivityLoading(false));
+  }, [API, selectedChildId, status]);
+
   function chooseChild(child: ChildProfile) {
     saveSelectedChild(child);
     setSelectedChildId(child.id);
     setData(null);
+    setDailyActivity(null);
+  }
+
+  async function toggleActivityPerformed() {
+    if (!dailyActivity || !selectedChildId) return;
+    const updated = await API.patch('active-every-day', {
+      childId: selectedChildId,
+      isPerformed: !dailyActivity.isPerformed,
+    }, false, true, false);
+    if (updated?.id) setDailyActivity(updated);
   }
 
   const role = (session?.user as { role?: string } | undefined)?.role || 'PARENT';
@@ -224,62 +256,61 @@ export default function DashboardPage() {
           </button>
 
           <div>
-  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e8f4e9] px-3 py-1 text-sm font-bold text-[#2d6358]">
-    <span aria-hidden>🔒</span>
-    {t('Parent Corner')}
-  </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e8f4e9] px-3 py-1 text-sm font-bold text-[#2d6358]">
+              <span aria-hidden>🔒</span>
+              {t('Parent Corner')}
+            </span>
 
-  <h1 className="mt-3 text-3xl font-extrabold sm:text-4xl">
-    {t('Good evening, parent')} 👋
-  </h1>
+            <h1 className="mt-3 text-3xl font-extrabold sm:text-4xl">
+              {t('Good evening, parent')} 👋
+            </h1>
 
-  {children.length > 0 && (
-    <div className="mt-5">
-      <p id="dashboard-child-label" className="text-sm font-bold text-[#60786e]">
-        Đang xem tiến độ của:
-      </p>
+            {children.length > 0 && (
+              <div className="mt-5">
+                <p id="dashboard-child-label" className="text-sm font-bold text-[#60786e]">
+                  Đang xem tiến độ của:
+                </p>
 
-      <div
-        role="radiogroup"
-        aria-labelledby="dashboard-child-label"
-        className="mt-2 flex flex-wrap items-center gap-2"
-      >
-        {children.map(child => {
-          const active = child.id === selectedChildId;
-          return (
-            <button
-              type="button"
-              role="radio"
-              aria-checked={active}
-              key={child.id}
-              onClick={() => chooseChild(child)}
-              className={`inline-flex min-h-[48px] items-center gap-2 rounded-full border-2 py-1.5 pl-1.5 pr-4 font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358] ${
-                active
-                  ? 'border-[#2d6358] bg-[#2d6358] text-white shadow-md'
-                  : 'border-[#d9eadc] bg-white text-[#203b35] hover:border-[#2d6358]'
-              }`}
-            >
-              <span
-                aria-hidden
-                className={`grid h-9 w-9 place-items-center rounded-full text-xl ${active ? 'bg-white' : 'bg-[#f4faf4]'}`}
-              >
-                {child.avatar}
-              </span>
-              {child.nickname || child.name}
-            </button>
-          );
-        })}
+                <div
+                  role="radiogroup"
+                  aria-labelledby="dashboard-child-label"
+                  className="mt-2 flex flex-wrap items-center gap-2"
+                >
+                  {children.map(child => {
+                    const active = child.id === selectedChildId;
+                    return (
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        key={child.id}
+                        onClick={() => chooseChild(child)}
+                        className={`inline-flex min-h-[48px] items-center gap-2 rounded-full border-2 py-1.5 pl-1.5 pr-4 font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358] ${active
+                            ? 'border-[#2d6358] bg-[#2d6358] text-white shadow-md'
+                            : 'border-[#d9eadc] bg-white text-[#203b35] hover:border-[#2d6358]'
+                          }`}
+                      >
+                        <span
+                          aria-hidden
+                          className={`grid h-9 w-9 place-items-center rounded-full text-xl ${active ? 'bg-white' : 'bg-[#f4faf4]'}`}
+                        >
+                          {child.avatar}
+                        </span>
+                        {child.nickname || child.name}
+                      </button>
+                    );
+                  })}
 
-        <Link
-          href="/children"
-          className="inline-flex min-h-[48px] items-center gap-1 rounded-full border-2 border-dashed border-[#9bc7b4] px-4 font-bold text-[#2d6358] transition hover:bg-[#e8f4e9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358]"
-        >
-          <span aria-hidden className="text-xl leading-none">+</span> Thêm bé
-        </Link>
-      </div>
-    </div>
-  )}
-</div>
+                  <Link
+                    href="/children"
+                    className="inline-flex min-h-[48px] items-center gap-1 rounded-full border-2 border-dashed border-[#9bc7b4] px-4 font-bold text-[#2d6358] transition hover:bg-[#e8f4e9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358]"
+                  >
+                    <span aria-hidden className="text-xl leading-none">+</span> Thêm bé
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="hidden items-center gap-3 rounded-full bg-white p-2 pr-5 shadow-sm sm:flex">
             {parentAvatar ? (
@@ -312,7 +343,7 @@ export default function DashboardPage() {
                 <span className="text-6xl">🌱</span>
                 <span
                   className="text-[6.5rem] leading-none drop-shadow-lg sm:text-[8rem]"
-                  // motion-safe:animate-bounce 
+                // motion-safe:animate-bounce 
                 >
                   🦊
                 </span>
@@ -548,22 +579,24 @@ export default function DashboardPage() {
               <span className="text-4xl">💡</span>
 
               <small className="mt-3 block font-bold text-[#9a7d3a]">
-                {t('Suggestions for Tonight')}
+                {t('Suggestions for Tonight')} {dailyActivity?.durationMinutes ? `· ${dailyActivity.durationMinutes} phút` : ''}
               </small>
 
               <h3 className="text-2xl font-extrabold">
-                {t('Hide and Seek Around the House')}
+                {activityLoading ? t('Loading...') : dailyActivity?.activityTitle || t('Today’s activity is unavailable')}
               </h3>
 
               <p className="mt-2 text-[#74643f]">
-                {t('Parents call out a color in English, and the child has 30 seconds to find an object of that color. No screens, just fun learning!')}
+                {dailyActivity?.activityDescription || (activityLoading ? '' : t('Please try again later.'))}
               </p>
 
               <button
-                onClick={() => setDone(true)}
-                className="mt-4 rounded-full bg-[#203b35] px-5 py-3 font-bold text-white"
+                type="button"
+                onClick={toggleActivityPerformed}
+                disabled={!dailyActivity || activityLoading}
+                className="mt-4 rounded-full bg-[#203b35] px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {done
+                {dailyActivity?.isPerformed
                   ? t('Completed today 🌟')
                   : t('Mark as played ✓')}
               </button>
