@@ -224,34 +224,62 @@ export default function DashboardPage() {
           </button>
 
           <div>
-            <span className="text-sm font-bold text-[#80938a]">
-              {t('Parent Corner')}
-            </span>
+  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e8f4e9] px-3 py-1 text-sm font-bold text-[#2d6358]">
+    <span aria-hidden>🔒</span>
+    {t('Parent Corner')}
+  </span>
 
-            <h1 className="text-3xl font-extrabold sm:text-4xl">
-              {t('Good evening, parent')} 👋
-            </h1>
+  <h1 className="mt-3 text-3xl font-extrabold sm:text-4xl">
+    {t('Good evening, parent')} 👋
+  </h1>
 
-            {children.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <label htmlFor="dashboard-child" className="text-sm font-bold text-[#60786e]">Đang xem tiến độ của:</label>
-                <select
-                  id="dashboard-child"
-                  value={selectedChildId}
-                  onChange={event => {
-                    const child = children.find(item => item.id === event.target.value);
-                    if (child) chooseChild(child);
-                  }}
-                  className="rounded-xl border border-[#d9eadc] bg-white px-3 py-2 font-bold shadow-sm outline-none focus:border-[#2d6358]"
-                >
-                  {children.map(child => (
-                    <option key={child.id} value={child.id}>{child.avatar} {child.name}</option>
-                  ))}
-                </select>
-                <Link href="/children" className="font-bold text-[#2d6358]">+ Thêm bé</Link>
-              </div>
-            )}
-          </div>
+  {children.length > 0 && (
+    <div className="mt-5">
+      <p id="dashboard-child-label" className="text-sm font-bold text-[#60786e]">
+        Đang xem tiến độ của:
+      </p>
+
+      <div
+        role="radiogroup"
+        aria-labelledby="dashboard-child-label"
+        className="mt-2 flex flex-wrap items-center gap-2"
+      >
+        {children.map(child => {
+          const active = child.id === selectedChildId;
+          return (
+            <button
+              type="button"
+              role="radio"
+              aria-checked={active}
+              key={child.id}
+              onClick={() => chooseChild(child)}
+              className={`inline-flex min-h-[48px] items-center gap-2 rounded-full border-2 py-1.5 pl-1.5 pr-4 font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358] ${
+                active
+                  ? 'border-[#2d6358] bg-[#2d6358] text-white shadow-md'
+                  : 'border-[#d9eadc] bg-white text-[#203b35] hover:border-[#2d6358]'
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`grid h-9 w-9 place-items-center rounded-full text-xl ${active ? 'bg-white' : 'bg-[#f4faf4]'}`}
+              >
+                {child.avatar}
+              </span>
+              {child.nickname || child.name}
+            </button>
+          );
+        })}
+
+        <Link
+          href="/children"
+          className="inline-flex min-h-[48px] items-center gap-1 rounded-full border-2 border-dashed border-[#9bc7b4] px-4 font-bold text-[#2d6358] transition hover:bg-[#e8f4e9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358]"
+        >
+          <span aria-hidden className="text-xl leading-none">+</span> Thêm bé
+        </Link>
+      </div>
+    </div>
+  )}
+</div>
 
           <div className="hidden items-center gap-3 rounded-full bg-white p-2 pr-5 shadow-sm sm:flex">
             {parentAvatar ? (
@@ -269,30 +297,60 @@ export default function DashboardPage() {
 
         <div className="mx-auto max-w-7xl px-5 pb-10 lg:px-10">
           {/* Weekly News */}
-          <section className="flex items-center justify-between overflow-hidden rounded-3xl bg-[#2d6358] p-7 text-white shadow-soft">
-            <div>
-              <span className="font-bold text-[#b7e0bd]">
-                {t('Weekly News')}
-              </span>
+          <section className="relative overflow-hidden rounded-[2.5rem] border-4 border-white bg-gradient-to-br from-[#7fd6b0] via-[#9be3c4] to-[#ffe58a] p-6 shadow-soft sm:p-8">
+            {/* Trang trí nền */}
+            <span aria-hidden className="pointer-events-none absolute -left-6 -top-6 h-28 w-28 rounded-full bg-white/30" />
+            <span aria-hidden className="pointer-events-none absolute -bottom-8 right-24 h-24 w-24 rounded-full bg-white/30" />
+            <span aria-hidden className="pointer-events-none absolute right-6 top-4 text-3xl motion-safe:animate-pulse">✨</span>
 
-              <h2 className="mt-2 text-4xl font-extrabold">
-                {dashboardData.shortName} đang tiến bộ thật tuyệt!
-              </h2>
-
-              <p className="mt-3 max-w-xl text-[#d1e4d4]">
-                Con đã duy trì thói quen học đều và phát âm tốt hơn tuần trước.
-              </p>
-
-              <Link
-                href="/learn"
-                className="mt-5 inline-block rounded-full bg-white px-5 py-3 font-bold text-[#203b35]"
+            <div className="relative flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:text-left">
+              {/* Mascot */}
+              <div
+                aria-hidden
+                className="order-1 flex items-end justify-center sm:order-2"
               >
-                {t('Continue Learning')} →
-              </Link>
-            </div>
+                <span className="text-6xl">🌱</span>
+                <span
+                  className="text-[6.5rem] leading-none drop-shadow-lg sm:text-[8rem]"
+                  // motion-safe:animate-bounce 
+                >
+                  🦊
+                </span>
+              </div>
 
-            <div className="hidden text-8xl sm:block">
-              🌱<span className="text-6xl">🦊</span>
+              {/* Nội dung */}
+              <div className="order-2 sm:order-1">
+                <span className="inline-block rounded-full bg-white/80 px-4 py-1 text-sm font-extrabold text-[#2d6358]">
+                  ⭐ {t('Weekly News')}
+                </span>
+
+                <h2 className="mt-3 text-3xl font-black leading-tight text-[#1f4d43] sm:text-5xl">
+                  Giỏi quá, {dashboardData.shortName} ơi! 🎉
+                </h2>
+
+                <div
+                  className="mt-3 flex justify-center gap-1 text-3xl sm:justify-start"
+                  aria-label="Số ngày học trong tuần"
+                >
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <span key={i} className={i < dashboardData.stats.daysLearned ? '' : 'opacity-30 grayscale'}>
+                      ⭐
+                    </span>
+                  ))}
+                </div>
+
+                <p className="mt-2 text-base font-bold text-[#2d6358] sm:text-lg">
+                  Con học đều và phát âm hay hơn tuần trước!
+                </p>
+
+                <Link
+                  href="/learn"
+                  className="mt-5 inline-flex min-h-[64px] items-center gap-3 rounded-full border-b-8 border-[#e0742a] bg-[#ff9a3c] px-8 text-xl font-black text-white shadow-lg transition active:translate-y-1 active:border-b-4 motion-safe:hover:scale-105"
+                >
+                  <span className="text-3xl">▶️</span>
+                  {t('Continue Learning')}
+                </Link>
+              </div>
             </div>
           </section>
 

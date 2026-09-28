@@ -22,6 +22,7 @@ model User {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   organizationMembers OrganizationMember[]
+  activeEveryDays     ActiveEveryDay[]
 
   @@map("users")
 }
@@ -91,6 +92,7 @@ model Child {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   aiconversations AIConversation[]
+  activeEveryDays ActiveEveryDay[]
 
   @@map("children")
 }
@@ -579,4 +581,22 @@ model Partner {
 enum OrganizationRole {
   ADMIN
   TEACHER
+}
+
+model ActiveEveryDay {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  childId     String?  @db.ObjectId
+  date        DateTime
+  isActive    Boolean  @default(false)
+  isPerformed Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id])
+  child Child? @relation(fields: [childId], references: [id])
+
+  @@unique([userId, childId, date])
+  @@map("active_everydays")
 }
