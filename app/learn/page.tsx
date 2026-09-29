@@ -154,62 +154,68 @@ export default function LearnPage() {
 
     if (!hasSelectedLesson && topics.length > 0) {
         return (
-            <div className="min-h-screen bg-[#f4faf4] text-[#203b35]">
-                <header className="flex items-center justify-between border-b border-[#dceadd] bg-white px-5 py-4 lg:px-10">
+            <div className="min-h-screen bg-[#fff8e6] text-[#203b35]">
+                <header className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-[#ffe58a] bg-white px-5 py-3 lg:px-10">
                     <Link href="/dashboard" className="flex items-center gap-2">
                         <span className="text-3xl font-extrabold text-[#f47d52]">e<span className="text-[#6eaa83]">c</span>o</span>
                         <span className="border-l pl-2 text-xs font-black leading-3 tracking-widest">KIDS<br /><small>English 3D</small></span>
                     </Link>
-                    <Link href="/dashboard" className="font-bold text-[#2d6358]">👩‍👧 Góc phụ huynh</Link>
-                    <Link href="/learn/review" className="font-bold text-[#f47d52]">📝 Ôn luyện</Link>
+
+                    <nav className="flex items-center gap-2">
+                        <Link
+                            href="/learn/review"
+                            className="inline-flex min-h-[48px] items-center gap-2 rounded-full border-b-4 border-[#e0742a] bg-[#ff9a3c] px-5 font-extrabold text-white transition active:translate-y-0.5 active:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e0742a]"
+                        >
+                            <span aria-hidden className="text-xl">📝</span> Ôn luyện
+                        </Link>
+                        <Link
+                            href="/dashboard"
+                            className="inline-flex min-h-[48px] items-center gap-1.5 rounded-full bg-[#e8f4e9] px-4 text-sm font-bold text-[#2d6358] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358]"
+                        >
+                            <span aria-hidden>👩‍👧</span> Góc phụ huynh
+                        </Link>
+                    </nav>
                 </header>
 
-                <main className="mx-auto max-w-6xl px-5 py-10 lg:px-8">
-                    <div className="max-w-2xl">
-                        <span className="font-bold text-[#ef7d32]">Lớp học của bé</span>
-                        <h1 className="mt-2 text-4xl font-extrabold sm:text-5xl">Chọn bài học hôm nay</h1>
-                        <p className="mt-3 text-lg text-[#60786e]">Khám phá từng chủ đề, sau đó chọn từ vựng để bắt đầu học.</p>
+                <main className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
+                    <div className="text-center">
+                        <div aria-hidden className="text-7xl motion-safe:animate-bounce">🦊</div>
+                        <h1 className="mt-2 text-4xl font-black sm:text-5xl">Hôm nay mình học gì nào?</h1>
+                        <p className="mt-2 text-lg font-bold text-[#60786e]">Chạm vào hình để bắt đầu nhé!</p>
                     </div>
 
-                    <section className="mt-8 grid gap-5 md:grid-cols-2">
-                        {topics.map(topicItem => (
-                            <article key={topicItem.id} className="overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-[#e0ece0]">
-                                <Link href={getTopicStartUrl(topicItem)} onClick={() => {
-                                    const lessonUrl = getTopicStartUrl(topicItem);
-                                    const lessonParams = new URL(lessonUrl, window.location.origin).searchParams;
-                                    openLesson(lessonParams.get('topic') || topicItem.id, lessonParams.get('word') || topicItem.words?.[0]?.id || '');
-                                }} className="flex items-start gap-4 p-6 transition hover:brightness-95" style={{ backgroundColor: `${topicItem.color || '#dcefe0'}22` }}>
-                                    <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white text-4xl shadow-sm">{topicItem.icon || '📚'}</span>
-                                    <div>
-                                        <p className="text-sm font-bold text-[#80938a]">Chủ đề</p>
-                                        <h2 className="mt-1 text-2xl font-extrabold">{topicItem.title}</h2>
-                                        <p className="mt-1 text-[#60786e]">{topicItem.vietnamese} · Nhấn để tiếp tục</p>
-                                    </div>
+                    <section className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+                        {topics.map(topicItem => {
+                            const lessonUrl = getTopicStartUrl(topicItem);
+                            const color = topicItem.color || '#dcefe0';
+
+                            return (
+                                <Link
+                                    key={topicItem.id}
+                                    href={lessonUrl}
+                                    onClick={() => {
+                                        const lessonParams = new URL(lessonUrl, window.location.origin).searchParams;
+                                        openLesson(lessonParams.get('topic') || topicItem.id, lessonParams.get('word') || topicItem.words?.[0]?.id || '');
+                                    }}
+                                    aria-label={`${topicItem.title}, ${topicItem.vietnamese}`}
+                                    className="group flex min-h-[220px] flex-col items-center justify-between rounded-[2rem] border-4 border-b-8 bg-white p-5 text-center shadow-md transition active:translate-y-1 active:border-b-4 motion-safe:hover:scale-105 focus-visible:outline focus-visible:outline-4 focus-visible:outline-[#2d6358]"
+                                    style={{ borderColor: color, backgroundColor: `${color}33` }}
+                                >
+                                    <span className="grid h-28 w-28 place-items-center rounded-full bg-white text-7xl shadow-sm sm:h-32 sm:w-32 sm:text-8xl">
+                                        {topicItem.icon || '📚'}
+                                    </span>
+
+                                    <span className="mt-3 block">
+                                        <b className="block text-2xl font-black leading-tight sm:text-3xl">{topicItem.title}</b>
+                                        <small className="mt-1 block text-base font-bold text-[#60786e]">{topicItem.vietnamese}</small>
+                                    </span>
+
+                                    <span aria-hidden className="mt-3 grid h-12 w-12 place-items-center rounded-full bg-[#ff9a3c] text-2xl text-white shadow transition group-hover:bg-[#e0742a]">
+                                        ▶
+                                    </span>
                                 </Link>
-                                {/* <div className="p-5">
-                                    <div className="mb-3 flex items-center justify-between text-sm font-bold text-[#80938a]">
-                                        <span>{topicItem.words?.length || 0} bài nhỏ</span>
-                                        <span>Chọn để học</span>
-                                    </div>
-                                    <div className="grid gap-2 sm:grid-cols-2">
-                                        {(topicItem.words || []).map((wordItem, wordItemIndex) => (
-                                            <Link
-                                                key={wordItem.id}
-                                                href={`/learn?topic=${encodeURIComponent(topicItem.id)}&word=${encodeURIComponent(wordItem.id)}`}
-                                                className="flex items-center gap-3 rounded-xl border border-[#e0ece0] px-3 py-3 transition hover:-translate-y-0.5 hover:border-[#2d6358] hover:bg-[#f4faf4]"
-                                            >
-                                                <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#e8f4e9] text-sm font-black text-[#2d6358]">{wordItemIndex + 1}</span>
-                                                <span className="min-w-0">
-                                                    <b className="block truncate">{wordItem.english}</b>
-                                                    <small className="block truncate text-[#80938a]">{wordItem.vietnamese}</small>
-                                                </span>
-                                                <span className="ml-auto text-[#2d6358]">→</span>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div> */}
-                            </article>
-                        ))}
+                            );
+                        })}
                     </section>
                 </main>
             </div>
@@ -354,24 +360,23 @@ export default function LearnPage() {
     const time = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 
     return (
-        <div className="min-h-screen bg-[#f4faf4] text-[#203b35]">
-            <header className="flex items-center justify-between border-b border-[#dceadd] bg-white px-5 py-4 lg:px-10">
+        <div className="min-h-screen bg-[#fff8e6] text-[#203b35]">
+            <header className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-[#ffe58a] bg-white px-5 py-3 lg:px-10">
                 <Link href="/" className="flex items-center gap-2">
-                    <span className="text-3xl font-extrabold text-[#f47d52]">e
-                        <span className="text-[#6eaa83]">c</span>o
-                    </span>
-                    <span className="border-l pl-2 text-xs font-black leading-3 tracking-widest">KIDS<br />
-                        <small>English 3D</small>
-                    </span>
+                    <span className="text-3xl font-extrabold text-[#f47d52]">e<span className="text-[#6eaa83]">c</span>o</span>
+                    <span className="border-l pl-2 text-xs font-black leading-3 tracking-widest">KIDS<br /><small>English 3D</small></span>
                 </Link>
 
                 <div className="hidden items-center gap-3 sm:flex">
-                    <span className="text-sm">Tiến độ bài học <b>{wordIndex + 1} / {topic.words.length}</b></span>
-                    <span className="h-2 w-32 rounded-full bg-[#e0ece0]"><i className="block h-full rounded-full bg-[#f47d52]" style={{ width: `${(wordIndex + 1) / topic.words.length * 100}%` }} />
+                    <span aria-hidden className="text-2xl">🚀</span>
+                    <span className="h-4 w-40 overflow-hidden rounded-full bg-[#e0ece0]">
+                        <i className="block h-full rounded-full bg-[#f47d52] transition-all" style={{ width: `${(wordIndex + 1) / topic.words.length * 100}%` }} />
                     </span>
+                    <b className="text-sm">{wordIndex + 1} / {topic.words.length}</b>
                 </div>
-                <div className="flex items-center gap-4 text-sm">👀
-                    <b>{time}</b>
+
+                <div className="flex items-center gap-3 text-sm">
+                    <span className="rounded-full bg-[#f4faf4] px-3 py-1.5">👀 <b>{time}</b></span>
                     {children.length > 0 && (
                         <label className="hidden items-center gap-2 font-bold sm:flex">
                             Bé đang học
@@ -386,16 +391,19 @@ export default function LearnPage() {
                                         setProgressRecords(Array.isArray(progress?.records) ? progress.records : []);
                                     });
                                 }}
-                                className="rounded-xl border border-[#dceadd] bg-white px-2 py-1 outline-none"
+                                className="rounded-xl border border-[#dceadd] bg-white px-2 py-1.5 outline-none"
                             >
                                 {children.map(child => <option key={child.id} value={child.id}>{child.avatar} {child.name}</option>)}
                             </select>
                         </label>
                     )}
-                    <Link href="/dashboard" className="font-bold">👩‍👧 Góc phụ huynh</Link>
+                    <Link href="/dashboard" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#e8f4e9] px-4 font-bold text-[#2d6358]">
+                        <span aria-hidden>👩‍👧</span> Góc phụ huynh
+                    </Link>
                 </div>
             </header>
-            <main className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[230px_1fr] lg:px-8">
+
+            <main className="mx-auto grid max-w-7xl gap-6 px-5 py-6 lg:grid-cols-[230px_1fr] lg:gap-8 lg:px-8">
                 <aside>
                     <Link
                         href={session ? "/learn" : "/"}
@@ -405,28 +413,50 @@ export default function LearnPage() {
                             setSelectedParams({ topic: '', word: '' });
                             router.replace('/learn');
                         }}
-                        className="font-bold text-[#6c857c]"
+                        className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-5 font-extrabold text-[#2d6358] shadow-sm"
                     >
-                        ← Về trang chủ
+                        <span aria-hidden className="text-xl">🏠</span> Về trang chủ
                     </Link>
-                    <p className="mt-8 text-sm font-bold text-[#83968c]">Chủ đề của bé</p>
-                    <nav className="mt-3 space-y-2">{topics.map((item, index) =>
-                        <button key={item.id} onClick={() => selectTopic(index)} className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left font-bold ${index === topicIndex ? 'bg-[#203b35] text-white shadow-lg' : 'bg-white'}`}><span className="text-2xl">{item.icon}</span>{item.vietnamese}</button>)}</nav><div className="mt-8 rounded-2xl bg-[#fff2d5] p-4 text-sm"><b>🌿 Quy tắc 70/30</b><p className="mt-2 leading-5">Sau 20 phút, mình sẽ cùng rời màn hình và chơi với mô hình thật nhé!</p><button onClick={() => setBreakOpen(true)} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
+
+                    <p className="mt-6 text-sm font-bold text-[#83968c]">Chủ đề của bé</p>
+                    <nav className="mt-3 flex gap-2 overflow-x-auto pb-2 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
+                        {topics.map((item, index) => (
+                            <button
+                                key={item.id}
+                                onClick={() => selectTopic(index)}
+                                aria-current={index === topicIndex}
+                                className={`flex min-h-[64px] shrink-0 items-center gap-3 rounded-2xl border-b-4 px-4 py-2 text-left font-bold transition active:translate-y-0.5 lg:w-full ${index === topicIndex ? 'border-[#0f2621] bg-[#203b35] text-white shadow-lg' : 'border-[#e0ece0] bg-white'}`}
+                            >
+                                <span className="text-3xl">{item.icon}</span>{item.vietnamese}
+                            </button>
+                        ))}
+                    </nav>
+
+                    <div className="mt-6 hidden rounded-2xl bg-[#fff2d5] p-4 text-sm lg:block">
+                        <b>🌿 Quy tắc 70/30</b>
+                        <p className="mt-2 leading-5">Sau 20 phút, mình sẽ cùng rời màn hình và chơi với mô hình thật nhé!</p>
+                        <button onClick={() => setBreakOpen(true)} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
                     </div>
                 </aside>
+
                 <section>
-                    <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                            <span className="font-bold text-[#ef7d32]">{topic.vietnamese}</span>
-                            <h1 className="text-5xl font-extrabold">{topic.title}</h1>
+                            <span className="inline-block rounded-full bg-[#ffe58a] px-3 py-1 text-sm font-extrabold text-[#8a5a00]">{topic.vietnamese}</span>
+                            <h1 className="mt-1 text-4xl font-black sm:text-5xl">{topic.title}</h1>
                         </div>
-                        <div className="flex gap-2">{topic.words.map((item, index) =>
-                            <button key={item.id} onClick={() => selectWord(index)} aria-label={`Từ ${index + 1}`} className={`h-3 w-3 rounded-full ${index === wordIndex ? 'bg-[#f47d52]' : 'bg-[#c8d9cb]'}`} />)}
+                        <div className="flex">
+                            {topic.words.map((item, index) => (
+                                <button key={item.id} onClick={() => selectWord(index)} aria-label={`Từ ${index + 1}`} aria-current={index === wordIndex} className="grid h-11 w-8 place-items-center">
+                                    <span className={`block rounded-full transition-all ${index === wordIndex ? 'h-5 w-5 bg-[#f47d52]' : 'h-3.5 w-3.5 bg-[#c8d9cb]'}`} />
+                                </button>
+                            ))}
                         </div>
                     </div>
-                    <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_.9fr]">
-                        <div className="relative grid min-h-[430px] place-items-center overflow-hidden rounded-[2rem] shadow-soft">
-                            <div className="absolute left-7 top-7 rounded-full bg-white/80 px-4 py-2 text-sm font-bold">Mô hình 3D</div>
+
+                    <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_.9fr]">
+                        <div className="relative grid min-h-[340px] place-items-center overflow-hidden rounded-[2rem] border-4 border-white shadow-soft lg:min-h-[430px]">
+                            <div className="absolute left-5 top-5 z-10 rounded-full bg-white/90 px-4 py-2 text-sm font-bold">🧊 Mô hình 3D</div>
                             {model.type === 'iframe' ? (
                                 <div className="h-full w-full bg-[#dceff0]">
                                     <iframe
@@ -442,78 +472,113 @@ export default function LearnPage() {
                                 <button
                                     aria-label="Xoay mô hình"
                                     onClick={() => setRotation(value => value + 40)}
-                                    className="text-[10rem] transition-transform duration-500"
+                                    className="text-[9rem] transition-transform duration-500 sm:text-[10rem]"
                                     style={{ transform: `rotateY(${rotation}deg)` }}
                                 >
                                     {model.icon}
                                 </button>
                             )}
-                            <div className="absolute bottom-5 text-sm text-[#557b7a]">{model.type === 'iframe' ? '↔ Chạm nút để xoay · Cuộn để phóng to' : 'Mô hình minh họa theo hình dạng từ vựng'}</div>
-                            <button onClick={() => setRotation(value => value + 360)} className="absolute right-5 top-5 rounded-full bg-white px-3 py-2 text-xl shadow">✦</button>
+                            <div className="absolute bottom-4 rounded-full bg-white/80 px-4 py-1.5 text-sm font-bold text-[#557b7a]">
+                                {model.type === 'iframe' ? '👆 Chạm để xoay · Kéo hai ngón để phóng to' : 'Chạm vào hình để xoay nhé!'}
+                            </div>
+                            <button onClick={() => setRotation(value => value + 360)} aria-label="Xoay một vòng" className="absolute right-4 top-4 z-10 grid h-12 w-12 place-items-center rounded-full bg-white text-2xl shadow">✦</button>
                         </div>
-                        <div className="rounded-[2rem] bg-white p-6 shadow-soft">
-                            <div className="flex justify-between">
-                                <span className="flex flex-col justify-content text-sm font-bold text-[#83968c]">Từ mới của bé</span>
+
+                        <div className="rounded-[2rem] border-4 border-[#ffe58a] bg-white p-6 shadow-soft">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="text-sm font-bold text-[#83968c]">Từ mới của bé</span>
                                 {currentWordProgress && typeof currentWordProgress.score === 'number' && (
-                                    <div className="inline-flex rounded-full bg-[#eef8ef] px-3 py-1.5 text-sm font-bold text-[#2d6358]">
+                                    <span className="rounded-full bg-[#eef8ef] px-3 py-1 text-sm font-bold text-[#2d6358]">
                                         Điểm lần trước: {Math.round(currentWordProgress.score)}/100
-                                    </div>
+                                    </span>
                                 )}
                             </div>
-                            <h2 className="mt-2 text-6xl font-extrabold">{word.english}</h2>
-                            <div className="mt-2 flex items-center gap-3 text-[#6c857c]">{word.phonetic}
-                                <button onClick={() => speak(word.english)} className="rounded-full bg-[#eaf5ed] px-4 py-2 font-bold">🔊 Nghe từ</button>
+
+                            <h2 className="mt-2 text-6xl font-black sm:text-7xl">{word.english}</h2>
+                            <div className="mt-2 flex flex-wrap items-center gap-3 text-[#6c857c]">
+                                <span className="text-lg">{word.phonetic}</span>
+                                <button
+                                    onClick={() => speak(word.english)}
+                                    className="inline-flex min-h-[56px] items-center gap-2 rounded-full border-b-4 border-[#4f9a72] bg-[#6eaa83] px-6 text-lg font-extrabold text-white transition active:translate-y-0.5 active:border-b-2"
+                                >
+                                    <span aria-hidden className="text-2xl">🔊</span> Nghe từ
+                                </button>
                             </div>
-                            <p className="mt-4 text-2xl font-bold text-[#f47d52]">{word.vietnamese}</p>
-                            <div className="mt-6 flex items-center gap-3 rounded-2xl bg-[#fff6e8] p-4">
-                                <span className="text-2xl">💬</span>
-                                <p className="flex-1">{word.prompt}</p>
-                                <button onClick={() => speak(word.prompt)} aria-label="Nghe câu" className="rounded-full bg-white p-3">▶</button>
+                            <p className="mt-3 text-2xl font-bold text-[#f47d52]">{word.vietnamese}</p>
+
+                            <div className="mt-5 flex items-center gap-3 rounded-2xl bg-[#fff6e8] p-4">
+                                <span aria-hidden className="text-2xl">💬</span>
+                                <p className="flex-1 text-lg">{word.prompt}</p>
+                                <button onClick={() => speak(word.prompt)} aria-label="Nghe câu" className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-xl shadow-sm">▶</button>
                             </div>
-                            <div className="mt-5 rounded-2xl bg-[#eef8ef] p-4">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl">✨</span>
-                                    <div>
+
+                            <div className="mt-5 rounded-2xl bg-[#eef8ef] p-4 text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                    <span aria-hidden className="text-2xl">🐿️</span>
+                                    <div className="text-left">
                                         <b>Bạn Sóc AI</b>
                                         <small className="block text-[#71867c]">Hãy nói theo mình nhé!</small>
                                     </div>
                                 </div>
-                                <button disabled={isAssessing} onClick={practice} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm disabled:cursor-not-allowed disabled:opacity-70">
-                                    <span className="text-2xl">🎙️</span>
-                                    <span>
-                                        <b>{isAssessing ? 'Đang chấm phát âm...' : `Chạm để nói “${word.english}”`}</b>
-                                        <small className="block text-[#71867c]">{score === null ? 'Mình đang lắng nghe bé' : 'Chạm để thử lại'}</small>
-                                    </span>
-                                </button>{score !== null &&
-                                    <div className="mt-3 flex items-center justify-between rounded-xl bg-white p-3">
-                                        <span>🌟
-                                            <b>{score >= 85 ? 'Tuyệt lắm!' : 'Gần đúng rồi!'}</b>
+
+                                <button
+                                    disabled={isAssessing}
+                                    onClick={practice}
+                                    aria-label={`Nói “${word.english}”`}
+                                    className={`mx-auto mt-4 grid h-24 w-24 place-items-center rounded-full border-b-8 border-[#e0742a] bg-[#ff9a3c] text-5xl shadow-lg transition active:translate-y-1 active:border-b-4 disabled:cursor-not-allowed disabled:opacity-70 ${isAssessing ? 'motion-safe:animate-pulse' : ''}`}
+                                >
+                                    🎙️
+                                </button>
+                                <p className="mt-3 text-lg font-extrabold">{isAssessing ? 'Đang chấm phát âm...' : `Chạm để nói “${word.english}”`}</p>
+                                <small className="block text-[#71867c]">{score === null ? 'Mình đang lắng nghe bé' : 'Chạm để thử lại'}</small>
+
+                                {score !== null && (
+                                    <div role="status" className="mt-3 flex items-center justify-between rounded-2xl bg-white p-3">
+                                        <span className="flex items-center gap-2">
+                                            <span className="flex text-3xl" aria-hidden>
+                                                {[0, 1, 2].map(i => (
+                                                    <span key={i} className={i < (score >= 85 ? 3 : score >= 60 ? 2 : 1) ? '' : 'opacity-30 grayscale'}>⭐</span>
+                                                ))}
+                                            </span>
+                                            <b className="text-lg">{score >= 85 ? 'Tuyệt lắm!' : 'Gần đúng rồi!'}</b>
                                         </span>
                                         <strong className="text-2xl text-[#6eaa83]">{score}</strong>
-                                    </div>}
+                                    </div>
+                                )}
                             </div>
+
                             <div className="mt-6 flex items-center justify-between gap-3">
-                                <button disabled={wordIndex === 0} onClick={() => selectWord(wordIndex - 1)} className="h-12 w-12 rounded-full border-2 disabled:opacity-30">←</button>
-                                <button onClick={complete} className="flex-1 rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white">Hoàn thành từ này ✓</button>
-                                <button disabled={wordIndex === topic.words.length - 1} onClick={() => selectWord(wordIndex + 1)} className="h-12 w-12 rounded-full border-2 disabled:opacity-30">→</button>
+                                <button disabled={wordIndex === 0} onClick={() => selectWord(wordIndex - 1)} aria-label="Từ trước" className="h-16 w-16 shrink-0 rounded-full border-4 border-[#e0ece0] bg-white text-2xl font-black transition active:scale-95 disabled:opacity-30">←</button>
+                                <button onClick={complete} className="min-h-[64px] flex-1 rounded-full border-b-8 border-[#3f8a5f] bg-[#5bb381] px-5 text-xl font-black text-white transition active:translate-y-1 active:border-b-4">Xong rồi ✓</button>
+                                <button disabled={wordIndex === topic.words.length - 1} onClick={() => selectWord(wordIndex + 1)} aria-label="Từ tiếp theo" className="h-16 w-16 shrink-0 rounded-full border-4 border-[#e0ece0] bg-white text-2xl font-black transition active:scale-95 disabled:opacity-30">→</button>
                             </div>
                         </div>
                     </div>
+
+                    {/* Quy tắc 70/30 trên mobile (ẩn ở sidebar) */}
+                    <div className="mt-6 rounded-2xl bg-[#fff2d5] p-4 text-sm lg:hidden">
+                        <b>🌿 Quy tắc 70/30</b>
+                        <p className="mt-2 leading-5">Sau 20 phút, mình sẽ cùng rời màn hình và chơi với mô hình thật nhé!</p>
+                        <button onClick={() => setBreakOpen(true)} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
+                    </div>
                 </section>
             </main>
-            {breakOpen &&
-                <div className="fixed inset-0 z-30 grid place-items-center bg-[#203b35]/50 p-5"><div className="max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"><div className="text-7xl">🌳
+
+            {breakOpen && (
+                <div className="fixed inset-0 z-30 grid place-items-center bg-[#203b35]/50 p-5">
+                    <div role="dialog" aria-modal="true" aria-label="Đến giờ nghỉ" className="max-w-md rounded-[2rem] border-4 border-[#ffe58a] bg-white p-8 text-center shadow-2xl">
+                        <div aria-hidden className="text-8xl motion-safe:animate-bounce">🌳</div>
+                        <span className="mt-2 inline-block rounded-full bg-[#ffe58a] px-3 py-1 text-sm font-extrabold text-[#8a5a00]">Đôi mắt cần nghỉ ngơi</span>
+                        <h2 className="mt-3 text-4xl font-black">Đến giờ rời màn hình rồi!</h2>
+                        <p className="mt-4 text-lg text-[#637970]">Hãy tìm mô hình thật, đặt nó lên bàn và kể cho ba mẹ nghe 3 điều con nhớ nhé.</p>
+                        <button onClick={() => setBreakOpen(false)} className="mt-6 min-h-[64px] rounded-full border-b-8 border-[#3f8a5f] bg-[#5bb381] px-8 text-xl font-black text-white transition active:translate-y-1 active:border-b-4">Con đã vận động xong 🌱</button>
+                    </div>
                 </div>
-                    <span className="font-bold text-[#ef7d32]">Đôi mắt cần nghỉ ngơi</span>
-                    <h2 className="mt-2 text-4xl font-extrabold">Đến giờ rời màn hình rồi!</h2>
-                    <p className="mt-4 text-[#637970]">Hãy tìm mô hình thật, đặt nó lên bàn và kể cho ba mẹ nghe 3 điều con nhớ nhé.</p>
-                    <button onClick={() => setBreakOpen(false)} className="mt-6 rounded-full bg-[#f47d52] px-6 py-3 font-bold text-white">Con đã vận động xong 🌱</button>
-                </div>
-                </div>
-            }
-            {toast &&
-                <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full bg-[#203b35] px-5 py-3 text-sm font-bold text-white">{toast}</div>
-            }
+            )}
+
+            {toast && (
+                <div role="status" className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full bg-[#203b35] px-6 py-3 text-base font-bold text-white shadow-lg">{toast}</div>
+            )}
         </div>
     );
 }
