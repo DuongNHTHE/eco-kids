@@ -22,12 +22,14 @@ async function handleLogout() {
 export function AppSidebar({
     brand = 'KIDS',
     role = 'Admin',
+    homeHref = '/',
     items,
     footerTitle,
     footerText,
 }: Readonly<{
     brand?: string;
     role?: string;
+    homeHref?: string;
     items: SidebarItem[];
     footerTitle?: string;
     footerText?: string;
@@ -142,7 +144,7 @@ export function AppSidebar({
 
             <aside className={`fixed inset-y-0 left-0 z-30 flex w-72 max-w-[85vw] flex-col bg-[#203b35] p-6 text-white transition-transform duration-200 lg:w-64 lg:translate-x-0 ${sidebarTransform}`}>
 
-            <Link href="/" className="flex shrink-0 items-center gap-2 text-white justify-center">
+            <Link href={homeHref} className="flex shrink-0 items-center gap-2 text-white justify-center">
                 <span className="text-4xl font-extrabold leading-none text-[#f47d52]">
                     e<span className="text-[#6eaa83]">c</span>o
                 </span>

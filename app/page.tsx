@@ -3,7 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { useAPI } from '../lib/hooks/useAPI';
+import { resolveRoleHome } from '../lib/auth';
 
 const money = value => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
 const productIcon = id => id === 'premium' ? '✨' : id === 'explorer' ? '🚀' : '🦊';
@@ -14,6 +16,10 @@ function Button({ children, className = '', ...props }) {
 
 export default function HomePage() {
     const { API } = useAPI();
+    const { data: session, status } = useSession();
+    const isAuthenticated = status === 'authenticated' && !!session?.user;
+    const accountName = session?.user?.name || session?.user?.email || 'Tài khoản';
+    const accountRole = (session?.user as { role?: string } | undefined)?.role || 'PARENT';
     const [topics, setTopics] = useState([]);
     const [products, setProducts] = useState([]);
     const [cart, setCart] = useState([]);
@@ -205,10 +211,10 @@ export default function HomePage() {
                     </button>
 
                     <Link
-                        href="/login"
+                        href={isAuthenticated ? resolveRoleHome(accountRole) : '/login'}
                         className="hidden rounded-full bg-[#f47d52] px-4 py-2 font-bold text-white sm:block"
                     >
-                        Login
+                        {isAuthenticated ? accountName : 'Login'}
                     </Link>
                 </div>
             </div>

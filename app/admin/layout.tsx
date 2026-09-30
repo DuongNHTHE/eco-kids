@@ -57,6 +57,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
             <AppSidebar
                 brand="KIDS"
                 role="Admin"
+                homeHref="/admin/dashboard"
                 items={items}
             // footerTitle="✨ Hệ thống đang ổn định"
             // footerText="Tổng thời gian hoạt động 99.9% trong tháng này."

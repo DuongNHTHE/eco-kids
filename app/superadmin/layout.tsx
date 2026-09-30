@@ -45,6 +45,7 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
             <AppSidebar
                 brand="KIDS"
                 role="Super Admin"
+                homeHref="/superadmin/dashboard"
                 items={items}
                 footerTitle="🔒 Mức quyền tối đa"
                 footerText="Toàn bộ hệ thống và dữ liệu doanh nghiệp đang được giám sát."

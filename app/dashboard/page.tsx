@@ -156,7 +156,7 @@ export default function DashboardPage() {
           }`}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-4xl font-extrabold leading-none text-[#f47d52]">
             e
             <span className="text-[#6eaa83]">
