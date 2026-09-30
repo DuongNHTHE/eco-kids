@@ -558,8 +558,11 @@ export default function LearnPage() {
                 </div>
             </header>
 
-            <main className="mx-auto grid max-w-7xl gap-6 px-5 py-6 lg:grid-cols-[230px_1fr] lg:gap-8 lg:px-8">
-                <aside>
+            <main className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 overflow-x-hidden px-5 py-6 lg:grid-cols-[230px_1fr] lg:overflow-visible lg:gap-8 lg:px-8">
+                {/* min-w-0: bắt buộc để item grid không tự nới rộng theo nội dung bên trong
+                    (icon 3D text-[9rem], hàng chip...), nguyên nhân khiến cả trang bị zoom out
+                    tràn ngang trên mobile trước đây. */}
+                <aside className="min-w-0">
                     <Link
                         href={session ? "/learn" : "/"}
                         onClick={event => {
@@ -599,7 +602,7 @@ export default function LearnPage() {
                     </div>
                 </aside>
 
-                <section>
+                <section className="min-w-0">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <span className="inline-block rounded-full bg-[#ffe58a] px-3 py-1 text-sm font-extrabold text-[#8a5a00]">{topic.vietnamese}</span>
