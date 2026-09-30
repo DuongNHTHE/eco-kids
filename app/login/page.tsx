@@ -6,6 +6,27 @@ import { getSession, signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { resolveRoleHome, saveSession } from '../../lib/auth';
 
+function getSafeReturnUrl(consume = false) {
+  if (typeof window === 'undefined') return null;
+
+  const returnUrl = window.localStorage.getItem('ru');
+  if (!returnUrl) return null;
+
+  try {
+    const destination = new URL(returnUrl, window.location.origin);
+    if (destination.origin !== window.location.origin || destination.pathname === '/login') {
+      window.localStorage.removeItem('ru');
+      return null;
+    }
+
+    if (consume) window.localStorage.removeItem('ru');
+    return `${destination.pathname}${destination.search}${destination.hash}`;
+  } catch {
+    window.localStorage.removeItem('ru');
+    return null;
+  }
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -18,7 +39,7 @@ export default function LoginPage() {
     if (status !== 'authenticated' || !session?.user) return;
 
     const role = (session.user as { role?: string }).role || 'PARENT';
-    router.replace(resolveRoleHome(role));
+    router.replace(getSafeReturnUrl(true) || resolveRoleHome(role));
   }, [router, session, status]);
 
   if (status === 'loading' || status === 'authenticated') {
@@ -28,7 +49,7 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setLoading(true);
     setMessage('');
-    const result = await signIn('google', { callbackUrl: '/dashboard' });
+    const result = await signIn('google', { callbackUrl: getSafeReturnUrl() || '/login' });
     if (result?.error) {
       setMessage('Không thể đăng nhập bằng Google. Hãy kiểm tra cấu hình Google OAuth.');
       setLoading(false);
@@ -62,8 +83,6 @@ export default function LoginPage() {
         name: user.name || user.email,
         role: user.role,
       });
-
-      router.replace(resolveRoleHome(user.role));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Không thể đăng nhập.');
     } finally {
