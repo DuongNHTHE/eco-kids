@@ -547,7 +547,7 @@ export default function HomePage() {
                                     : "bg-[#203b35] text-white"
                                     }`}
                             >
-                                Chọn package
+                                Chọn sản phẩm
                             </Button>
                         </article>
                     ))}
@@ -714,7 +714,7 @@ export default function HomePage() {
                     className=" h-max self-start rounded-3xl bg-white p-6 text-[#203b35] shadow-soft"
                 >
                     <h3 className="text-3xl font-extrabold">
-                        Đăng ký buổi trải nghiệm
+                        Đăng ký buổi tư vấn miễn phí
                     </h3>
 
                     <label className="mt-5 block text-sm font-bold">

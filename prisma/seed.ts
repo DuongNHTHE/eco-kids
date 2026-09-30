@@ -14,9 +14,9 @@ const products = [
 ];
 
 const packages = [
-    { slug: 'starter', name: 'Starter Kit', subtitle: 'Khởi đầu đa giác quan', price: 399000, badge: 'Bán chạy', color: '#ff7b54', items: [{ productId: 'fox', quantity: 1 }] },
-    { slug: 'explorer', name: 'Explorer Kit', subtitle: 'Học đủ 3 chủ đề', price: 899000, badge: 'Tiết kiệm 18%', color: '#397ad7', featured: true, items: [{ productId: 'fox', quantity: 1 }, { productId: 'whale', quantity: 1 }, { productId: 'rocket', quantity: 1 }] },
-    { slug: 'premium', name: 'AI Premium', subtitle: 'Bạn đồng hành mỗi ngày', price: 59000, period: '/tháng', badge: 'Dùng thử 7 ngày', color: '#7566d9', features: ['Luyện nói không giới hạn', 'Câu chuyện cá nhân hóa', 'Dashboard chi tiết', 'Nội dung mới mỗi tháng'], items: [] },
+    { slug: 'starter', name: 'Starter Kit', subtitle: 'Khởi đầu đa giác quan', price: 699000, badge: 'Bán chạy', color: '#ff7b54', items: [{ productId: 'fox', quantity: 1 }] },
+    { slug: 'explorer', name: 'Explorer Kit', subtitle: 'Học đủ 3 chủ đề', price: 299000, badge: 'Tiết kiệm 18%', color: '#397ad7', featured: true, items: [{ productId: 'fox', quantity: 1 }, { productId: 'whale', quantity: 1 }, { productId: 'rocket', quantity: 1 }] },
+    { slug: 'premium', name: 'AI Premium', subtitle: 'Bạn đồng hành mỗi ngày', price: 50000, period: '/tháng', badge: 'Dùng thử 7 ngày', color: '#7566d9', features: ['Luyện nói không giới hạn', 'Câu chuyện cá nhân hóa', 'Dashboard chi tiết', 'Nội dung mới mỗi tháng'], items: [] },
 ];
 
 const demoUsers = [
