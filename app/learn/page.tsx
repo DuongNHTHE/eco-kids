@@ -574,15 +574,20 @@ export default function LearnPage() {
                     </Link>
 
                     <p className="mt-6 text-sm font-bold text-[#83968c]">Chủ đề của bé</p>
-                    <nav className="mt-3 flex gap-2 overflow-x-auto pb-2 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
+                    {/* whitespace-nowrap + -mx-5 px-5: chip không bị bóp chữ xuống dòng, và hàng cuộn
+                        chạm được ra tận mép màn hình trên mobile. [scrollbar-width:none] + ::-webkit
+                        ẩn thanh cuộn cho gọn, vẫn cuộn được bằng tay. */}
+                    <nav
+                        className="mt-3 -mx-5 flex gap-2 overflow-x-auto px-5 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:block lg:space-y-2 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
+                    >
                         {topics.map((item, index) => (
                             <button
                                 key={item.id}
                                 onClick={() => selectTopic(index)}
                                 aria-current={index === topicIndex}
-                                className={`flex min-h-[64px] shrink-0 items-center gap-3 rounded-2xl border-b-4 px-4 py-2 text-left font-bold transition active:translate-y-0.5 lg:w-full ${index === topicIndex ? 'border-[#0f2621] bg-[#203b35] text-white shadow-lg' : 'border-[#e0ece0] bg-white'}`}
+                                className={`flex h-14 shrink-0 items-center gap-2 whitespace-nowrap rounded-2xl border-b-4 px-4 text-left text-sm font-bold transition active:translate-y-0.5 sm:text-base lg:h-auto lg:w-full lg:gap-3 lg:py-3 lg:text-base ${index === topicIndex ? 'border-[#0f2621] bg-[#203b35] text-white shadow-lg' : 'border-[#e0ece0] bg-white'}`}
                             >
-                                <span className="text-3xl">{item.icon}</span>{item.vietnamese}
+                                <span className="text-2xl lg:text-3xl">{item.icon}</span>{item.vietnamese}
                             </button>
                         ))}
                     </nav>
