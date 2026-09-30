@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
         // { icon: '▣', label: t('Courses'), href: '/admin/dashboard' },
         { icon: '▶', label: t('Classroom'), href: '/learn', accent: 'highlight' },
         { icon: '＋', label: t('Topics'), href: '/admin/topics' },
-        { icon: '📝', label: 'Bài ôn luyện', href: '/admin/exercises' },
+        // { icon: '📝', label: 'Bài ôn luyện', href: '/admin/exercises' },
         // { icon: '🔔', label: 'Thông báo', href: '/admin/notifications' },
         { icon: '🔑', label: 'Mã mở khóa', href: '/admin/learning-codes' },
         { icon: '📊', label: t('Reports'), href: '/admin/reports' },
