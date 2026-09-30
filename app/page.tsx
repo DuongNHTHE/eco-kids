@@ -205,10 +205,10 @@ export default function HomePage() {
                     </button>
 
                     <Link
-                        href="/learn"
+                        href="/login"
                         className="hidden rounded-full bg-[#f47d52] px-4 py-2 font-bold text-white sm:block"
                     >
-                        Học thử miễn phí
+                        Login
                     </Link>
                 </div>
             </div>
@@ -243,12 +243,12 @@ export default function HomePage() {
                                 Khám phá bài học <span>→</span>
                             </Link>
 
-                            <a
+                            {/* <a
                                 href="#how"
                                 className="rounded-full border-2 border-[#203b35] px-6 py-4 font-bold"
                             >
                                 ▶ Xem cách hoạt động
-                            </a>
+                            </a> */}
                         </div>
 
                         <div className="mt-8 flex items-center gap-5 text-sm">

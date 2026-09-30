@@ -37,6 +37,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
         { icon: '🔔', label: 'Thông báo', href: '/admin/notifications' },
         { icon: '☎', label: 'Hỗ trợ tư vấn', href: '/admin/consultations' },
         { icon: '＋', label: t('Topics'), href: '/admin/topics' },
+        { icon: '🔑', label: 'Mã mở khóa', href: '/admin/learning-codes' },
         { icon: '📊', label: t('Reports'), href: '/admin/reports' },
         { icon: '📦', label: 'Sản phẩm', href: '/admin/products' },
         { icon: '👥', label: 'Người dùng', href: '/admin/users' },

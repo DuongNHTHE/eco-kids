@@ -159,6 +159,7 @@ model Vocabulary {
   phonetic        String?
   description     String?
   prompt          String?
+  requiresCode    Boolean          @default(false)
   shape           String?
   color           String?
   models          Model3D[]
@@ -253,6 +254,26 @@ model QRCode {
   updatedAt DateTime @updatedAt
 
   @@map("qrcodes")
+}
+
+model LearningCode {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  code             String    @unique
+  topicId          String
+  wordId           String
+  topicIds         String[]  @default([])
+  maxUses          Int?
+  usedCount        Int       @default(0)
+  isActive         Boolean   @default(true)
+  claimedParentIds String[]  @default([]) @db.ObjectId
+  claimedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([topicId, wordId])
+  @@index([isActive])
+  @@index([claimedParentIds])
+  @@map("learning_codes")
 }
 
 enum QRTargetType {

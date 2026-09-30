@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
-import { Child, Progress, ReviewExercise, connectMongo } from '../../../src/models';
+import { Child, LearningCode, Progress, ReviewExercise, connectMongo } from '../../../src/models';
 import { getTopics } from '../../../src/content';
 import mongoose from 'mongoose';
 
@@ -81,14 +81,30 @@ export async function GET(request: Request) {
             return Response.json({ message: 'Cần đăng nhập bằng tài khoản phụ huynh.' }, { status: 401 });
         }
 
+        const grants = await LearningCode.find({ claimedParentIds: user.id, isActive: true }, { topicId: 1, wordId: 1, topicIds: 1 }).lean();
+        if (!grants.length) return Response.json({ message: 'Hãy mở khóa Learn bằng mã trước khi ôn luyện.' }, { status: 403 });
+
         if (!mongoose.Types.ObjectId.isValid(String(childId))) {
             return Response.json({ message: 'childId không hợp lệ.' }, { status: 400 });
         }
         const child: any = await Child.findOne({ _id: childId, parentId: user.id }).lean();
         if (!child) return Response.json({ message: 'Không tìm thấy hồ sơ của bé.' }, { status: 404 });
 
+        const unlockedTopicIds = new Set<string>();
+        const unlockedLessons = new Set<string>();
+        for (const grant of grants as any[]) {
+            for (const topicId of grant.topicIds || []) unlockedTopicIds.add(topicId);
+            if (!grant.topicIds?.length) unlockedLessons.add(`${grant.topicId}:${grant.wordId}`);
+        }
+        for (const topic of topics) {
+            if (topic.words?.length && topic.words.every((word: any) => unlockedLessons.has(`${topic.id}:${word.id}`))) {
+                unlockedTopicIds.add(topic.id);
+            }
+        }
+
         const eligibleTopics = topics.filter(topic => {
             if (topicId && topic.id !== topicId) return false;
+            if (!unlockedTopicIds.has(topic.id)) return false;
             const wordIds = (topic.words || []).map((word: any) => word.id);
             return wordIds.length > 0;
         });

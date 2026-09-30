@@ -1,11 +1,40 @@
 import { getTopics } from '../../../src/content';
-import { connectMongo, Model3D, Topic, Vocabulary } from '../../../src/models';
+import { connectMongo, LearningCode, Model3D, Topic, Vocabulary } from '../../../src/models';
 import { writeAuditLog } from '../../../src/audit';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 
-export async function GET() {
-  return Response.json(await getTopics());
+export async function GET(request: Request) {
+  const topics = await getTopics();
+  let unlockedLessons = new Set<string>();
+  const session = await getServerSession(authOptions);
+  const user = session?.user as { id?: string; role?: string | null } | undefined;
+
+  if (user?.id && ['ADMIN', 'TEACHER', 'SCHOOL_ADMIN'].includes(user.role || '')) {
+    return Response.json(topics);
+  }
+
+  if (user?.id && user.role === 'PARENT') {
+    await connectMongo();
+    const grants = await LearningCode.find({ claimedParentIds: user.id, isActive: true }, { topicId: 1, wordId: 1, topicIds: 1 }).lean();
+    for (const grant of grants as any[]) {
+      if (grant.topicIds?.length) {
+        for (const topicId of grant.topicIds) unlockedLessons.add(`${topicId}:*`);
+      } else {
+        unlockedLessons.add(`${grant.topicId}:${grant.wordId}`);
+      }
+    }
+  }
+
+  return Response.json(topics.map(topic => ({
+    ...topic,
+    words: topic.words.map(word => {
+      const topicUnlocked = unlockedLessons.has(`${topic.id}:*`);
+      const lessonUnlocked = unlockedLessons.has(`${topic.id}:${word.id}`);
+      if (!topicUnlocked && !lessonUnlocked) return { id: word.id, requiresCode: true };
+      return { ...word, requiresCode: false };
+    }),
+  })));
 }
 
 export async function POST(request: Request) {

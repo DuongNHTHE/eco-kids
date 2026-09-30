@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAPI } from '../../lib/hooks/useAPI';
@@ -42,7 +42,7 @@ export function resolveWordModel(word: any) {
 export default function LearnPage() {
     const { API } = useAPI();
     const router = useRouter();
-    const [selectedParams, setSelectedParams] = useState({ topic: '', word: '' });
+    const [selectedParams, setSelectedParams] = useState({ topic: '', word: '', code: '' });
     const [topics, setTopics] = useState([]);
     const [topicIndex, setTopicIndex] = useState(0);
     const [wordIndex, setWordIndex] = useState(0);
@@ -54,6 +54,12 @@ export default function LearnPage() {
     const [isAssessing, setIsAssessing] = useState(false);
     const [children, setChildren] = useState<{ id: string; name: string; avatar: string }[]>([]);
     const [selectedChildId, setSelectedChildId] = useState('');
+    const [unlockedLessons, setUnlockedLessons] = useState<string[]>([]);
+    const [unlocksLoaded, setUnlocksLoaded] = useState(false);
+    const [unlockModalTopic, setUnlockModalTopic] = useState<string | null>(null);
+    const [unlockCode, setUnlockCode] = useState('');
+    const [isRedeemingCode, setIsRedeemingCode] = useState(false);
+    const autoRedeemedCode = useRef('');
     const [progressRecords, setProgressRecords] = useState<Array<{
         topicId: string;
         wordId: string;
@@ -69,13 +75,24 @@ export default function LearnPage() {
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        setSelectedParams({ topic: params.get('topic') || '', word: params.get('word') || '' });
+        setSelectedParams({ topic: params.get('topic') || '', word: params.get('word') || '', code: params.get('code') || '' });
     }, []);
 
     useEffect(() => {
+        let isCurrentRequest = true;
         API.get('topics', false, true, true).then(data => {
-            if (!Array.isArray(data)) return;
+            if (!isCurrentRequest || !Array.isArray(data)) return;
             setTopics(data);
+        });
+        return () => {
+            isCurrentRequest = false;
+        };
+    }, [API, unlockedLessons]);
+
+    useEffect(() => {
+        API.get('learning-codes', false, true, false).then(unlocks => {
+            setUnlockedLessons(Array.isArray(unlocks) ? unlocks.map(item => `${item.topicId}:${item.wordId}`) : []);
+            setUnlocksLoaded(true);
         });
     }, [API]);
 
@@ -96,7 +113,8 @@ export default function LearnPage() {
 
     useEffect(() => {
         API.get('children', false, true, true).then(children => {
-            if (!Array.isArray(children) || children.length === 0) return;
+            if (!Array.isArray(children)) return;
+            if (children.length === 0) return;
             const selectedId = getSelectedChildId();
             const selected = children.find(child => child.id === selectedId) || children[0];
             setChildren(children);
@@ -107,6 +125,28 @@ export default function LearnPage() {
             });
         });
     }, [API]);
+
+    useEffect(() => {
+        const code = selectedParams.code.trim();
+        if (!code || autoRedeemedCode.current === code) return;
+        autoRedeemedCode.current = code;
+        API.post('learning-codes', { code }, false, false, false).then(result => {
+            const topicId = result.topicId || selectedParams.topic;
+            const wordId = result.wordId || selectedParams.word;
+            setSelectedParams(current => ({ ...current, code: '' }));
+            router.replace(`/learn?topic=${encodeURIComponent(topicId)}&word=${encodeURIComponent(wordId)}`);
+            if (!result.success) {
+                setToast(result.message || 'Không thể sử dụng mã mở khóa.');
+                return;
+            }
+            setUnlockedLessons(current => [...new Set([
+                ...current,
+                ...(Array.isArray(result.topicIds) ? result.topicIds.map((id: string) => `${id}:*`) : [`${topicId}:${wordId}`]),
+            ])]);
+            setUnlocksLoaded(true);
+            setToast(result.message || 'Đã mở khóa bài học.');
+        });
+    }, [API, router, selectedParams]);
 
     useEffect(() => {
         const timer = setInterval(() =>
@@ -148,8 +188,42 @@ export default function LearnPage() {
     }
 
     function openLesson(topicId, wordId) {
-        setSelectedParams({ topic: topicId, word: wordId });
+        setSelectedParams({ topic: topicId, word: wordId, code: '' });
         router.replace(`/learn?topic=${encodeURIComponent(topicId)}&word=${encodeURIComponent(wordId)}`);
+    }
+
+    function isLessonUnlocked(topicItem, lesson) {
+        return unlockedLessons.includes('*:*') || unlockedLessons.includes(`${topicItem.id}:*`) || unlockedLessons.includes(`${topicItem.id}:${lesson?.id}`);
+    }
+
+    async function redeemLessonCode(event: { preventDefault: () => void }) {
+        event.preventDefault();
+        if (!unlockCode.trim() || isRedeemingCode) return;
+
+        setIsRedeemingCode(true);
+        const result = await API.post('learning-codes', { code: unlockCode, topicId: unlockModalTopic }, false, false, false);
+        setIsRedeemingCode(false);
+        if (!result.success) {
+            setToast(result.message || 'Không thể sử dụng mã mở khóa.');
+            return;
+        }
+
+        setUnlockCode('');
+        setUnlockModalTopic(null);
+        setUnlockedLessons(current => [...new Set([
+            ...current,
+            ...(Array.isArray(result.topicIds) ? result.topicIds.map((topicId: string) => `${topicId}:*`) : [`${result.topicId}:${result.wordId}`]),
+        ])]);
+        if (Array.isArray(result.topicIds)) {
+            setSelectedParams({ topic: result.topicId, word: '', code: '' });
+            router.replace(`/learn?topic=${encodeURIComponent(result.topicId)}`);
+            return;
+        }
+        openLesson(result.topicId, result.wordId);
+    }
+
+    if (!unlocksLoaded) {
+        return <div className="grid min-h-screen place-items-center bg-[#fff8e6] text-xl font-bold text-[#203b35]">Đang kiểm tra quyền truy cập Learn...</div>;
     }
 
     if (!hasSelectedLesson && topics.length > 0) {
@@ -162,6 +236,9 @@ export default function LearnPage() {
                     </Link>
 
                     <nav className="flex items-center gap-2">
+                        <Link href="/settings" className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-[#fff2d5] px-4 font-extrabold text-[#8a5a00]">
+                            <span aria-hidden>🔑</span> Mã mở khóa
+                        </Link>
                         <Link
                             href="/learn/review"
                             className="inline-flex min-h-[48px] items-center gap-2 rounded-full border-b-4 border-[#e0742a] bg-[#ff9a3c] px-5 font-extrabold text-white transition active:translate-y-0.5 active:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e0742a]"
@@ -186,38 +263,66 @@ export default function LearnPage() {
 
                     <section className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
                         {topics.map(topicItem => {
-                            const lessonUrl = getTopicStartUrl(topicItem);
+                            const availableLessons = (topicItem.words || []).filter(item => isLessonUnlocked(topicItem, item));
+                            const isTopicLocked = !unlocksLoaded || availableLessons.length === 0;
+                            const startWord = availableLessons.length
+                                ? availableLessons.find(item => !progressRecords.some(record => record.topicId === topicItem.id && record.wordId === item.id)) || availableLessons[0]
+                                : null;
                             const color = topicItem.color || '#dcefe0';
 
                             return (
-                                <Link
+                                <button
                                     key={topicItem.id}
-                                    href={lessonUrl}
+                                    type="button"
                                     onClick={() => {
-                                        const lessonParams = new URL(lessonUrl, window.location.origin).searchParams;
-                                        openLesson(lessonParams.get('topic') || topicItem.id, lessonParams.get('word') || topicItem.words?.[0]?.id || '');
+                                        if (isTopicLocked) {
+                                            setUnlockModalTopic(topicItem.id);
+                                            setToast('');
+                                            return;
+                                        }
+                                        if (startWord) openLesson(topicItem.id, startWord.id);
                                     }}
-                                    aria-label={`${topicItem.title}, ${topicItem.vietnamese}`}
-                                    className="group flex min-h-[220px] flex-col items-center justify-between rounded-[2rem] border-4 border-b-8 bg-white p-5 text-center shadow-md transition active:translate-y-1 active:border-b-4 motion-safe:hover:scale-105 focus-visible:outline focus-visible:outline-4 focus-visible:outline-[#2d6358]"
+                                    aria-label={`${topicItem.title}, ${topicItem.vietnamese}${isTopicLocked ? ', đang khóa, chạm để nhập mã' : ''}`}
+                                    className={`group relative flex min-h-[220px] flex-col items-center justify-between rounded-[2rem] border-4 border-b-8 bg-white p-5 text-center shadow-md transition active:translate-y-1 active:border-b-4 focus-visible:outline focus-visible:outline-4 focus-visible:outline-[#2d6358] ${isTopicLocked ? 'opacity-75 grayscale-[.35]' : 'motion-safe:hover:scale-105'}`}
                                     style={{ borderColor: color, backgroundColor: `${color}33` }}
                                 >
                                     <span className="grid h-28 w-28 place-items-center rounded-full bg-white text-7xl shadow-sm sm:h-32 sm:w-32 sm:text-8xl">
                                         {topicItem.icon || '📚'}
                                     </span>
 
+                                    {isTopicLocked && <span className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-[#203b35] text-xl text-white" aria-hidden>🔒</span>}
+
                                     <span className="mt-3 block">
                                         <b className="block text-2xl font-black leading-tight sm:text-3xl">{topicItem.title}</b>
                                         <small className="mt-1 block text-base font-bold text-[#60786e]">{topicItem.vietnamese}</small>
+                                        {isTopicLocked && <small className="mt-2 block font-extrabold text-[#a45b17]">Nhập mã để mở</small>}
                                     </span>
 
-                                    <span aria-hidden className="mt-3 grid h-12 w-12 place-items-center rounded-full bg-[#ff9a3c] text-2xl text-white shadow transition group-hover:bg-[#e0742a]">
-                                        ▶
+                                    <span aria-hidden className={`mt-3 grid h-12 w-12 place-items-center rounded-full text-2xl text-white shadow transition ${isTopicLocked ? 'bg-[#71867c]' : 'bg-[#ff9a3c] group-hover:bg-[#e0742a]'}`}>
+                                        {isTopicLocked ? '🔒' : '▶'}
                                     </span>
-                                </Link>
+                                </button>
                             );
                         })}
                     </section>
                 </main>
+
+                {unlockModalTopic && (
+                    <div className="fixed inset-0 z-50 grid place-items-center bg-[#203b35]/60 p-5" onMouseDown={event => event.target === event.currentTarget && setUnlockModalTopic(null)}>
+                        <section role="dialog" aria-modal="true" aria-labelledby="learn-unlock-title" className="w-full max-w-md rounded-3xl border-4 border-[#ffe58a] bg-white p-7 shadow-2xl">
+                            <button type="button" onClick={() => setUnlockModalTopic(null)} aria-label="Đóng" className="float-right grid h-10 w-10 place-items-center rounded-full bg-[#f4faf4] text-2xl">×</button>
+                            <div aria-hidden className="text-5xl">🔐</div>
+                            <h2 id="learn-unlock-title" className="mt-3 text-2xl font-black">Nhập mã mở khóa</h2>
+                            <p className="mt-2 text-[#637970]">{topics.find(item => item.id === unlockModalTopic)?.vietnamese || 'Chủ đề này'} đang khóa.</p>
+                            <form onSubmit={redeemLessonCode} className="mt-5">
+                                <label className="block text-sm font-bold" htmlFor="learn-access-code">Mã học</label>
+                                <input id="learn-access-code" autoFocus required maxLength={64} value={unlockCode} onChange={event => setUnlockCode(event.target.value)} placeholder="Nhập mã mở khóa" className="mt-2 min-h-12 w-full rounded-xl border border-[#dceadd] px-4 text-lg uppercase outline-none focus:border-[#6eaa83]" />
+                                {toast && <p role="alert" className="mt-3 text-sm font-bold text-[#c44f38]">{toast}</p>}
+                                <button type="submit" disabled={isRedeemingCode} className="mt-5 min-h-12 w-full rounded-full bg-[#f47d52] px-5 font-extrabold text-white disabled:opacity-60">{isRedeemingCode ? 'Đang kiểm tra...' : 'Mở bài học'}</button>
+                            </form>
+                        </section>
+                    </div>
+                )}
             </div>
         );
     }
@@ -358,6 +463,25 @@ export default function LearnPage() {
         }, 500);
     };
     const time = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+    const currentLessonKey = word ? `${topic?.id}:${word.id}` : '';
+    const isCurrentLessonUnlocked = !word?.requiresCode || unlockedLessons.includes(currentLessonKey) || unlockedLessons.includes(`${topic?.id}:*`) || unlockedLessons.includes('*:*');
+    const isUnlockedLessonLoading = word?.requiresCode && isCurrentLessonUnlocked && !word.english;
+
+    if (word?.requiresCode && (!unlocksLoaded || !isCurrentLessonUnlocked || isUnlockedLessonLoading)) {
+        const needsCode = !unlocksLoaded || !isCurrentLessonUnlocked;
+        return (
+            <main className="grid min-h-screen place-items-center bg-[#fff8e6] px-5 text-center text-[#203b35]">
+                <section className="max-w-lg rounded-3xl border-4 border-[#ffe58a] bg-white p-8 shadow-soft">
+                    <div aria-hidden className="text-7xl">🔐</div>
+                    <h1 className="mt-4 text-3xl font-black">{needsCode ? unlocksLoaded ? 'Bài học đang khóa' : 'Đang kiểm tra bài học...' : 'Đang tải bài học...'}</h1>
+                    <p className="mt-3 text-[#637970]">{needsCode ? unlocksLoaded ? 'Nhập mã mở khóa trong phần Cài đặt để học bài này.' : 'Vui lòng chờ một chút nhé.' : 'Vui lòng chờ nội dung bài học.'}</p>
+                    {needsCode && unlocksLoaded && <Link href="/settings" className="mt-6 inline-flex min-h-12 items-center rounded-full bg-[#f47d52] px-6 font-extrabold text-white">Đến Cài đặt nhập mã</Link>}
+                    {toast && <p role="status" className="mt-4 text-sm font-bold text-[#c44f38]">{toast}</p>}
+                    <Link href="/learn" className="mt-4 block font-bold text-[#2d6358]">Về danh sách bài học</Link>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#fff8e6] text-[#203b35]">
@@ -377,6 +501,9 @@ export default function LearnPage() {
 
                 <div className="flex items-center gap-3 text-sm">
                     <span className="rounded-full bg-[#f4faf4] px-3 py-1.5">👀 <b>{time}</b></span>
+                    <Link href="/settings" aria-label="Cài đặt mã mở khóa" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#fff2d5] px-3 font-bold text-[#8a5a00]">
+                        <span aria-hidden>🔑</span><span className="hidden sm:inline">Mã học</span>
+                    </Link>
                     {children.length > 0 && (
                         <label className="hidden items-center gap-2 font-bold sm:flex">
                             Bé đang học
@@ -410,7 +537,7 @@ export default function LearnPage() {
                         onClick={event => {
                             if (!session) return;
                             event.preventDefault();
-                            setSelectedParams({ topic: '', word: '' });
+                            setSelectedParams({ topic: '', word: '', code: '' });
                             router.replace('/learn');
                         }}
                         className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-5 font-extrabold text-[#2d6358] shadow-sm"

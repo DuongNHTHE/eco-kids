@@ -28,6 +28,15 @@ export default function ReviewPage() {
     const [mode, setMode] = useState<'TOPIC' | 'GENERAL'>('TOPIC');
     const [reviewTopics, setReviewTopics] = useState<ReviewTopic[]>([]);
     const [selectedTopicId, setSelectedTopicId] = useState('');
+    const [learnAccessLoaded, setLearnAccessLoaded] = useState(false);
+    const [hasLearnAccess, setHasLearnAccess] = useState(false);
+
+    useEffect(() => {
+        API.get('learning-codes', false, true, false).then(codes => {
+            setHasLearnAccess(Array.isArray(codes) && codes.length > 0);
+            setLearnAccessLoaded(true);
+        });
+    }, [API]);
 
     async function loadExercises(childId: string, nextMode = mode, topicId = selectedTopicId) {
         setLoading(true);
@@ -43,6 +52,7 @@ export default function ReviewPage() {
     }
 
     useEffect(() => {
+        if (!hasLearnAccess) return;
         API.get('children', false, false, true).then(nextChildren => {
             if (!Array.isArray(nextChildren) || !nextChildren.length) {
                 setLoading(false);
@@ -55,7 +65,7 @@ export default function ReviewPage() {
             saveSelectedChild(selected);
             loadExercises(selected.id, 'TOPIC', '');
         });
-    }, [API]);
+    }, [API, hasLearnAccess]);
 
     const exercise = exercises[index];
 
@@ -89,6 +99,20 @@ export default function ReviewPage() {
         setIndex(current => Math.min(current + 1, exercises.length - 1));
         setAnswer('');
         setFeedback('');
+    }
+
+    if (!learnAccessLoaded) return <div className="grid min-h-screen place-items-center bg-[#f4faf4] text-lg font-bold text-[#203b35]">Đang kiểm tra quyền truy cập Learn...</div>;
+    if (!hasLearnAccess) {
+        return (
+            <main className="grid min-h-screen place-items-center bg-[#f4faf4] px-5 text-center text-[#203b35]">
+                <section className="max-w-lg rounded-3xl border border-[#dceadd] bg-white p-8 shadow-sm">
+                    <div aria-hidden className="text-6xl">🔐</div>
+                    <h1 className="mt-4 text-3xl font-extrabold">Learn chưa được mở khóa</h1>
+                    <p className="mt-3 text-[#71867c]">Phụ huynh nhập mã trong Cài đặt để mở Learn cho tất cả bé trong tài khoản.</p>
+                    <Link href="/settings" className="mt-6 inline-flex min-h-12 items-center rounded-full bg-[#f47d52] px-6 font-bold text-white">Nhập mã mở khóa</Link>
+                </section>
+            </main>
+        );
     }
 
     return (

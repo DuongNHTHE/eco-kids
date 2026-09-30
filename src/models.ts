@@ -126,6 +126,7 @@ const vocabularySchema = new mongoose.Schema({
   shape: String,
   modelUrl: String,
   prompt: String,
+  requiresCode: { type: Boolean, default: false },
 }, { _id: false });
 
 const vocabularyCollectionSchema = new mongoose.Schema({
@@ -138,6 +139,7 @@ const vocabularyCollectionSchema = new mongoose.Schema({
   shape: String,
   modelUrl: String,
   prompt: String,
+  requiresCode: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 }, { collection: 'vocabularies' });
@@ -161,6 +163,20 @@ const qrCodeSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   scanCount: { type: Number, default: 0 },
 }, { collection: 'qrcodes', timestamps: true });
+
+const learningCodeSchema = new mongoose.Schema({
+  code: { type: String, required: true, unique: true, index: true, uppercase: true, trim: true },
+  topicId: { type: String, required: true, index: true },
+  wordId: { type: String, required: true },
+  topicIds: { type: [String], default: [] },
+  maxUses: { type: Number, min: 1, default: null },
+  usedCount: { type: Number, min: 0, default: 0 },
+  isActive: { type: Boolean, default: true, index: true },
+  claimedParentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  claimedAt: Date,
+}, { collection: 'learning_codes', timestamps: true });
+
+learningCodeSchema.index({ topicId: 1, wordId: 1 }, { unique: true });
 
 const topicSchema = new mongoose.Schema({
   slug: { type: String, unique: true, required: true },
@@ -208,5 +224,6 @@ export const Topic = (mongoose.models.Topic || mongoose.model('Topic', topicSche
 export const Vocabulary = (mongoose.models.Vocabulary || mongoose.model('Vocabulary', vocabularyCollectionSchema)) as mongoose.Model<any>;
 export const Model3D = (mongoose.models.Model3D || mongoose.model('Model3D', model3DSchema)) as mongoose.Model<any>;
 export const QRCode = (mongoose.models.QRCode || mongoose.model('QRCode', qrCodeSchema)) as mongoose.Model<any>;
+export const LearningCode = (mongoose.models.LearningCode || mongoose.model('LearningCode', learningCodeSchema)) as mongoose.Model<any>;
 export const Product = (mongoose.models.Product || mongoose.model('Product', productSchema)) as mongoose.Model<any>;
 export const Package = (mongoose.models.Package || mongoose.model('Package', packageSchema)) as mongoose.Model<any>;

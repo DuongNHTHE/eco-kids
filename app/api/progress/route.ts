@@ -2,7 +2,7 @@ import { saveProgress } from '../../../src/store';
 import { writeAuditLog } from '../../../src/audit';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
-import { Child, connectMongo } from '../../../src/models';
+import { Child, connectMongo, LearningCode, Vocabulary } from '../../../src/models';
 import mongoose from 'mongoose';
 
 export async function POST(request: Request) {
@@ -19,6 +19,15 @@ export async function POST(request: Request) {
     await connectMongo();
     const child: any = await Child.findOne({ _id: childId, parentId: user.id }).lean();
     if (!child) return Response.json({ message: 'Hồ sơ của bé không thuộc tài khoản này.' }, { status: 403 });
+    const isUnlocked = await LearningCode.exists({
+      claimedParentIds: user.id,
+      isActive: true,
+      $or: [
+        { topicId: String(topicId), wordId: String(wordId) },
+        { topicIds: String(topicId) },
+      ],
+    });
+    if (!isUnlocked) return Response.json({ message: 'Bài học này đang khóa. Hãy nhập mã mở khóa trước.' }, { status: 403 });
     const saved = await saveProgress({ childId: String(child._id), topicId, wordId, score: Number(score) || 0, minutes: Number(minutes) || 1 });
     await writeAuditLog({
       action: 'PROGRESS_UPSERT',

@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAPI } from '../../../../lib/hooks/useAPI';
 
-type Word = { id: string; english: string; vietnamese: string; phonetic?: string; prompt?: string; shape?: string; color?: string; modelUrl?: string; qr?: WordQr };
+type Word = { id: string; english: string; vietnamese: string; phonetic?: string; prompt?: string; shape?: string; color?: string; modelUrl?: string; requiresCode?: boolean; qr?: WordQr };
 type Topic = { id: string; title: string; vietnamese: string; icon: string; color: string; description?: string; words: Word[] };
-type WordDraft = { id: string; english: string; vietnamese: string; phonetic: string; prompt: string; shape: string; modelUrl: string };
-type WordQr = { code: string; url: string; image: string };
+type WordDraft = { id: string; english: string; vietnamese: string; phonetic: string; prompt: string; shape: string; modelUrl: string; requiresCode: boolean };
+type WordQr = { code: string; accessCode?: string | null; url: string; image: string };
 
 const icons: Record<string, string> = { fox: '🦊', whale: '🐋', turtle: '🐢', apple: '🍎', orange: '🍊', pear: '🍐', car: '🚗', bus: '🚌' };
 
@@ -19,7 +19,7 @@ export default function TopicDetailPage() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingWordId, setEditingWordId] = useState<string | null>(null);
-    const [draft, setDraft] = useState<WordDraft>({ id: '', english: '', vietnamese: '', phonetic: '', prompt: '', shape: 'rocket', modelUrl: '' });
+    const [draft, setDraft] = useState<WordDraft>({ id: '', english: '', vietnamese: '', phonetic: '', prompt: '', shape: 'rocket', modelUrl: '', requiresCode: false });
     const [saving, setSaving] = useState(false);
     const [sampling, setSampling] = useState(false);
     const [message, setMessage] = useState('');
@@ -38,14 +38,14 @@ export default function TopicDetailPage() {
 
     function openCreateModal() {
         setEditingWordId(null);
-        setDraft({ id: '', english: '', vietnamese: '', phonetic: '', prompt: '', shape: '', modelUrl: '' });
+        setDraft({ id: '', english: '', vietnamese: '', phonetic: '', prompt: '', shape: '', modelUrl: '', requiresCode: false });
         setMessage('');
         setIsModalOpen(true);
     }
 
     function openEditModal(word: Word) {
         setEditingWordId(word.id);
-        setDraft({ id: word.id, english: word.english, vietnamese: word.vietnamese, phonetic: word.phonetic || '', prompt: word.prompt || '', shape: word.shape || 'rocket', modelUrl: word.modelUrl || '' });
+        setDraft({ id: word.id, english: word.english, vietnamese: word.vietnamese, phonetic: word.phonetic || '', prompt: word.prompt || '', shape: word.shape || 'rocket', modelUrl: word.modelUrl || '', requiresCode: Boolean(word.requiresCode) });
         setMessage('');
         setIsModalOpen(true);
     }
@@ -57,9 +57,9 @@ export default function TopicDetailPage() {
         setMessage('');
         const result = await API.put('vocabulary', { topicId: topic.id, action: editingWordId ? 'update' : 'create', wordId: editingWordId, word: draft }, false, false, true);
         if (result.success) {
-            setTopic(result.topic);
             setLastQr(result.qr || null);
             setIsModalOpen(false);
+            await loadTopic();
         } else {
             setMessage(result.message || 'Không thể lưu bài học.');
         }
@@ -150,7 +150,8 @@ export default function TopicDetailPage() {
                             <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#dceadd] bg-white p-3">
                                 <img src={word.qr.image} alt={`QR mở từ ${word.english}`} className="h-20 w-20 rounded-md border border-[#dceadd]" />
                                 <div className="min-w-0 text-xs text-[#71867c]">
-                                    <p className="font-bold text-[#2d6358]">Quét để mở bài học</p>
+                                    <p className="font-bold text-[#2d6358]">Quét để {word.requiresCode ? 'nhập mã và mở bài' : 'mở bài học'}</p>
+                                    {word.qr.accessCode && <p className="mt-1 break-all font-bold text-[#ef7d32]">Mã: {word.qr.accessCode}</p>}
                                     <a href={word.qr.url} target="_blank" rel="noreferrer" className="mt-1 block truncate font-bold text-[#f47d52] hover:underline">Mở link</a>
                                 </div>
                             </div>}
@@ -187,6 +188,10 @@ export default function TopicDetailPage() {
                                 <label htmlFor="lesson-prompt">Câu ví dụ</label>
                                 <textarea id="lesson-prompt" required value={draft.prompt} onChange={event => setDraft(current => ({ ...current, prompt: event.target.value }))} placeholder="The forest is green." rows={3} className="mt-2 w-full resize-y rounded-xl border border-[#dceadd] bg-white px-3 py-2.5 font-normal outline-none focus:border-[#6eaa83]" />
                             </div>
+                            <label className="flex items-center gap-3 rounded-xl bg-[#fff2d5] p-4 text-sm font-bold">
+                                <input type="checkbox" checked={draft.requiresCode} onChange={event => setDraft(current => ({ ...current, requiresCode: event.target.checked }))} className="h-5 w-5 accent-[#2d6358]" />
+                                Yêu cầu mã để mở bài học
+                            </label>
                             <div className="flex flex-wrap items-center justify-end gap-3">
                                 <span className="mr-auto text-sm font-bold text-[#d45e45]">{message}</span>
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="rounded-full border border-[#c8d9cb] px-5 py-3 font-bold">Hủy</button>

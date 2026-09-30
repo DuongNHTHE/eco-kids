@@ -1,9 +1,10 @@
 import { getTopics } from '../../../src/content';
-import { connectMongo, Model3D, QRCode, Topic, Vocabulary } from '../../../src/models';
+import { connectMongo, LearningCode, Model3D, QRCode, Topic, Vocabulary } from '../../../src/models';
 import { writeAuditLog } from '../../../src/audit';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import QRCodeEncoder from 'qrcode';
+import { deactivateLearningCodes, ensureLearningCode } from '../../../src/learning-codes';
 
 function normalizeWord(word: any, fallbackId?: string) {
     const english = String(word?.english || '').trim();
@@ -16,6 +17,7 @@ function normalizeWord(word: any, fallbackId?: string) {
         shape: String(word?.shape || 'rocket').trim(),
         modelUrl: String(word?.modelUrl || '').trim(),
         color: String(word?.color || '#6eaa83').trim(),
+        requiresCode: Boolean(word?.requiresCode),
     };
 }
 
@@ -86,6 +88,12 @@ async function resolveTopic(topicId: string) {
 
 export async function GET(request: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const user = session?.user as { id?: string; role?: string | null } | undefined;
+        if (!user?.id || !['ADMIN', 'TEACHER', 'SCHOOL_ADMIN'].includes(user.role || '')) {
+            return Response.json({ message: 'Bạn không có quyền xem nội dung bài học.' }, { status: 403 });
+        }
+
         const topicId = new URL(request.url).searchParams.get('topicId')?.trim() || '';
         await connectMongo();
         const topic: any = await resolveTopic(topicId);
@@ -99,6 +107,12 @@ export async function GET(request: Request) {
 
 async function handleMutation(request: Request, requiredAction?: string) {
     try {
+        const session = await getServerSession(authOptions);
+        const user = session?.user as { id?: string; email?: string | null; role?: string | null } | undefined;
+        if (!user?.id || !['ADMIN', 'TEACHER', 'SCHOOL_ADMIN'].includes(user.role || '')) {
+            return Response.json({ message: 'Bạn không có quyền sửa bài học.' }, { status: 403 });
+        }
+
         const body = await request.json();
         const topicId = String(body?.topicId || '').trim();
         const action = String(body?.action || (requiredAction || ''));
@@ -124,21 +138,20 @@ async function handleMutation(request: Request, requiredAction?: string) {
         if (action === 'create') {
             const createdWord = await Vocabulary.create({ topicId, ...updateResult.word });
             await upsertModelForVocabulary(String(createdWord?.id || updateResult.word.id), updateResult.word);
-            updateResult.qr = await upsertWordQRCode(request, topicId, updateResult.word.id);
+            updateResult.qr = await upsertWordQRCode(request, topicId, updateResult.word.id, updateResult.word.requiresCode);
         } else if (action === 'update') {
             const updatedWord = await Vocabulary.findOneAndUpdate({ topicId, id: updateResult.wordId }, { ...updateResult.word, updatedAt: new Date() }, { runValidators: true, new: true });
             await upsertModelForVocabulary(String(updatedWord?.id || updateResult.wordId), updateResult.word);
-            updateResult.qr = await upsertWordQRCode(request, topicId, updateResult.wordId);
+            updateResult.qr = await upsertWordQRCode(request, topicId, updateResult.wordId, updateResult.word.requiresCode);
         } else {
             await Vocabulary.deleteOne({ topicId, id: updateResult.wordId });
             await Model3D.deleteMany({ vocabularyId: updateResult.wordId });
             await QRCode.deleteOne({ code: `${topicId}:${updateResult.wordId}` });
+            await LearningCode.deleteMany({ topicId, wordId: updateResult.wordId });
         }
 
         const wordCount = await Vocabulary.countDocuments({ topicId });
         await Topic.updateOne({ slug: topicId }, { lessonCount: wordCount });
-        const session = await getServerSession(authOptions);
-        const user = session?.user as { id?: string; email?: string | null; role?: string | null } | undefined;
         await writeAuditLog({
             action: `VOCABULARY_${action.toUpperCase()}`,
             resource: 'VOCABULARY',
@@ -165,9 +178,11 @@ export async function PUT(request: Request) {
     return handleMutation(request);
 }
 
-async function upsertWordQRCode(request: Request, topicId: string, wordId: string) {
+async function upsertWordQRCode(request: Request, topicId: string, wordId: string, requiresCode: boolean) {
     const code = `${topicId}:${wordId}`;
-    const target = `/learn?topic=${encodeURIComponent(topicId)}&word=${encodeURIComponent(wordId)}`;
+    const accessCode = requiresCode ? await ensureLearningCode(topicId, wordId) : null;
+    if (!requiresCode) await deactivateLearningCodes(topicId, wordId);
+    const target = `/learn?${accessCode ? `code=${encodeURIComponent(accessCode)}&` : ''}topic=${encodeURIComponent(topicId)}&word=${encodeURIComponent(wordId)}`;
     await QRCode.updateOne(
         { code },
         { code, targetId: target, isActive: true },
@@ -177,6 +192,7 @@ async function upsertWordQRCode(request: Request, topicId: string, wordId: strin
     const scanUrl = new URL(`/api/qr/${encodeURIComponent(code)}`, request.url).toString();
     return {
         code,
+        accessCode,
         url: scanUrl,
         image: await QRCodeEncoder.toDataURL(scanUrl, { margin: 2, width: 320 }),
     };

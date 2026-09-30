@@ -1,13 +1,20 @@
 import { getTopics } from '../../../../src/content';
-import { connectMongo, Model3D, QRCode, Topic, Vocabulary } from '../../../../src/models';
+import { connectMongo, LearningCode, Model3D, QRCode, Topic, Vocabulary } from '../../../../src/models';
 import { writeAuditLog } from '../../../../src/audit';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/next-auth';
 import QRCodeEncoder from 'qrcode';
+import { ensureLearningCode } from '../../../../src/learning-codes';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as { role?: string } | undefined;
+  if (!['ADMIN', 'TEACHER', 'SCHOOL_ADMIN'].includes(user?.role || '')) {
+    return Response.json({ message: 'Bạn không có quyền xem mã QR bài học.' }, { status: 403 });
+  }
+
   const { id } = await context.params;
   const topic = (await getTopics()).find(item => item.id === id);
   if (!topic) return Response.json({ message: 'Không tìm thấy chủ đề.' }, { status: 404 });
@@ -15,7 +22,8 @@ export async function GET(_request: Request, context: RouteContext) {
   await connectMongo();
   const words = await Promise.all(topic.words.map(async (word: any) => {
     const code = `${topic.id}:${word.id}`;
-    const target = `/learn?topic=${encodeURIComponent(topic.id)}&word=${encodeURIComponent(word.id)}`;
+    const accessCode = word.requiresCode ? await ensureLearningCode(topic.id, word.id) : null;
+    const target = `/learn?${accessCode ? `code=${encodeURIComponent(accessCode)}&` : ''}topic=${encodeURIComponent(topic.id)}&word=${encodeURIComponent(word.id)}`;
     await QRCode.updateOne(
       { code },
       { code, targetId: target, isActive: true },
@@ -27,6 +35,7 @@ export async function GET(_request: Request, context: RouteContext) {
       ...word,
       qr: {
         code,
+        accessCode,
         url: scanUrl,
         image: await QRCodeEncoder.toDataURL(scanUrl, { margin: 2, width: 220 }),
       },
@@ -79,6 +88,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       Topic.deleteOne({ slug: id }),
       Vocabulary.deleteMany({ topicId: id }),
       Model3D.deleteMany({ vocabularyId: { $in: wordIds } }),
+      LearningCode.deleteMany({ topicId: id }),
       QRCode.deleteMany({ code: new RegExp(`^${id.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}:`) }),
     ]);
 
