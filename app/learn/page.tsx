@@ -14,11 +14,12 @@ declare global {
     }
 }
 
-export function normalizePronunciationScore(payload: any): number {
+export function normalizePronunciationScore(payload: any): number | null {
     const best = payload?.NBest?.[0];
-    const rawScore = best?.PronunciationAssessment?.AccuracyScore ?? payload?.AccuracyScore ?? 0;
+    const rawScore = best?.PronunciationAssessment?.AccuracyScore ?? payload?.AccuracyScore;
+    if (rawScore === undefined || rawScore === null || rawScore === '') return null;
     const parsedScore = Number(rawScore);
-    if (!Number.isFinite(parsedScore)) return 0;
+    if (!Number.isFinite(parsedScore)) return null;
     return Math.max(0, Math.min(100, Math.round(parsedScore)));
 }
 
@@ -52,6 +53,9 @@ export default function LearnPage() {
     const [breakOpen, setBreakOpen] = useState(false);
     const [toast, setToast] = useState('');
     const [isAssessing, setIsAssessing] = useState(false);
+    const [isGeneratingAdvice, setIsGeneratingAdvice] = useState(false);
+    const [pronunciationAdvice, setPronunciationAdvice] = useState('');
+    const adviceRequestId = useRef(0);
     const [children, setChildren] = useState<{ id: string; name: string; avatar: string }[]>([]);
     const [selectedChildId, setSelectedChildId] = useState('');
     const [unlockedLessons, setUnlockedLessons] = useState<string[]>([]);
@@ -332,6 +336,10 @@ export default function LearnPage() {
         const selectedTopic = topics[index];
         if (!selectedTopic) return;
 
+        adviceRequestId.current += 1;
+        setPronunciationAdvice('');
+        setIsAssessing(false);
+        setIsGeneratingAdvice(false);
         const nextWord = getFirstUnlearnedWord(selectedTopic) || selectedTopic.words?.[0];
         setTopicIndex(index);
         setWordIndex(nextWord ? (selectedTopic.words?.findIndex(item => item.id === nextWord.id) ?? 0) : 0);
@@ -342,7 +350,11 @@ export default function LearnPage() {
         }
     };
     const selectWord = index => {
+        adviceRequestId.current += 1;
         setWordIndex(index);
+        setPronunciationAdvice('');
+        setIsAssessing(false);
+        setIsGeneratingAdvice(false);
         const selectedTopic = topics[topicIndex];
         const selectedWord = selectedTopic?.words?.[index];
         if (selectedTopic?.id && selectedWord?.id) {
@@ -362,8 +374,11 @@ export default function LearnPage() {
 
     const practice = async () => {
         if (!word) return;
+        const requestId = ++adviceRequestId.current;
+        setScore(null);
+        setPronunciationAdvice('');
         setIsAssessing(true);
-        setToast('Mình đang kiểm tra phát âm bằng Azure Speech…');
+        setToast('Bắt đầu nghe nhé, bé nói từ này nào…');
 
         try {
             const speechKey = process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY;
@@ -377,6 +392,8 @@ export default function LearnPage() {
             const speechSDK = await import('microsoft-cognitiveservices-speech-sdk');
             const speechConfig = speechSDK.SpeechConfig.fromSubscription(speechKey, speechRegion);
             speechConfig.speechRecognitionLanguage = 'en-US';
+            speechConfig.setProperty(speechSDK.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, '10000');
+            speechConfig.setProperty(speechSDK.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, '3000');
 
             const audioConfig = speechSDK.AudioConfig.fromDefaultMicrophoneInput();
             const recognizer = new speechSDK.SpeechRecognizer(speechConfig, audioConfig);
@@ -389,52 +406,63 @@ export default function LearnPage() {
             pronunciationAssessmentConfig.applyTo(recognizer);
 
             const result = await new Promise<any>((resolve, reject) => {
-                recognizer.recognized = (_sender, event) => {
-                    if (event.result.reason !== speechSDK.ResultReason.RecognizedSpeech) return;
-                    const payloadJson = event.result.properties.getProperty(speechSDK.PropertyId.SpeechServiceResponse_JsonResult);
+                recognizer.recognizeOnceAsync((recognitionResult) => {
                     try {
+                        if (process.env.NODE_ENV === 'development') {
+                            console.log('Azure Speech recognition reason:', recognitionResult.reason);
+                        }
+                        if (recognitionResult.reason !== speechSDK.ResultReason.RecognizedSpeech) {
+                            recognizer.close();
+                            resolve({});
+                            return;
+                        }
+                        const payloadJson = recognitionResult.properties.getProperty(speechSDK.PropertyId.SpeechServiceResponse_JsonResult);
                         const parsedPayload = JSON.parse(payloadJson || '{}');
                         if (process.env.NODE_ENV === 'development') {
                             console.log('Azure Speech response:', parsedPayload);
                         }
-                        recognizer.stopContinuousRecognitionAsync(() => {
-                            recognizer.close();
-                            resolve(parsedPayload);
-                        }, () => {
-                            recognizer.close();
-                            resolve(parsedPayload);
-                        });
+                        recognizer.close();
+                        resolve(parsedPayload);
                     } catch (error) {
                         recognizer.close();
                         resolve({});
                     }
-                };
-
-                recognizer.canceled = (_sender, event) => {
-                    recognizer.close();
-                    reject(new Error(event.errorDetails || 'Phát âm không được nhận diện.'));
-                };
-
-                recognizer.startContinuousRecognitionAsync(() => {
-                    setTimeout(() => {
-                        recognizer.stopContinuousRecognitionAsync(() => {
-                            recognizer.close();
-                        }, () => recognizer.close());
-                    }, 4500);
                 }, (error) => {
                     recognizer.close();
                     reject(error);
                 });
             });
 
+            if (requestId !== adviceRequestId.current) return;
             const assessedScore = normalizePronunciationScore(result);
-            setScore(assessedScore || 85);
-            setToast(assessedScore >= 85 ? 'Phát âm rất tốt! Tiếp tục nhé!' : 'Gần đúng rồi, thử lại một lần nữa.');
+            if (assessedScore === null) {
+                setPronunciationAdvice('Mình chưa nghe rõ từ này. Bé thử đưa micro gần hơn, nói chậm và rõ từng âm rồi chạm ghi âm lại nhé!');
+                return;
+            }
+            setScore(assessedScore);
+            setPronunciationAdvice('');
+            setIsAssessing(false);
+            setIsGeneratingAdvice(true);
+            const feedback = await API.post('pronunciation-feedback', {
+                targetWord: word.english,
+                azureResponse: result,
+            }, false, false, false);
+            if (requestId === adviceRequestId.current) {
+                setPronunciationAdvice(
+                    feedback.success && typeof feedback.text === 'string'
+                        ? feedback.text
+                        : 'Bé hãy nghe mẫu một lần, rồi đọc chậm từ này và chú ý từng âm nhé!'
+                );
+                setIsGeneratingAdvice(false);
+            }
         } catch (error) {
             console.error(error);
             setToast(error instanceof Error ? error.message : 'Không thể chấm điểm phát âm.');
         } finally {
-            setIsAssessing(false);
+            if (requestId === adviceRequestId.current) {
+                setIsAssessing(false);
+                setIsGeneratingAdvice(false);
+            }
         }
     };
 
@@ -649,14 +677,14 @@ export default function LearnPage() {
                                 </div>
 
                                 <button
-                                    disabled={isAssessing}
+                                    disabled={isAssessing || isGeneratingAdvice}
                                     onClick={practice}
                                     aria-label={`Nói “${word.english}”`}
                                     className={`mx-auto mt-4 grid h-24 w-24 place-items-center rounded-full border-b-8 border-[#e0742a] bg-[#ff9a3c] text-5xl shadow-lg transition active:translate-y-1 active:border-b-4 disabled:cursor-not-allowed disabled:opacity-70 ${isAssessing ? 'motion-safe:animate-pulse' : ''}`}
                                 >
                                     🎙️
                                 </button>
-                                <p className="mt-3 text-lg font-extrabold">{isAssessing ? 'Đang chấm phát âm...' : `Chạm để nói “${word.english}”`}</p>
+                                <p className="mt-3 text-lg font-extrabold">{isAssessing ? 'Mình đang nghe, bé nói ngay nhé...' : isGeneratingAdvice ? 'Bạn Sóc đang nghĩ lời khuyên...' : `Chạm để nói “${word.english}”`}</p>
                                 <small className="block text-[#71867c]">{score === null ? 'Mình đang lắng nghe bé' : 'Chạm để thử lại'}</small>
 
                                 {score !== null && (
@@ -669,8 +697,13 @@ export default function LearnPage() {
                                             </span>
                                             <b className="text-lg">{score >= 85 ? 'Tuyệt lắm!' : 'Gần đúng rồi!'}</b>
                                         </span>
-                                        <strong className="text-2xl text-[#6eaa83]">{score}</strong>
+                                        <strong className="text-2xl text-[#6eaa83]">{score}/100</strong>
                                     </div>
+                                )}
+                                {pronunciationAdvice && (
+                                    <p role="status" className="mt-3 rounded-2xl bg-white p-4 text-left font-bold text-[#2d6358]">
+                                        🐿️ {pronunciationAdvice}
+                                    </p>
                                 )}
                             </div>
 

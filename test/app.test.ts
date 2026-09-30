@@ -16,6 +16,11 @@ test('extracts pronunciation score from Azure assessment payload', () => {
     }]
   });
   assert.equal(score, 94);
+  assert.equal(normalizePronunciationScore({ NBest: [{ PronunciationAssessment: { AccuracyScore: 0 } }] }), 0);
+  assert.equal(normalizePronunciationScore({
+    RecognitionStatus: 'Success',
+    NBest: [{ Confidence: 0, Lexical: '', ITN: '', Display: '' }],
+  }), null);
 });
 
 test('uses saved 3d model url when present and falls back to shape icon otherwise', () => {
