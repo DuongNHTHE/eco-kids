@@ -13,6 +13,16 @@ Website MVP được xây dựng từ tài liệu Checkpoint 1–3: kết hợp 
 
 MongoDB là bắt buộc. Chạy `npm run db:seed` một lần sau khi cấu hình `MONGODB_URI` để tạo chủ đề, từ vựng và sản phẩm ban đầu. Tiến độ học, đơn hàng, đăng ký đối tác và nội dung đều được đọc/ghi từ MongoDB; ứng dụng không có dữ liệu fallback trong bộ nhớ.
 
+## Google Analytics 4
+
+Tạo GA4 property và Web data stream, sau đó thêm Measurement ID (bắt đầu bằng `G-`) vào `.env`:
+
+```env
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+```
+
+Trong GA4, bật Enhanced Measurement và tùy chọn “Page changes based on browser history events” để theo dõi điều hướng giữa các trang trong ứng dụng. Khởi động lại ứng dụng sau khi cập nhật biến môi trường.
+
 ## AI agent dùng chung
 
 Các route server có thể dùng `callAgent` từ `lib/agent.ts`. Cấu hình `AI_PROVIDER=gemini` cùng `GEMINI_API_KEY`, hoặc `AI_PROVIDER=openai` cùng `OPENAI_API_KEY`. Nếu không chỉ định provider, thư viện ưu tiên OpenAI khi có key, sau đó đến Gemini. API key chỉ được đọc ở server-side.

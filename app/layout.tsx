@@ -1,4 +1,5 @@
 import AgentAssistant from '../components/AgentAssistant';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { LocaleProvider } from '../context/LocaleContext';
 import Providers from './providers';
 import './globals.css';
@@ -14,6 +15,8 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const googleAnalyticsId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="vi">
       <body>
@@ -23,6 +26,7 @@ export default function RootLayout({ children }) {
             <AgentAssistant />
           </LocaleProvider>
         </Providers>
+        {googleAnalyticsId && <GoogleAnalytics gaId={googleAnalyticsId} />}
       </body>
     </html>
   );

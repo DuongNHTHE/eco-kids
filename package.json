@@ -16,6 +16,7 @@
     "node": "22.14.0"
   },
   "dependencies": {
+    "@next/third-parties": "^16.3.8",
     "@prisma/client": "6.19.0",
     "@types/nodemailer": "^8.0.2",
     "dotenv": "^16.4.7",
