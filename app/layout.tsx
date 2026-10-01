@@ -1,6 +1,5 @@
 import AgentAssistant from '../components/AgentAssistant';
 import { GoogleAnalytics } from '@next/third-parties/google';
-import Script from 'next/script';
 import { LocaleProvider } from '../context/LocaleContext';
 import Providers from './providers';
 import './globals.css';
@@ -20,6 +19,13 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="vi">
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1822119781682021"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <Providers>
           <LocaleProvider>
@@ -28,12 +34,6 @@ export default function RootLayout({ children }) {
           </LocaleProvider>
         </Providers>
         {googleAnalyticsId && <GoogleAnalytics gaId={googleAnalyticsId} />}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1822119781682021"
-          crossOrigin="anonymous"
-          strategy="beforeInteractive"
-        />
       </body>
     </html>
   );
