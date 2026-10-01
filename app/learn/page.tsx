@@ -75,7 +75,7 @@ export default function LearnPage() {
     const word = topic?.words[wordIndex];
     const model = resolveWordModel(word);
     const currentWordProgress = word ? progressRecords.find(record => record.topicId === topic?.id && record.wordId === word.id) : undefined;
-    const { data: session } = useSession();
+    const { data: session, status: sessionStatus } = useSession();
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -132,25 +132,32 @@ export default function LearnPage() {
 
     useEffect(() => {
         const code = selectedParams.code.trim();
-        if (!code || autoRedeemedCode.current === code) return;
+        if (sessionStatus !== 'authenticated' || !code || autoRedeemedCode.current === code) return;
         autoRedeemedCode.current = code;
         API.post('learning-codes', { code }, false, false, false).then(result => {
+            if (!result.success) {
+                if (result.status !== 401) {
+                    setSelectedParams(current => ({ ...current, code: '' }));
+                    router.replace(`/learn?topic=${encodeURIComponent(selectedParams.topic)}&word=${encodeURIComponent(selectedParams.word)}`);
+                }
+                setToast(result.message || 'Không thể sử dụng mã mở khóa.');
+                return;
+            }
+
             const topicId = result.topicId || selectedParams.topic;
             const wordId = result.wordId || selectedParams.word;
             setSelectedParams(current => ({ ...current, code: '' }));
             router.replace(`/learn?topic=${encodeURIComponent(topicId)}&word=${encodeURIComponent(wordId)}`);
-            if (!result.success) {
-                setToast(result.message || 'Không thể sử dụng mã mở khóa.');
-                return;
-            }
             setUnlockedLessons(current => [...new Set([
                 ...current,
                 ...(Array.isArray(result.topicIds) ? result.topicIds.map((id: string) => `${id}:*`) : [`${topicId}:${wordId}`]),
             ])]);
             setUnlocksLoaded(true);
             setToast(result.message || 'Đã mở khóa bài học.');
+        }, error => {
+            setToast(error instanceof Error ? error.message : 'Không thể sử dụng mã mở khóa.');
         });
-    }, [API, router, selectedParams]);
+    }, [API, router, selectedParams, sessionStatus]);
 
     useEffect(() => {
         const timer = setInterval(() =>
