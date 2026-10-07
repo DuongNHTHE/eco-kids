@@ -108,6 +108,15 @@ auditLogSchema.index({ user_id: 1, createdAt: -1 });
 auditLogSchema.index({ resource: 1, resourceId: 1, createdAt: -1 });
 auditLogSchema.index({ action: 1, createdAt: -1 });
 
+const parentSettingsSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true, index: true },
+  useParentCode: { type: Boolean, default: false },
+  parentCodeSalt: String,
+  parentCodeHash: String,
+  failedCodeAttempts: { type: Number, default: 0 },
+  parentCodeLockedUntil: Date,
+}, { collection: 'parent_settings', timestamps: true });
+
 export const User = (mongoose.models.User || mongoose.model('User', userSchema)) as mongoose.Model<any>;
 export const Child = (mongoose.models.Child || mongoose.model('Child', childSchema)) as mongoose.Model<any>;
 export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
@@ -116,6 +125,7 @@ export const Order = (mongoose.models.Order || mongoose.model('Order', orderSche
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;
 export const Notification = (mongoose.models.Notification || mongoose.model('Notification', notificationSchema)) as mongoose.Model<any>;
 export const AuditLog = (mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema)) as mongoose.Model<any>;
+export const ParentSettings = (mongoose.models.ParentSettings || mongoose.model('ParentSettings', parentSettingsSchema)) as mongoose.Model<any>;
 
 const vocabularySchema = new mongoose.Schema({
   id: String,

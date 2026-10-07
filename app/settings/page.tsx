@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAPI } from '../../lib/hooks/useAPI';
 
@@ -11,6 +11,32 @@ export default function SettingsPage() {
     const [code, setCode] = useState('');
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [useParentCode, setUseParentCode] = useState(false);
+    const [hasParentCode, setHasParentCode] = useState(false);
+    const [parentCode, setParentCode] = useState('');
+    const [parentSettingsMessage, setParentSettingsMessage] = useState('');
+    const [parentSettingsError, setParentSettingsError] = useState(false);
+    const [parentSettingsLoaded, setParentSettingsLoaded] = useState(false);
+    const [isSavingParentSettings, setIsSavingParentSettings] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        API.get('parent-settings', false, false, false).then(settings => {
+            if (!mounted) return;
+            if (!settings.success) {
+                setParentSettingsError(true);
+                setParentSettingsMessage(settings.message || 'Không thể tải cài đặt phụ huynh.');
+                setParentSettingsLoaded(true);
+                return;
+            }
+            setUseParentCode(Boolean(settings.useParentCode));
+            setHasParentCode(Boolean(settings.hasParentCode));
+            setParentSettingsLoaded(true);
+        });
+        return () => {
+            mounted = false;
+        };
+    }, [API]);
 
     async function redeemCode(event: { preventDefault: () => void }) {
         event.preventDefault();
@@ -28,6 +54,30 @@ export default function SettingsPage() {
         router.push(firstTopicId
             ? `/learn?topic=${encodeURIComponent(firstTopicId)}${result.wordId && result.wordId !== '*' ? `&word=${encodeURIComponent(result.wordId)}` : ''}`
             : '/learn');
+    }
+
+    async function saveParentSettings(event: { preventDefault: () => void }) {
+        event.preventDefault();
+        setParentSettingsMessage('');
+        setParentSettingsError(false);
+        setIsSavingParentSettings(true);
+
+        const result = await API.patch('parent-settings', {
+            useParentCode,
+            ...(parentCode ? { code: parentCode } : {}),
+        }, false, false, false);
+        setIsSavingParentSettings(false);
+
+        if (!result.success) {
+            setParentSettingsError(true);
+            setParentSettingsMessage(result.message || 'Không thể lưu cài đặt phụ huynh.');
+            return;
+        }
+
+        setUseParentCode(Boolean(result.useParentCode));
+        setHasParentCode(Boolean(result.hasParentCode));
+        setParentCode('');
+        setParentSettingsMessage('Đã lưu cài đặt vào tài khoản của bạn.');
     }
 
     return (
@@ -57,6 +107,55 @@ export default function SettingsPage() {
                             <button disabled={isSubmitting} className="min-h-12 rounded-full bg-[#f47d52] px-6 font-extrabold text-white disabled:opacity-60">
                                 {isSubmitting ? 'Đang kiểm tra...' : 'Mở bài học'}
                             </button>
+                    </form>
+                </section>
+                <section className="mt-8 rounded-3xl border border-[#dceadd] bg-white p-6 shadow-sm sm:p-8">
+                    <span className="text-sm font-extrabold text-[#ef7d32]">GIỜ NGHỈ</span>
+                    <h2 className="mt-2 text-2xl font-extrabold">Mã phụ huynh</h2>
+                    <p className="mt-2 text-[#71867c]">
+                        Dùng mã để hoãn nhắc nghỉ 10 phút hoặc bỏ qua lần nhắc kế tiếp. Mã được lưu an toàn trong cài đặt tài khoản.
+                    </p>
+                    <form onSubmit={saveParentSettings} className="mt-5 space-y-4">
+                        <label className="flex items-center justify-between gap-4 rounded-2xl bg-[#f4faf4] p-4">
+                            <span>
+                                <b className="block">Yêu cầu mã khi điều chỉnh nhắc nghỉ</b>
+                                <small className="text-[#80938a]">Có thể bật hoặc tắt bất cứ lúc nào.</small>
+                            </span>
+                            <input
+                                type="checkbox"
+                                checked={useParentCode}
+                                onChange={event => setUseParentCode(event.target.checked)}
+                                disabled={!parentSettingsLoaded || isSavingParentSettings}
+                                className="h-5 w-5 accent-[#2d6358]"
+                            />
+                        </label>
+                        <label className="block text-sm font-bold">
+                            {hasParentCode ? 'Đổi mã phụ huynh (không bắt buộc)' : 'Tạo mã phụ huynh'}
+                            <input
+                                type="password"
+                                inputMode="numeric"
+                                autoComplete="new-password"
+                                pattern="[0-9]{6,12}"
+                                minLength={6}
+                                maxLength={12}
+                                value={parentCode}
+                                onChange={event => setParentCode(event.target.value)}
+                                placeholder="Nhập mã gồm 6–12 chữ số"
+                                className="mt-2 min-h-12 w-full rounded-xl border border-[#dceadd] bg-white px-4 text-lg tracking-[0.3em] outline-none focus:border-[#6eaa83]"
+                            />
+                        </label>
+                        {parentSettingsMessage && (
+                            <p role={parentSettingsError ? 'alert' : 'status'} className={`text-sm font-bold ${parentSettingsError ? 'text-[#c44f38]' : 'text-[#2d6358]'}`}>
+                                {parentSettingsMessage}
+                            </p>
+                        )}
+                        <button
+                            type="submit"
+                            disabled={!parentSettingsLoaded || isSavingParentSettings}
+                            className="min-h-12 rounded-full bg-[#2d6358] px-6 font-extrabold text-white disabled:opacity-60"
+                        >
+                            {isSavingParentSettings ? 'Đang lưu...' : 'Lưu cài đặt'}
+                        </button>
                     </form>
                 </section>
                 <section className="mt-8 rounded-3xl bg-white p-6 shadow-sm sm:p-8">

@@ -51,6 +51,14 @@ export default function LearnPage() {
     const [rotation, setRotation] = useState(-12);
     const [seconds, setSeconds] = useState(1200);
     const [breakOpen, setBreakOpen] = useState(false);
+    const [parentControlsOpen, setParentControlsOpen] = useState(false);
+    const [parentSettingsLoaded, setParentSettingsLoaded] = useState(false);
+    const [parentSettingsError, setParentSettingsError] = useState('');
+    const [useParentCode, setUseParentCode] = useState(false);
+    const [parentCodeInput, setParentCodeInput] = useState('');
+    const [parentCodeError, setParentCodeError] = useState('');
+    const [parentAccessGranted, setParentAccessGranted] = useState(false);
+    const [isVerifyingParentCode, setIsVerifyingParentCode] = useState(false);
     const [toast, setToast] = useState('');
     const [isAssessing, setIsAssessing] = useState(false);
     const [isGeneratingAdvice, setIsGeneratingAdvice] = useState(false);
@@ -76,6 +84,24 @@ export default function LearnPage() {
     const model = resolveWordModel(word);
     const currentWordProgress = word ? progressRecords.find(record => record.topicId === topic?.id && record.wordId === word.id) : undefined;
     const { data: session, status: sessionStatus } = useSession();
+    const sessionRole = (session?.user as { role?: string } | undefined)?.role;
+
+    const speak = (text, language = 'en-US') => {
+        if (!('speechSynthesis' in window)) {
+            setToast('Trình duyệt chưa hỗ trợ đọc giọng nói.');
+            return;
+        }
+        speechSynthesis.cancel();
+        const voice = new SpeechSynthesisUtterance(text);
+        voice.lang = language;
+        voice.rate = voice.lang === 'vi-VN' ? 0.92 : 0.78;
+        voice.pitch = 1.0;
+        speechSynthesis.speak(voice);
+    };
+
+    useEffect(() => () => {
+        if ('speechSynthesis' in window) speechSynthesis.cancel();
+    }, []);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -160,16 +186,39 @@ export default function LearnPage() {
     }, [API, router, selectedParams, sessionStatus]);
 
     useEffect(() => {
-        const timer = setInterval(() =>
-            setSeconds(value => {
-                if (value <= 1) {
-                    setBreakOpen(true);
-                    return 1200;
-                }
-                return value - 1;
-            }), 1000);
+        const timer = setInterval(() => setSeconds(value => Math.max(0, value - 1)), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        if (seconds !== 0) return;
+        setBreakOpen(true);
+        setSeconds(1200);
+        speak('Con đã học rất chăm chỉ rồi! Bây giờ mình cùng nghỉ mắt và vận động một chút nhé.', 'vi-VN');
+    }, [seconds]);
+
+    useEffect(() => {
+        if (sessionStatus === 'loading') return;
+        if (sessionStatus !== 'authenticated' || sessionRole !== 'PARENT') {
+            setParentSettingsError('Cần đăng nhập bằng tài khoản phụ huynh để điều chỉnh nhắc nghỉ.');
+            setParentSettingsLoaded(true);
+            return;
+        }
+
+        let mounted = true;
+        API.get('parent-settings', false, false, false).then(settings => {
+            if (!mounted) return;
+            if (!settings.success) {
+                setParentSettingsError(settings.message || 'Không thể tải cài đặt mã phụ huynh.');
+            } else {
+                setUseParentCode(Boolean(settings.useParentCode));
+            }
+            setParentSettingsLoaded(true);
+        });
+        return () => {
+            mounted = false;
+        };
+    }, [API, sessionRole, sessionStatus]);
 
     useEffect(() => {
         if (!toast) return;
@@ -370,13 +419,46 @@ export default function LearnPage() {
         }
     };
 
-    const speak = text => {
-        if (!('speechSynthesis' in window)) return setToast('Trình duyệt chưa hỗ trợ đọc giọng nói.');
-        speechSynthesis.cancel();
-        const voice = new SpeechSynthesisUtterance(text);
-        voice.lang = 'en-US'; voice.rate = .78;
-        voice.pitch = 1.0;
-        speechSynthesis.speak(voice);
+    const openBreak = () => {
+        setBreakOpen(true);
+        speak('Mình cùng rời màn hình, tìm mô hình thật và vận động một chút nhé.', 'vi-VN');
+    };
+
+    const finishBreak = () => {
+        setBreakOpen(false);
+        setSeconds(1200);
+        speak('Con đã nghỉ ngơi xong rồi. Chào mừng con quay lại học nhé!', 'vi-VN');
+    };
+
+    const openParentControls = () => {
+        setParentCodeInput('');
+        setParentCodeError('');
+        setParentAccessGranted(!useParentCode);
+        setParentControlsOpen(true);
+    };
+
+    async function verifyParentCode(event: { preventDefault: () => void }) {
+        event.preventDefault();
+        setParentCodeError('');
+        setIsVerifyingParentCode(true);
+        const result = await API.post('parent-settings', { code: parentCodeInput }, false, false, false);
+        setIsVerifyingParentCode(false);
+
+        if (!result.success || !result.verified) {
+            setParentCodeError(result.message || 'Không thể xác minh mã phụ huynh.');
+            return;
+        }
+
+        setParentCodeInput('');
+        setParentAccessGranted(true);
+    }
+
+    const adjustReminder = (action: 'snooze' | 'skip') => {
+        setSeconds(action === 'snooze' ? 600 : 1200);
+        setBreakOpen(false);
+        setParentControlsOpen(false);
+        setParentAccessGranted(false);
+        setToast(action === 'snooze' ? 'Đã hoãn nhắc nghỉ 10 phút.' : 'Đã bỏ qua lần nhắc này.');
     };
 
     const practice = async () => {
@@ -536,6 +618,13 @@ export default function LearnPage() {
 
                 <div className="flex items-center gap-3 text-sm">
                     <span className="rounded-full bg-[#f4faf4] px-3 py-1.5">👀 <b>{time}</b></span>
+                    <button
+                        type="button"
+                        onClick={openParentControls}
+                        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#e8f4e9] px-3 font-bold text-[#2d6358]"
+                    >
+                        <span aria-hidden>🔒</span><span className="hidden sm:inline">Nhắc nghỉ</span>
+                    </button>
                     <Link href="/settings" aria-label="Cài đặt mã mở khóa" className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#fff2d5] px-3 font-bold text-[#8a5a00]">
                         <span aria-hidden>🔑</span><span className="hidden sm:inline">Mã học</span>
                     </Link>
@@ -605,7 +694,7 @@ export default function LearnPage() {
                     <div className="mt-6 hidden rounded-2xl bg-[#fff2d5] p-4 text-sm lg:block">
                         <b>🌿 Quy tắc 70/30</b>
                         <p className="mt-2 leading-5">Sau 20 phút, mình sẽ cùng rời màn hình và chơi với mô hình thật nhé!</p>
-                        <button onClick={() => setBreakOpen(true)} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
+                        <button onClick={openBreak} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
                     </div>
                 </aside>
 
@@ -734,7 +823,7 @@ export default function LearnPage() {
                     <div className="mt-6 rounded-2xl bg-[#fff2d5] p-4 text-sm lg:hidden">
                         <b>🌿 Quy tắc 70/30</b>
                         <p className="mt-2 leading-5">Sau 20 phút, mình sẽ cùng rời màn hình và chơi với mô hình thật nhé!</p>
-                        <button onClick={() => setBreakOpen(true)} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
+                        <button onClick={openBreak} className="mt-2 font-bold underline">Thử chế độ nghỉ</button>
                     </div>
                 </section>
             </main>
@@ -746,8 +835,58 @@ export default function LearnPage() {
                         <span className="mt-2 inline-block rounded-full bg-[#ffe58a] px-3 py-1 text-sm font-extrabold text-[#8a5a00]">Đôi mắt cần nghỉ ngơi</span>
                         <h2 className="mt-3 text-4xl font-black">Đến giờ rời màn hình rồi!</h2>
                         <p className="mt-4 text-lg text-[#637970]">Hãy tìm mô hình thật, đặt nó lên bàn và kể cho ba mẹ nghe 3 điều con nhớ nhé.</p>
-                        <button onClick={() => setBreakOpen(false)} className="mt-6 min-h-[64px] rounded-full border-b-8 border-[#3f8a5f] bg-[#5bb381] px-8 text-xl font-black text-white transition active:translate-y-1 active:border-b-4">Con đã vận động xong 🌱</button>
+                        <button onClick={finishBreak} className="mt-6 min-h-[64px] rounded-full border-b-8 border-[#3f8a5f] bg-[#5bb381] px-8 text-xl font-black text-white transition active:translate-y-1 active:border-b-4">Con đã vận động xong 🌱</button>
+                        <button onClick={openParentControls} className="mt-4 block w-full text-sm font-bold text-[#60786e] underline">Phụ huynh: điều chỉnh nhắc nghỉ</button>
                     </div>
+                </div>
+            )}
+
+            {parentControlsOpen && (
+                <div className="fixed inset-0 z-50 grid place-items-center bg-[#203b35]/60 p-5">
+                    <section role="dialog" aria-modal="true" aria-labelledby="parent-reminder-title" className="w-full max-w-md rounded-3xl border-4 border-[#ffe58a] bg-white p-7 shadow-2xl">
+                        <button
+                            type="button"
+                            onClick={() => setParentControlsOpen(false)}
+                            aria-label="Đóng"
+                            className="float-right grid h-10 w-10 place-items-center rounded-full bg-[#f4faf4] text-2xl"
+                        >
+                            ×
+                        </button>
+                        <div aria-hidden className="text-5xl">👨‍👩‍👧</div>
+                        <h2 id="parent-reminder-title" className="mt-3 text-2xl font-black">Điều chỉnh nhắc nghỉ</h2>
+                        <p className="mt-2 text-[#637970]">Hoãn nhắc 10 phút hoặc bỏ qua lần nhắc kế tiếp.</p>
+
+                        {!parentSettingsLoaded && <p role="status" className="mt-5 font-bold text-[#60786e]">Đang tải cài đặt phụ huynh...</p>}
+                        {parentSettingsLoaded && parentSettingsError && <p role="alert" className="mt-5 font-bold text-[#c44f38]">{parentSettingsError}</p>}
+                        {parentSettingsLoaded && !parentSettingsError && useParentCode && !parentAccessGranted && (
+                            <form onSubmit={verifyParentCode} className="mt-5 space-y-3">
+                                <label htmlFor="parent-reminder-code" className="block text-left text-sm font-bold">Nhập mã phụ huynh</label>
+                                <input
+                                    id="parent-reminder-code"
+                                    type="password"
+                                    inputMode="numeric"
+                                    autoComplete="current-password"
+                                    pattern="[0-9]{6,12}"
+                                    minLength={6}
+                                    maxLength={12}
+                                    required
+                                    value={parentCodeInput}
+                                    onChange={event => setParentCodeInput(event.target.value)}
+                                    className="min-h-12 w-full rounded-xl border border-[#dceadd] px-4 text-lg tracking-[0.3em] outline-none focus:border-[#6eaa83]"
+                                />
+                                {parentCodeError && <p role="alert" className="text-sm font-bold text-[#c44f38]">{parentCodeError}</p>}
+                                <button type="submit" disabled={isVerifyingParentCode} className="min-h-12 w-full rounded-full bg-[#2d6358] px-5 font-extrabold text-white disabled:opacity-60">
+                                    {isVerifyingParentCode ? 'Đang xác minh...' : 'Xác nhận mã'}
+                                </button>
+                            </form>
+                        )}
+                        {parentSettingsLoaded && !parentSettingsError && (!useParentCode || parentAccessGranted) && (
+                            <div className="mt-6 grid gap-3">
+                                <button onClick={() => adjustReminder('snooze')} className="min-h-12 rounded-full bg-[#2d6358] px-5 font-extrabold text-white">Hoãn 10 phút</button>
+                                <button onClick={() => adjustReminder('skip')} className="min-h-12 rounded-full bg-[#fff2d5] px-5 font-extrabold text-[#8a5a00]">Bỏ qua lần nhắc này</button>
+                            </div>
+                        )}
+                    </section>
                 </div>
             )}
 

@@ -8,6 +8,17 @@ import { GET as getProducts } from '../app/api/products/route';
 import { GET as getProgress } from '../app/api/progress/[childName]/route';
 import { POST as saveProgress } from '../app/api/progress/route';
 import { POST as createOrder } from '../app/api/orders/route';
+import { hashParentCode, verifyParentCode } from '../src/parent-settings-code';
+
+test('stores parent codes as salted hashes and verifies without retaining the plain code', async () => {
+  const code = '736184';
+  const savedCode = await hashParentCode(code);
+
+  assert.notEqual(savedCode.hash, code);
+  assert.notEqual(savedCode.salt, '');
+  assert.equal(await verifyParentCode(code, savedCode.salt, savedCode.hash), true);
+  assert.equal(await verifyParentCode('736185', savedCode.salt, savedCode.hash), false);
+});
 
 test('extracts pronunciation score from Azure assessment payload', () => {
   const score = normalizePronunciationScore({
