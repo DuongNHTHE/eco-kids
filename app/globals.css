@@ -14,3 +14,20 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 .animate-float { animation: float 4s ease-in-out infinite; }
 .animate-rise { animation: rise .65s ease both; }
+@media print {
+  body.invoice-printing * { visibility: hidden !important; }
+  body.invoice-printing #invoice-print,
+  body.invoice-printing #invoice-print * { visibility: visible !important; }
+  body.invoice-printing #invoice-print {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  body.invoice-printing .invoice-no-print { display: none !important; }
+  @page { margin: 16mm; }
+}

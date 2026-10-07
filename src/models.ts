@@ -67,7 +67,8 @@ const orderSchema = new mongoose.Schema({
   },
   items: [{ productId: String, packageId: String, name: String, price: Number, quantity: Number }],
   total: { type: Number, required: true },
-  status: { type: String, default: 'new' }
+  status: { type: String, default: 'new' },
+  invoice: mongoose.Schema.Types.Mixed
 }, { timestamps: true });
 
 const partnerSchema = new mongoose.Schema({
