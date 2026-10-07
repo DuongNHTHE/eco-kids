@@ -9,6 +9,7 @@ import { GET as getProgress } from '../app/api/progress/[childName]/route';
 import { POST as saveProgress } from '../app/api/progress/route';
 import { POST as createOrder } from '../app/api/orders/route';
 import { hashParentCode, verifyParentCode } from '../src/parent-settings-code';
+import { createOrderPayment } from '../src/order-payment';
 
 test('stores parent codes as salted hashes and verifies without retaining the plain code', async () => {
   const code = '736184';
@@ -18,6 +19,17 @@ test('stores parent codes as salted hashes and verifies without retaining the pl
   assert.notEqual(savedCode.salt, '');
   assert.equal(await verifyParentCode(code, savedCode.salt, savedCode.hash), true);
   assert.equal(await verifyParentCode('736185', savedCode.salt, savedCode.hash), false);
+});
+
+test('creates a VietQR transfer code with the order amount and reference', () => {
+  const payment = createOrderPayment('order-12345678', 125000);
+  const qrUrl = new URL(payment.qrUrl);
+
+  assert.equal(payment.bankId, '970436');
+  assert.equal(payment.accountNumber, '188688788');
+  assert.equal(payment.transferContent, 'ECO KIDS 12345678');
+  assert.equal(qrUrl.searchParams.get('amount'), '125000');
+  assert.equal(qrUrl.searchParams.get('addInfo'), 'ECO KIDS 12345678');
 });
 
 test('extracts pronunciation score from Azure assessment payload', () => {

@@ -41,9 +41,43 @@ type OrderHistory = {
     total: number;
     status: string;
     createdAt: string;
+    payment?: OrderPayment | null;
+};
+
+type OrderPayment = {
+    bankName: string;
+    bankId: string;
+    accountNumber: string;
+    amount: number;
+    transferContent: string;
+    qrUrl: string;
 };
 
 const money = (value: number) => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+
+function PaymentQr({ payment }: { payment: OrderPayment }) {
+    return (
+        <div className="mt-4 rounded-2xl border border-[#dceadd] bg-[#f4faf4] p-4">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+                <img
+                    src={payment.qrUrl}
+                    alt={`Mã QR thanh toán ${money(payment.amount)} qua ${payment.bankName}`}
+                    className="h-52 w-52 rounded-xl border border-[#dceadd] bg-white object-contain p-2"
+                />
+                <div className="w-full text-sm">
+                    <h4 className="text-base font-extrabold text-[#203b35]">Quét QR để chuyển khoản</h4>
+                    <p className="mt-2 text-[#71867c]">Ngân hàng: <b className="text-[#203b35]">{payment.bankName}</b></p>
+                    <p className="mt-1 text-[#71867c]">Số tài khoản: <b className="text-[#203b35]">{payment.accountNumber}</b></p>
+                    <p className="mt-1 text-[#71867c]">Số tiền: <b className="text-[#203b35]">{money(payment.amount)}</b></p>
+                    <p className="mt-1 break-all text-[#71867c]">Nội dung: <b className="text-[#203b35]">{payment.transferContent}</b></p>
+                    <p className="mt-3 rounded-xl bg-white p-3 text-xs leading-5 text-[#71867c]">
+                        Vui lòng chuyển đúng số tiền và nội dung trên. Đơn hàng sẽ được xác nhận sau khi cửa hàng kiểm tra thanh toán.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 const statusLabels: Record<string, string> = {
     new: 'Mới',
@@ -72,6 +106,7 @@ export default function ParentShopPage() {
     const [ordersOpen, setOrdersOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
+    const [paymentInfo, setPaymentInfo] = useState<OrderPayment | null>(null);
     const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
     const [orders, setOrders] = useState<OrderHistory[]>([]);
 
@@ -123,6 +158,7 @@ export default function ParentShopPage() {
             setCart([]);
             setCustomer({ name: '', phone: '', address: '' });
             setMessage(`Đặt hàng thành công. Mã đơn: ${result.orderId}`);
+            setPaymentInfo(result.payment || null);
             const nextOrders = await API.get('orders', false, true, false);
             if (Array.isArray(nextOrders)) setOrders(nextOrders);
         } else {
@@ -342,6 +378,12 @@ export default function ParentShopPage() {
                                                     </span>
                                                 ))}
                                             </div>
+                                            {order.status === 'new' && order.payment && (
+                                                <details className="mt-4">
+                                                    <summary className="cursor-pointer font-bold text-[#2d6358]">💳 Thanh toán đơn này bằng QR</summary>
+                                                    <PaymentQr payment={order.payment} />
+                                                </details>
+                                            )}
                                         </article>
                                     ))}
                                 </div>
@@ -370,7 +412,10 @@ export default function ParentShopPage() {
                                 <button
                                     aria-label="Đóng giỏ hàng"
                                     type="button"
-                                    onClick={() => setCartOpen(false)}
+                                    onClick={() => {
+                                        setCartOpen(false);
+                                        setPaymentInfo(null);
+                                    }}
                                     className="relative grid h-9 w-9 place-items-center rounded-full bg-white text-lg font-bold text-[#71867c] shadow-sm hover:text-[#203b35]"
                                 >
                                     ×
@@ -408,6 +453,24 @@ export default function ParentShopPage() {
                                         </div>
                                     </div>
                                 ))
+                            ) : paymentInfo ? (
+                                <div className="py-5">
+                                    <div role="status" className="rounded-2xl bg-[#e9f3eb] px-4 py-3 text-sm font-bold text-[#2d6358]">
+                                        {message}
+                                    </div>
+                                    <PaymentQr payment={paymentInfo} />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setCartOpen(false);
+                                            setPaymentInfo(null);
+                                            setOrdersOpen(true);
+                                        }}
+                                        className="mt-4 w-full rounded-full bg-[#203b35] px-5 py-3 font-bold text-white"
+                                    >
+                                        Xem lịch sử đơn hàng
+                                    </button>
+                                </div>
                             ) : (
                                 <div className="py-16 text-center text-[#71867c]">
                                     <p className="text-3xl" aria-hidden="true">🛒</p>

@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { writeAuditLog } from '../../../src/audit';
 import mongoose from 'mongoose';
+import { createOrderPayment } from '../../../src/order-payment';
 
 export async function POST(request: Request) {
   try {
@@ -99,7 +100,13 @@ export async function POST(request: Request) {
       request,
       metadata: { itemCount: normalizedItems.length, total },
     });
-    return Response.json({ message: 'Đặt hàng thành công!', orderId: order.id, total }, { status: 201 });
+    const orderId = String(order._id || order.id);
+    return Response.json({
+      message: 'Đặt hàng thành công!',
+      orderId,
+      total,
+      payment: createOrderPayment(orderId, total),
+    }, { status: 201 });
   } catch (error) {
     console.error(error);
     return Response.json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.' }, { status: 500 });
@@ -122,6 +129,9 @@ export async function GET() {
       total: Number(order.total || 0),
       status: order.status || 'new',
       createdAt: order.createdAt,
+      payment: (order.status || 'new') === 'new'
+        ? createOrderPayment(String(order._id || order.id), Number(order.total || 0))
+        : null,
     })));
   } catch (error) {
     console.error('parent order history error', error);
