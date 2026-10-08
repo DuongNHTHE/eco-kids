@@ -18,7 +18,7 @@ export async function GET() {
         await connectMongo();
         const [rawProgress, orders, partners, topics] = await Promise.all([
             Progress.find().sort({ practicedAt: -1 }).lean(),
-            Order.find().sort({ createdAt: -1 }).lean(),
+            Order.find().select('-paymentReceipt.dataUrl').sort({ createdAt: -1 }).lean(),
             Partner.find().sort({ createdAt: -1 }).lean(),
             getTopics(),
         ]);

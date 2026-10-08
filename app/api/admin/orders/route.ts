@@ -20,6 +20,7 @@ function serializeOrder(order: any) {
         total: Number(order.total || 0),
         status: order.status || 'new',
         isRead: Boolean(order.isRead),
+        paymentReceiptUploaded: Boolean(order.paymentReceipt?.uploadedAt),
         invoice: order.invoice || null,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
         if (status && statuses.includes(status as typeof statuses[number])) query.status = status;
         if (isReadParam === 'true' || isReadParam === 'false') query.isRead = isReadParam === 'true';
         await connectMongo();
-        const orders = await Order.find(query).sort({ isRead: 1, createdAt: -1 }).limit(100).lean();
+        const orders = await Order.find(query).select('-paymentReceipt.dataUrl').sort({ isRead: 1, createdAt: -1 }).limit(100).lean();
         const countEntries = await Promise.all(
             statuses.map(async currentStatus => [currentStatus, await Order.countDocuments({ status: currentStatus })] as const),
         );
@@ -139,7 +140,7 @@ export async function PATCH(request: Request) {
 
         await connectMongo();
         if (issueInvoice) {
-            const existingOrder: any = await Order.findById(orderId).lean();
+            const existingOrder: any = await Order.findById(orderId).select('-paymentReceipt.dataUrl').lean();
             if (!existingOrder) return Response.json({ message: 'Không tìm thấy đơn hàng.' }, { status: 404 });
 
             if (existingOrder.invoice?.number) {
@@ -176,9 +177,9 @@ export async function PATCH(request: Request) {
                 { _id: orderId, $or: [{ invoice: { $exists: false } }, { invoice: null }] },
                 { $set: { invoice, updatedAt: issuedAt, isRead: true } },
                 { new: true, runValidators: true },
-            ).lean();
+            ).select('-paymentReceipt.dataUrl').lean();
             const invoiceWasCreated = Boolean(order);
-            if (!order) order = await Order.findById(orderId).lean();
+            if (!order) order = await Order.findById(orderId).select('-paymentReceipt.dataUrl').lean();
             if (!order) return Response.json({ message: 'Không tìm thấy đơn hàng.' }, { status: 404 });
             if (!invoiceWasCreated) {
                 return Response.json({ message: 'Hóa đơn đã được lưu.', order: serializeOrder(order) });
@@ -201,7 +202,7 @@ export async function PATCH(request: Request) {
             update.isRead = true;
         }
         if (isRead !== undefined) update.isRead = isRead;
-        const order: any = await Order.findByIdAndUpdate(orderId, update, { new: true, runValidators: true }).lean();
+        const order: any = await Order.findByIdAndUpdate(orderId, update, { new: true, runValidators: true }).select('-paymentReceipt.dataUrl').lean();
         if (!order) return Response.json({ message: 'Không tìm thấy đơn hàng.' }, { status: 404 });
 
         await writeAuditLog({

@@ -68,6 +68,11 @@ const orderSchema = new mongoose.Schema({
   items: [{ productId: String, packageId: String, name: String, price: Number, quantity: Number }],
   total: { type: Number, required: true },
   status: { type: String, default: 'new' },
+  paymentReceipt: {
+    dataUrl: String,
+    contentType: String,
+    uploadedAt: Date,
+  },
   invoice: mongoose.Schema.Types.Mixed
 }, { timestamps: true });
 

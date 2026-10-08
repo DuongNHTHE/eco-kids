@@ -23,6 +23,15 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
 Trong GA4, bật Enhanced Measurement và tùy chọn “Page changes based on browser history events” để theo dõi điều hướng giữa các trang trong ứng dụng. Khởi động lại ứng dụng sau khi cập nhật biến môi trường.
 
+Để kiểm tra GA4 bằng 100 phiên trình duyệt độc lập, đặt URL của môi trường cần kiểm tra rồi chạy:
+
+```powershell
+$env:ANALYTICS_TEST_URL = "http://localhost:3000"
+npm run test:analytics
+```
+
+Mỗi phiên được giữ mở 5 giây theo mặc định. Script báo số request GA4 thu được trên từng phiên và trả về lỗi nếu có phiên không gửi request GA4 hoặc không tải được trang. Có thể đổi số phiên và thời gian chờ bằng `ANALYTICS_TEST_USERS` và `ANALYTICS_TEST_DWELL_MS`. Chạy thử trên môi trường được phép kiểm tra; tránh tạo lượt truy cập giả trên production.
+
 ## AI agent dùng chung
 
 Các route server có thể dùng `callAgent` từ `lib/agent.ts`. Cấu hình `AI_PROVIDER=gemini` cùng `GEMINI_API_KEY`, hoặc `AI_PROVIDER=openai` cùng `OPENAI_API_KEY`. Nếu không chỉ định provider, thư viện ưu tiên OpenAI khi có key, sau đó đến Gemini. API key chỉ được đọc ở server-side.

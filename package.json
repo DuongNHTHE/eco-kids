@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "test": "tsx --test test/app.test.ts",
+    "test:analytics": "node scripts/test-analytics.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },
@@ -25,6 +26,7 @@
     "next": "^16.3.3",
     "next-auth": "^4.24.15",
     "nodemailer": "^7.0.13",
+    "playwright": "^1.63.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

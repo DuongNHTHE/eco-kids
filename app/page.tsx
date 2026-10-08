@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../lib/hooks/useAPI';
 import { resolveRoleHome } from '../lib/auth';
+import { OrderPaymentStep, type OrderPayment } from '../components/OrderPaymentStep';
 
 const money = value => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
 const productIcon = id => id === 'premium' ? '✨' : id === 'explorer' ? '🚀' : '🦊';
@@ -27,6 +28,7 @@ export default function HomePage() {
     const [toast, setToast] = useState('');
     const [partnerMessage, setPartnerMessage] = useState('');
     const [checkoutMessage, setCheckoutMessage] = useState('');
+    const [checkoutPayment, setCheckoutPayment] = useState<{ orderId: string; payment: OrderPayment } | null>(null);
 
     useEffect(() => {
         setCart(
@@ -139,11 +141,12 @@ export default function HomePage() {
 
     async function checkout(event) {
         event.preventDefault();
+        const form = event.currentTarget;
 
         setCheckoutMessage("Đang tạo đơn…");
 
         const customer = Object.fromEntries(
-            new FormData(event.currentTarget)
+            new FormData(form)
         );
 
         const result = await API.post(
@@ -163,9 +166,14 @@ export default function HomePage() {
         );
 
         if (result.success) {
-            setCart([]);
-            event.currentTarget.reset();
-            setToast("Đơn hàng đã được ghi nhận 🎉");
+            if (result.orderId && result.payment) {
+                setCheckoutPayment({ orderId: result.orderId, payment: result.payment });
+                setCart([]);
+                form.reset();
+                setToast("Đơn hàng đã được ghi nhận 🎉");
+            } else {
+                setCheckoutMessage('Không thể tải thông tin thanh toán. Vui lòng liên hệ cửa hàng.');
+            }
         }
     }
 
@@ -895,7 +903,21 @@ export default function HomePage() {
                     </div>
 
                     <div className="flex-1 py-8">
-                        {cartCount ? (
+                        {checkoutPayment ? (
+                            <div className="space-y-4">
+                                <p role="status" className="rounded-2xl bg-[#e9f3eb] px-4 py-3 text-sm font-bold text-[#2d6358]">
+                                    {checkoutMessage}
+                                </p>
+                                <OrderPaymentStep
+                                    orderId={checkoutPayment.orderId}
+                                    payment={checkoutPayment.payment}
+                                    onUploaded={() => {
+                                        setCheckoutPayment(null);
+                                        setToast('Đã gửi bill chuyển khoản thành công.');
+                                    }}
+                                />
+                            </div>
+                        ) : cartCount ? (
                             cart.map((item) => {
                                 const product = products.find(
                                     (p) => p.id === item.productId

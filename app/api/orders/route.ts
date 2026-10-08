@@ -121,7 +121,7 @@ export async function GET() {
     if (user.role !== 'PARENT') return Response.json({ message: 'Chỉ tài khoản phụ huynh được xem lịch sử đơn hàng.' }, { status: 403 });
 
     await connectMongo();
-    const orders = await Order.find({ user_id: user.id }).sort({ createdAt: -1 }).lean();
+    const orders = await Order.find({ user_id: user.id }).select('-paymentReceipt.dataUrl').sort({ createdAt: -1 }).lean();
     return Response.json(orders.map((order: any) => ({
       id: String(order._id || order.id),
       customer: order.customer,
@@ -129,6 +129,7 @@ export async function GET() {
       total: Number(order.total || 0),
       status: order.status || 'new',
       createdAt: order.createdAt,
+      paymentReceiptUploaded: Boolean(order.paymentReceipt?.uploadedAt),
       payment: (order.status || 'new') === 'new'
         ? createOrderPayment(String(order._id || order.id), Number(order.total || 0))
         : null,

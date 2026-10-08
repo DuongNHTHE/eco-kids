@@ -9,7 +9,7 @@ import { GET as getProgress } from '../app/api/progress/[childName]/route';
 import { POST as saveProgress } from '../app/api/progress/route';
 import { POST as createOrder } from '../app/api/orders/route';
 import { hashParentCode, verifyParentCode } from '../src/parent-settings-code';
-import { createOrderPayment } from '../src/order-payment';
+import { createOrderPayment, isSupportedPaymentReceipt } from '../src/order-payment';
 
 test('stores parent codes as salted hashes and verifies without retaining the plain code', async () => {
   const code = '736184';
@@ -30,6 +30,14 @@ test('creates a VietQR transfer code with the order amount and reference', () =>
   assert.equal(payment.transferContent, 'ECO KIDS 12345678');
   assert.equal(qrUrl.searchParams.get('amount'), '125000');
   assert.equal(qrUrl.searchParams.get('addInfo'), 'ECO KIDS 12345678');
+});
+
+test('accepts only receipt images whose bytes match a supported image format', () => {
+  assert.equal(isSupportedPaymentReceipt(Buffer.from([0xff, 0xd8, 0xff, 0x00]), 'image/jpeg'), true);
+  assert.equal(isSupportedPaymentReceipt(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), 'image/png'), true);
+  assert.equal(isSupportedPaymentReceipt(Buffer.from('RIFF0000WEBP'), 'image/webp'), true);
+  assert.equal(isSupportedPaymentReceipt(Buffer.from('<svg/>'), 'image/png'), false);
+  assert.equal(isSupportedPaymentReceipt(Buffer.from([0xff, 0xd8, 0xff]), 'image/png'), false);
 });
 
 test('extracts pronunciation score from Azure assessment payload', () => {

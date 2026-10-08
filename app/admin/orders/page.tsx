@@ -21,6 +21,7 @@ type Order = {
     total: number;
     status: string;
     isRead: boolean;
+    paymentReceiptUploaded: boolean;
     invoice: OrderInvoice | null;
     createdAt: string;
 };
@@ -57,6 +58,7 @@ export default function AdminOrdersPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [invoiceView, setInvoiceView] = useState<OrderInvoice | null>(null);
+    const [paymentReceiptView, setPaymentReceiptView] = useState<{ dataUrl: string; uploadedAt?: string } | null>(null);
     const [issuingInvoiceId, setIssuingInvoiceId] = useState('');
 
     async function loadOrders() {
@@ -105,6 +107,13 @@ export default function AdminOrdersPage() {
             if (result.message === 'Đã lưu hóa đơn bán hàng.') {
                 setStats(current => ({ ...current, invoiceCount: current.invoiceCount + 1 }));
             }
+        }
+    }
+
+    async function viewPaymentReceipt(orderId: string) {
+        const result = await API.get(`orders/${orderId}/payment-receipt`, false, true, true);
+        if (result?.dataUrl) {
+            setPaymentReceiptView({ dataUrl: result.dataUrl, uploadedAt: result.uploadedAt });
         }
     }
 
@@ -331,6 +340,18 @@ export default function AdminOrdersPage() {
                                     </div>
                                 </div>
 
+                                {order.paymentReceiptUploaded && (
+                                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#e9f3eb] px-4 py-3">
+                                        <span className="text-sm font-bold text-[#2d6358]">Đã nhận ảnh bill chuyển khoản</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => viewPaymentReceipt(order.id)}
+                                            className="rounded-full bg-[#2d6358] px-4 py-2 text-sm font-bold text-white"
+                                        >
+                                            Xem ảnh bill
+                                        </button>
+                                    </div>
+                                )}
                                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf3ed] pt-4">
                                     <span className="text-sm text-[#71867c]">
                                         Cập nhật trạng thái chốt đơn:
@@ -416,6 +437,22 @@ export default function AdminOrdersPage() {
                             <p className="border-t-2 border-[#203b35] pt-3 text-lg font-extrabold">Tổng cộng <span className="ml-4">{money(invoiceView.total)}</span></p>
                         </div>
                         <p className="mt-10 text-center text-sm text-[#71867c]">Cảm ơn quý khách đã mua hàng!</p>
+                    </section>
+                </div>
+            )}
+            {paymentReceiptView && (
+                <div className="fixed inset-0 z-50 grid place-items-center bg-[#203b35]/60 p-4">
+                    <section className="w-full max-w-2xl rounded-3xl bg-white p-5 shadow-2xl">
+                        <div className="mb-4 flex items-center justify-between gap-4">
+                            <div>
+                                <h2 className="text-xl font-extrabold">Bill chuyển khoản</h2>
+                                {paymentReceiptView.uploadedAt && (
+                                    <p className="mt-1 text-sm text-[#71867c]">Gửi lúc {dateTime(paymentReceiptView.uploadedAt)}</p>
+                                )}
+                            </div>
+                            <button type="button" onClick={() => setPaymentReceiptView(null)} className="rounded-full border border-[#dceadd] px-4 py-2 font-bold text-[#526d64]">Đóng</button>
+                        </div>
+                        <img src={paymentReceiptView.dataUrl} alt="Ảnh bill chuyển khoản" className="mx-auto max-h-[75vh] max-w-full rounded-xl object-contain" />
                     </section>
                 </div>
             )}

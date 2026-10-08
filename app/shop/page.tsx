@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAPI } from '../../lib/hooks/useAPI';
+import { OrderPaymentStep, type OrderPayment } from '../../components/OrderPaymentStep';
 
 type Product = {
     id: string;
@@ -41,43 +42,11 @@ type OrderHistory = {
     total: number;
     status: string;
     createdAt: string;
+    paymentReceiptUploaded?: boolean;
     payment?: OrderPayment | null;
 };
 
-type OrderPayment = {
-    bankName: string;
-    bankId: string;
-    accountNumber: string;
-    amount: number;
-    transferContent: string;
-    qrUrl: string;
-};
-
 const money = (value: number) => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
-
-function PaymentQr({ payment }: { payment: OrderPayment }) {
-    return (
-        <div className="mt-4 rounded-2xl border border-[#dceadd] bg-[#f4faf4] p-4">
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-                <img
-                    src={payment.qrUrl}
-                    alt={`Mã QR thanh toán ${money(payment.amount)} qua ${payment.bankName}`}
-                    className="h-52 w-52 rounded-xl border border-[#dceadd] bg-white object-contain p-2"
-                />
-                <div className="w-full text-sm">
-                    <h4 className="text-base font-extrabold text-[#203b35]">Quét QR để chuyển khoản</h4>
-                    <p className="mt-2 text-[#71867c]">Ngân hàng: <b className="text-[#203b35]">{payment.bankName}</b></p>
-                    <p className="mt-1 text-[#71867c]">Số tài khoản: <b className="text-[#203b35]">{payment.accountNumber}</b></p>
-                    <p className="mt-1 text-[#71867c]">Số tiền: <b className="text-[#203b35]">{money(payment.amount)}</b></p>
-                    <p className="mt-1 break-all text-[#71867c]">Nội dung: <b className="text-[#203b35]">{payment.transferContent}</b></p>
-                    <p className="mt-3 rounded-xl bg-white p-3 text-xs leading-5 text-[#71867c]">
-                        Vui lòng chuyển đúng số tiền và nội dung trên. Đơn hàng sẽ được xác nhận sau khi cửa hàng kiểm tra thanh toán.
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 const statusLabels: Record<string, string> = {
     new: 'Mới',
@@ -107,6 +76,7 @@ export default function ParentShopPage() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
     const [paymentInfo, setPaymentInfo] = useState<OrderPayment | null>(null);
+    const [paymentOrderId, setPaymentOrderId] = useState('');
     const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
     const [orders, setOrders] = useState<OrderHistory[]>([]);
 
@@ -159,6 +129,7 @@ export default function ParentShopPage() {
             setCustomer({ name: '', phone: '', address: '' });
             setMessage(`Đặt hàng thành công. Mã đơn: ${result.orderId}`);
             setPaymentInfo(result.payment || null);
+            setPaymentOrderId(result.orderId);
             const nextOrders = await API.get('orders', false, true, false);
             if (Array.isArray(nextOrders)) setOrders(nextOrders);
         } else {
@@ -378,11 +349,18 @@ export default function ParentShopPage() {
                                                     </span>
                                                 ))}
                                             </div>
-                                            {order.status === 'new' && order.payment && (
+                                            {order.status === 'new' && order.payment && !order.paymentReceiptUploaded && (
                                                 <details className="mt-4">
                                                     <summary className="cursor-pointer font-bold text-[#2d6358]">💳 Thanh toán đơn này bằng QR</summary>
-                                                    <PaymentQr payment={order.payment} />
+                                                    <OrderPaymentStep
+                                                        orderId={order.id}
+                                                        payment={order.payment}
+                                                        onUploaded={() => setOrders(current => current.map(item => item.id === order.id ? { ...item, paymentReceiptUploaded: true } : item))}
+                                                    />
                                                 </details>
+                                            )}
+                                            {order.paymentReceiptUploaded && (
+                                                <p className="mt-3 text-sm font-bold text-[#2d6358]">✓ Đã gửi ảnh bill chuyển khoản</p>
                                             )}
                                         </article>
                                     ))}
@@ -458,12 +436,19 @@ export default function ParentShopPage() {
                                     <div role="status" className="rounded-2xl bg-[#e9f3eb] px-4 py-3 text-sm font-bold text-[#2d6358]">
                                         {message}
                                     </div>
-                                    <PaymentQr payment={paymentInfo} />
+                                    {paymentOrderId && (
+                                        <OrderPaymentStep
+                                            orderId={paymentOrderId}
+                                            payment={paymentInfo}
+                                            onUploaded={() => setOrders(current => current.map(order => order.id === paymentOrderId ? { ...order, paymentReceiptUploaded: true } : order))}
+                                        />
+                                    )}
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setCartOpen(false);
                                             setPaymentInfo(null);
+                                            setPaymentOrderId('');
                                             setOrdersOpen(true);
                                         }}
                                         className="mt-4 w-full rounded-full bg-[#203b35] px-5 py-3 font-bold text-white"
