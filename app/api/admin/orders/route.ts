@@ -69,7 +69,10 @@ export async function GET(request: Request) {
         const query: Record<string, unknown> = {};
         if (status && statuses.includes(status as typeof statuses[number])) query.status = status;
         Object.assign(query, dateFilter);
-        if (paymentStatus === 'confirmed') query.paymentStatus = 'confirmed';
+        if (paymentStatus === 'confirmed') {
+            query.paymentStatus = 'confirmed';
+            query.status = { $ne: 'completed' };
+        }
         if (paymentStatus === 'pending') {
             query.$or = [{ paymentStatus: 'pending' }, { paymentStatus: null }];
         }
@@ -79,7 +82,7 @@ export async function GET(request: Request) {
         const [countEntries, pendingPaymentCount, confirmedPaymentCount] = await Promise.all([
             Promise.all(statuses.map(async currentStatus => [currentStatus, await Order.countDocuments({ ...dateFilter, status: currentStatus })] as const)),
             Order.countDocuments({ ...dateFilter, $or: [{ paymentStatus: 'pending' }, { paymentStatus: null }] }),
-            Order.countDocuments({ ...dateFilter, paymentStatus: 'confirmed' }),
+            Order.countDocuments({ ...dateFilter, paymentStatus: 'confirmed', status: { $ne: 'completed' } }),
         ]);
 
         const rangeDays = range === '7' || range === '30' || range === '90' ? Number(range) : null;
