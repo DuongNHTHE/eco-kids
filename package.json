@@ -10,6 +10,7 @@
     "start": "next start",
     "test": "tsx --test test/app.test.ts",
     "test:analytics": "node scripts/test-analytics.mjs",
+    "analytics-test-user-return": "node scripts/test-analytics-user-return.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },

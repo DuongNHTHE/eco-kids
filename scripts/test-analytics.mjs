@@ -2,9 +2,9 @@ import { chromium } from "playwright";
 
 const SITE_URL = "https://lupinh.vercel.app";
 
-// Thêm UTM để GA4 ghi nhận nguồn = facebook
+// Thêm UTM để GA4 ghi nhận nguồn = tiktok
 const TARGET_URL =
-  `${SITE_URL}/?utm_source=facebook&utm_medium=social&utm_campaign=test_facebook`;
+  `${SITE_URL}/?utm_source=www.tiktok&utm_medium=social&utm_campaign=test_facebook`;
 const USERS = 101;
 
 const WAIT_AFTER_LOAD = 15000;
