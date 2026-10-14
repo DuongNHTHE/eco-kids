@@ -3,6 +3,7 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 import { LocaleProvider } from '../context/LocaleContext';
 import Providers from './providers';
 import './globals.css';
+import { Baloo_2, Nunito } from "next/font/google";
 
 export const metadata = {
   title: 'ECO-KIDS | Chạm để học, chơi để lớn',
@@ -13,6 +14,20 @@ export const metadata = {
     apple: '/img/banner-logo.png'
   }
 };
+
+const baloo = Baloo_2({
+  subsets: ["latin", "vietnamese"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-baloo",
+  display: "swap",
+});
+
+const nunito = Nunito({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "600", "700", "800", "900"],
+  variable: "--font-nunito",
+  display: "swap",
+});
 
 export default function RootLayout({ children }) {
   const googleAnalyticsId = process.env.NEXT_PUBLIC_GA_ID;
@@ -26,7 +41,7 @@ export default function RootLayout({ children }) {
           crossOrigin="anonymous"
         />
       </head>
-      <body>
+      <body className={`${baloo.variable} ${nunito.variable}`}>
         <Providers>
           <LocaleProvider>
             {children}
