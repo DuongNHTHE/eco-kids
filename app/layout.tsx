@@ -35,10 +35,17 @@ export default function RootLayout({ children }) {
   return (
     <html lang="vi">
       <head>
+        <link
+          rel="preload"
+          as="image"
+          href="/img/banner-logo.png"
+          fetchPriority="high"
+        />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1822119781682021"
           crossOrigin="anonymous"
+          fetchPriority="high"
         />
       </head>
       <body className={`${baloo.variable} ${nunito.variable}`}>
