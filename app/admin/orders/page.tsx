@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useAPI } from '../../../lib/hooks/useAPI';
 
 type OrderItem = { productId?: string; packageId?: string; name: string; price: number; quantity: number };
@@ -21,12 +21,18 @@ type Order = {
     items: OrderItem[];
     total: number;
     status: string;
+    paymentStatus: 'pending' | 'confirmed';
+    paymentConfirmedAt?: string | null;
     isRead: boolean;
     paymentReceiptUploaded: boolean;
     invoice: OrderInvoice | null;
     createdAt: string;
 };
 
+type OrderFilter = 'pending' | 'confirmed' | 'shipped' | 'completed' | 'cancelled';
+type DatePreset = 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'thisQuarter' | 'lastQuarter' | 'thisYear' | 'lastYear' | 'custom';
+type DateRange = { from: string; to: string; preset: DatePreset };
+type PaymentCounts = { pending: number; confirmed: number };
 type OrderCounts = Record<string, number>;
 type SalesStats = {
     orderCount: number;
@@ -35,6 +41,7 @@ type SalesStats = {
     pendingCount: number;
     invoiceCount: number;
     dailySales: { _id: string; revenue: number; orderCount: number }[];
+    salesInterval: 'day' | 'month';
 };
 
 const statuses = [
@@ -45,52 +52,181 @@ const statuses = [
     { value: 'cancelled', label: 'Đã hủy' },
 ];
 
+const datePresets: { value: Exclude<DatePreset, 'custom'>; label: string }[] = [
+    { value: 'thisWeek', label: 'Tuần này' },
+    { value: 'lastWeek', label: 'Tuần trước' },
+    { value: 'thisMonth', label: 'Tháng này' },
+    { value: 'lastMonth', label: 'Tháng trước' },
+    { value: 'thisQuarter', label: 'Quý này' },
+    { value: 'lastQuarter', label: 'Quý trước' },
+    { value: 'thisYear', label: 'Năm nay' },
+    { value: 'lastYear', label: 'Năm trước' },
+];
+
+function dateKey(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function presetRange(preset: Exclude<DatePreset, 'custom'>, now = new Date()) {
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    const currentQuarter = Math.floor(today.getMonth() / 3);
+    const quarterStart = new Date(today.getFullYear(), currentQuarter * 3, 1);
+    const yearStart = new Date(today.getFullYear(), 0, 1);
+
+    switch (preset) {
+        case 'thisWeek':
+            return { from: dateKey(weekStart), to: dateKey(today), preset };
+        case 'lastWeek': {
+            const from = new Date(weekStart);
+            from.setDate(from.getDate() - 7);
+            const to = new Date(weekStart);
+            to.setDate(to.getDate() - 1);
+            return { from: dateKey(from), to: dateKey(to), preset };
+        }
+        case 'thisMonth':
+            return { from: dateKey(monthStart), to: dateKey(today), preset };
+        case 'lastMonth':
+            return {
+                from: dateKey(new Date(today.getFullYear(), today.getMonth() - 1, 1)),
+                to: dateKey(new Date(today.getFullYear(), today.getMonth(), 0)),
+                preset,
+            };
+        case 'thisQuarter':
+            return { from: dateKey(quarterStart), to: dateKey(today), preset };
+        case 'lastQuarter':
+            return {
+                from: dateKey(new Date(today.getFullYear(), currentQuarter * 3 - 3, 1)),
+                to: dateKey(new Date(today.getFullYear(), currentQuarter * 3, 0)),
+                preset,
+            };
+        case 'thisYear':
+            return { from: dateKey(yearStart), to: dateKey(today), preset };
+        case 'lastYear':
+            return {
+                from: dateKey(new Date(today.getFullYear() - 1, 0, 1)),
+                to: dateKey(new Date(today.getFullYear() - 1, 11, 31)),
+                preset,
+            };
+    }
+}
+
 const money = (value: number) => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
 const dateTime = (value: string) => new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
-const emptyStats: SalesStats = { orderCount: 0, revenue: 0, averageOrder: 0, pendingCount: 0, invoiceCount: 0, dailySales: [] };
+const formatDateOnly = (value: string) => new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00.000Z`));
+const emptyStats: SalesStats = { orderCount: 0, revenue: 0, averageOrder: 0, pendingCount: 0, invoiceCount: 0, dailySales: [], salesInterval: 'day' };
+const MAX_RECEIPT_SIZE = 4 * 1024 * 1024;
 
 export default function AdminOrdersPage() {
     const { API } = useAPI();
     const [orders, setOrders] = useState<Order[]>([]);
-    const [filter, setFilter] = useState('all');
-    const [range, setRange] = useState('30');
-    const [counts, setCounts] = useState<OrderCounts>({});
+    const [filter, setFilter] = useState<OrderFilter>('pending');
+    const [dateRange, setDateRange] = useState<DateRange>(() => presetRange('thisWeek'));
+    const [customFrom, setCustomFrom] = useState(() => presetRange('thisWeek').from);
+    const [customTo, setCustomTo] = useState(() => presetRange('thisWeek').to);
+    const [datePickerOpen, setDatePickerOpen] = useState(false);
+    const [dateFilterError, setDateFilterError] = useState('');
+    const [paymentCounts, setPaymentCounts] = useState<PaymentCounts>({ pending: 0, confirmed: 0 });
+    const [orderCounts, setOrderCounts] = useState<OrderCounts>({});
     const [stats, setStats] = useState<SalesStats>(emptyStats);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [invoiceView, setInvoiceView] = useState<OrderInvoice | null>(null);
     const [paymentReceiptView, setPaymentReceiptView] = useState<{ dataUrl: string; uploadedAt?: string } | null>(null);
     const [issuingInvoiceId, setIssuingInvoiceId] = useState('');
+    const [confirmingPaymentId, setConfirmingPaymentId] = useState('');
+    const [uploadingReceiptId, setUploadingReceiptId] = useState('');
+    const [editingReceiptId, setEditingReceiptId] = useState('');
+    const [receiptUploadMessage, setReceiptUploadMessage] = useState<{ orderId: string; text: string } | null>(null);
+    const [receiptPreviews, setReceiptPreviews] = useState<Record<string, string>>({});
+    const receiptPreviewUrls = useRef<Record<string, string>>({});
+
+    useEffect(() => () => {
+        Object.values(receiptPreviewUrls.current).forEach(url => URL.revokeObjectURL(url));
+    }, []);
 
     async function loadOrders() {
         setLoading(true);
         setError('');
-        const params = new URLSearchParams({ range });
-        if (filter !== 'all') params.set('status', filter);
+        const params = new URLSearchParams({ from: dateRange.from, to: dateRange.to });
+        if (filter === 'pending' || filter === 'confirmed') params.set('paymentStatus', filter);
+        else params.set('status', filter);
         const query = `?${params.toString()}`;
         const result = await API.get(`admin/orders${query}`, false, true, true);
         if (Array.isArray(result?.orders)) setOrders(result.orders);
         else if (Array.isArray(result)) setOrders(result);
-        if (result?.counts) setCounts(result.counts);
-        if (result?.stats) setStats(result.stats);
+        if (result?.paymentCounts) setPaymentCounts(result.paymentCounts);
+        if (result?.counts) setOrderCounts(result.counts);
+        if (result?.stats) setStats({ ...result.stats, salesInterval: result.salesInterval || 'day' });
         if (!result?.counts) setError(result?.message || 'Không thể tải đơn hàng.');
         setLoading(false);
     }
 
-    useEffect(() => { loadOrders(); }, [filter, range]);
+    useEffect(() => { loadOrders(); }, [filter, dateRange.from, dateRange.to]);
+
+    function chooseDatePreset(preset: Exclude<DatePreset, 'custom'>) {
+        const nextRange = presetRange(preset);
+        setDateRange(nextRange);
+        setCustomFrom(nextRange.from);
+        setCustomTo(nextRange.to);
+        setDateFilterError('');
+        setDatePickerOpen(false);
+    }
+
+    function applyCustomDateRange(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!customFrom || !customTo || customFrom > customTo) {
+            setDateFilterError('Vui lòng chọn khoảng ngày hợp lệ.');
+            return;
+        }
+        setDateRange({ from: customFrom, to: customTo, preset: 'custom' });
+        setDateFilterError('');
+        setDatePickerOpen(false);
+    }
+
+    const selectedDatePreset = datePresets.find(preset => preset.value === dateRange.preset)?.label;
+    const selectedDateLabel = selectedDatePreset
+        ? `${selectedDatePreset} · ${dateRange.from} – ${dateRange.to}`
+        : `${dateRange.from} – ${dateRange.to}`;
 
     async function updateStatus(orderId: string, status: string) {
         const result = await API.put('admin/orders', { orderId, status }, true, true, true);
         if (result?.order) {
             const previousOrder = orders.find(order => order.id === orderId);
-            setOrders(current => current.map(order => order.id === orderId ? result.order : order));
+            if ((filter === 'shipped' || filter === 'completed' || filter === 'cancelled') && status !== filter) {
+                setOrders(current => current.filter(order => order.id !== orderId));
+            } else {
+                setOrders(current => current.map(order => order.id === orderId ? result.order : order));
+            }
             if (previousOrder && previousOrder.status !== status) {
-                setCounts(current => ({
+                setOrderCounts(current => ({
                     ...current,
                     [previousOrder.status]: Math.max(0, (current[previousOrder.status] || 0) - 1),
                     [status]: (current[status] || 0) + 1,
                 }));
             }
+        }
+    }
+
+    async function confirmPayment(orderId: string) {
+        setConfirmingPaymentId(orderId);
+        try {
+            const result = await API.patch('admin/orders', { orderId, action: 'confirm-payment' }, false, true, true);
+            if (result?.order) {
+                if (filter === 'pending') {
+                    setOrders(current => current.filter(order => order.id !== orderId));
+                    setPaymentCounts(current => ({
+                        pending: Math.max(0, current.pending - 1),
+                        confirmed: current.confirmed + 1,
+                    }));
+                } else {
+                    setOrders(current => current.map(order => order.id === orderId ? result.order : order));
+                }
+            }
+        } finally {
+            setConfirmingPaymentId('');
         }
     }
 
@@ -116,6 +252,70 @@ export default function AdminOrdersPage() {
         if (result?.dataUrl) {
             setPaymentReceiptView({ dataUrl: result.dataUrl, uploadedAt: result.uploadedAt });
         }
+    }
+
+    async function uploadPaymentReceipt(orderId: string, event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const receiptInput = form.elements.namedItem('receipt');
+        const receipt = receiptInput instanceof HTMLInputElement ? receiptInput.files?.[0] : undefined;
+        if (!receipt) {
+            setReceiptUploadMessage({ orderId, text: 'Vui lòng chọn ảnh bill chuyển khoản.' });
+            return;
+        }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(receipt.type) || receipt.size > MAX_RECEIPT_SIZE) {
+            setReceiptUploadMessage({ orderId, text: 'Chỉ nhận ảnh JPG, PNG hoặc WebP có dung lượng tối đa 4 MB.' });
+            return;
+        }
+
+        setUploadingReceiptId(orderId);
+        setReceiptUploadMessage({ orderId, text: 'Đang tải ảnh bill...' });
+        try {
+            const result = await API.post(`orders/${orderId}/payment-receipt`, new FormData(form), false, true, true);
+            if (result?.success) {
+                setOrders(current => current.map(order => order.id === orderId
+                    ? { ...order, paymentReceiptUploaded: true }
+                    : order));
+                form.reset();
+                clearReceiptPreview(orderId);
+                setEditingReceiptId('');
+                setReceiptUploadMessage({ orderId, text: 'Đã lưu ảnh bill cho đơn hàng.' });
+            } else {
+                setReceiptUploadMessage({ orderId, text: result?.message || 'Không thể tải ảnh bill.' });
+            }
+        } finally {
+            setUploadingReceiptId('');
+        }
+    }
+
+    function previewPaymentReceipt(orderId: string, file?: File) {
+        const currentUrl = receiptPreviewUrls.current[orderId];
+        if (currentUrl) URL.revokeObjectURL(currentUrl);
+
+        if (!file || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            delete receiptPreviewUrls.current[orderId];
+            setReceiptPreviews(current => {
+                const next = { ...current };
+                delete next[orderId];
+                return next;
+            });
+            return;
+        }
+
+        const previewUrl = URL.createObjectURL(file);
+        receiptPreviewUrls.current[orderId] = previewUrl;
+        setReceiptPreviews(current => ({ ...current, [orderId]: previewUrl }));
+    }
+
+    function clearReceiptPreview(orderId: string) {
+        const previewUrl = receiptPreviewUrls.current[orderId];
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        delete receiptPreviewUrls.current[orderId];
+        setReceiptPreviews(current => {
+            const next = { ...current };
+            delete next[orderId];
+            return next;
+        });
     }
 
     function printInvoice() {
@@ -148,15 +348,75 @@ export default function AdminOrdersPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                        <label className="text-sm font-bold text-[#60766e]">
-                            Thống kê
-                            <select value={range} onChange={event => setRange(event.target.value)} className="ml-2 rounded-xl border border-[#dceadd] bg-white px-3 py-2">
-                                <option value="7">7 ngày</option>
-                                <option value="30">30 ngày</option>
-                                <option value="90">90 ngày</option>
-                                <option value="all">Toàn thời gian</option>
-                            </select>
-                        </label>
+                        <div className="relative">
+                            <button
+                                type="button"
+                                aria-expanded={datePickerOpen}
+                                onClick={() => setDatePickerOpen(current => !current)}
+                                className="rounded-xl border border-[#dceadd] bg-white px-4 py-3 text-left text-sm font-bold text-[#203b35]"
+                            >
+                                <span className="block text-xs font-semibold text-[#83968c]">Khoảng thời gian</span>
+                                <span>{selectedDateLabel}</span>
+                            </button>
+                            {datePickerOpen && (
+                                <>
+                                    <button
+                                        type="button"
+                                        aria-label="Đóng bộ lọc ngày"
+                                        className="fixed inset-0 z-30 cursor-default"
+                                        onClick={() => setDatePickerOpen(false)}
+                                    />
+                                    <section className="absolute right-0 top-full z-40 mt-2 grid w-[min(92vw,38rem)] overflow-hidden rounded-2xl border border-[#dceadd] bg-white shadow-2xl sm:grid-cols-[10rem_1fr]">
+                                        <div className="border-b border-[#edf3ed] bg-[#f8fbf7] p-2 sm:border-b-0 sm:border-r">
+                                            {datePresets.map(preset => (
+                                                <button
+                                                    key={preset.value}
+                                                    type="button"
+                                                    onClick={() => chooseDatePreset(preset.value)}
+                                                    className={`block w-full rounded-lg px-3 py-2 text-left text-sm font-bold ${dateRange.preset === preset.value ? 'bg-[#e9f3eb] text-[#2d6358]' : 'text-[#526d64] hover:bg-white'}`}
+                                                >
+                                                    {preset.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <form onSubmit={applyCustomDateRange} className="space-y-4 p-4">
+                                            <div>
+                                                <h2 className="font-extrabold text-[#203b35]">Tùy chỉnh ngày</h2>
+                                                <p className="mt-1 text-xs text-[#71867c]">Lọc đơn hàng và thống kê trong khoảng đã chọn.</p>
+                                            </div>
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <label className="text-sm font-bold text-[#526d64]">
+                                                    Từ ngày
+                                                    <input
+                                                        required
+                                                        type="date"
+                                                        value={customFrom}
+                                                        max={customTo || undefined}
+                                                        onChange={event => setCustomFrom(event.target.value)}
+                                                        className="mt-1 block w-full rounded-xl border border-[#dceadd] px-3 py-2"
+                                                    />
+                                                </label>
+                                                <label className="text-sm font-bold text-[#526d64]">
+                                                    Đến ngày
+                                                    <input
+                                                        required
+                                                        type="date"
+                                                        value={customTo}
+                                                        min={customFrom || undefined}
+                                                        onChange={event => setCustomTo(event.target.value)}
+                                                        className="mt-1 block w-full rounded-xl border border-[#dceadd] px-3 py-2"
+                                                    />
+                                                </label>
+                                            </div>
+                                            {dateFilterError && <p role="alert" className="text-sm font-bold text-[#c1493a]">{dateFilterError}</p>}
+                                            <button type="submit" className="w-full rounded-full bg-[#203b35] px-4 py-2.5 text-sm font-bold text-white">
+                                                Áp dụng khoảng ngày
+                                            </button>
+                                        </form>
+                                    </section>
+                                </>
+                            )}
+                        </div>
                         <button
                             type="button"
                             onClick={loadOrders}
@@ -171,7 +431,7 @@ export default function AdminOrdersPage() {
             <div className="mx-auto max-w-7xl px-5 pb-10 pt-8 lg:px-10">
                 <section aria-label="Thống kê bán hàng" className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {[
-                        { label: 'Giá trị đơn không huỷ', value: money(stats.revenue), hint: `Trong ${range === 'all' ? 'toàn thời gian' : `${range} ngày gần đây`}`, icon: '💰', color: 'bg-[#e9f3eb]' },
+                        { label: 'Giá trị đơn không huỷ', value: money(stats.revenue), hint: `Trong ${dateRange.from} – ${dateRange.to}`, icon: '💰', color: 'bg-[#e9f3eb]' },
                         { label: 'Số đơn hàng', value: String(stats.orderCount), hint: 'Bao gồm đơn đã huỷ', icon: '🧾', color: 'bg-[#eaf1ff]' },
                         { label: 'Đơn mới cần xử lý', value: String(stats.pendingCount), hint: 'Đang chờ xác nhận', icon: '📦', color: 'bg-[#fff2d5]' },
                         { label: 'Hóa đơn đã lưu', value: String(stats.invoiceCount), hint: `Giá trị TB: ${money(stats.averageOrder)}`, icon: '📄', color: 'bg-[#f4eefe]' },
@@ -189,10 +449,10 @@ export default function AdminOrdersPage() {
                     ))}
                 </section>
 
-                <section aria-label="Doanh số 7 ngày gần đây" className="mb-8 rounded-3xl bg-white p-6 shadow-sm">
+                <section aria-label={`Doanh số từ ${dateRange.from} đến ${dateRange.to}`} className="mb-8 rounded-3xl bg-white p-6 shadow-sm">
                     <div className="flex flex-wrap items-end justify-between gap-2">
                         <div>
-                            <h2 className="text-xl font-extrabold">Doanh số 7 ngày gần đây</h2>
+                            <h2 className="text-xl font-extrabold">{formatDateOnly(dateRange.from)} – {formatDateOnly(dateRange.to)}</h2>
                             <p className="mt-1 text-sm text-[#71867c]">Không tính các đơn đã huỷ.</p>
                         </div>
                         <div className="text-right">
@@ -209,38 +469,68 @@ export default function AdminOrdersPage() {
                                     <div className="flex h-24 w-full items-end rounded-t-lg bg-[#eef8ef]">
                                         <div title={`${day.orderCount} đơn · ${money(day.revenue)}`} className="w-full rounded-t-lg bg-[#6eaa83]" style={{ height: `${height}%` }} />
                                     </div>
-                                    <span className="text-xs font-bold text-[#71867c]">{new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date(`${day._id}T12:00:00+07:00`))}</span>
+                                    <span className="text-xs font-bold text-[#71867c]">
+                                        {stats.salesInterval === 'month'
+                                            ? new Intl.DateTimeFormat('vi-VN', { month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date(`${day._id}-01T12:00:00+07:00`))
+                                            : new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date(`${day._id}T12:00:00+07:00`))}
+                                    </span>
                                 </div>
                             );
-                        }) : <p className="self-center text-sm text-[#80938a]">Chưa có doanh số trong 7 ngày gần đây.</p>}
+                        }) : <p className="self-center text-sm text-[#80938a]">Không có doanh số trong khoảng ngày đã chọn.</p>}
                     </div>
                 </section>
 
                 <div className="mb-6 flex flex-wrap gap-2">
                     <button
                         type="button"
-                        onClick={() => setFilter("all")}
-                        className={`rounded-full px-4 py-2 text-sm font-bold ${filter === "all"
+                        onClick={() => setFilter('pending')}
+                        className={`rounded-full px-4 py-2 text-sm font-bold ${filter === 'pending'
                             ? "bg-[#203b35] text-white"
                             : "bg-white text-[#527067]"
                             }`}
                     >
-                        Tất cả ({Object.values(counts).reduce((total, count) => total + count, 0)})
+                        Đơn chờ xác nhận ({paymentCounts.pending})
                     </button>
-
-                    {statuses.map((status) => (
-                        <button
-                            key={status.value}
-                            type="button"
-                            onClick={() => setFilter(status.value)}
-                            className={`rounded-full px-4 py-2 text-sm font-bold ${filter === status.value
+                    <button
+                        type="button"
+                        onClick={() => setFilter('confirmed')}
+                        className={`rounded-full px-4 py-2 text-sm font-bold ${filter === 'confirmed'
                                 ? "bg-[#203b35] text-white"
                                 : "bg-white text-[#527067]"
-                                }`}
-                        >
-                            {status.label} ({counts[status.value] || 0})
-                        </button>
-                    ))}
+                            }`}
+                    >
+                        Đơn đã xác nhận ({paymentCounts.confirmed})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFilter('shipped')}
+                        className={`rounded-full px-4 py-2 text-sm font-bold ${filter === 'shipped'
+                            ? "bg-[#203b35] text-white"
+                            : "bg-white text-[#527067]"
+                            }`}
+                    >
+                        Đang giao ({orderCounts.shipped || 0})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFilter('completed')}
+                        className={`rounded-full px-4 py-2 text-sm font-bold ${filter === 'completed'
+                            ? "bg-[#203b35] text-white"
+                            : "bg-white text-[#527067]"
+                            }`}
+                    >
+                        Hoàn tất ({orderCounts.completed || 0})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFilter('cancelled')}
+                        className={`rounded-full px-4 py-2 text-sm font-bold ${filter === 'cancelled'
+                            ? "bg-[#203b35] text-white"
+                            : "bg-white text-[#527067]"
+                            }`}
+                    >
+                        Đã hủy ({orderCounts.cancelled || 0})
+                    </button>
                 </div>
 
                 {error && (
@@ -341,18 +631,114 @@ export default function AdminOrdersPage() {
                                     </div>
                                 </div>
 
-                                {order.paymentReceiptUploaded && (
-                                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#e9f3eb] px-4 py-3">
-                                        <span className="text-sm font-bold text-[#2d6358]">Đã nhận ảnh bill chuyển khoản</span>
+                                <section className="mb-4 rounded-2xl border border-[#dceadd] bg-[#f8fbf7] p-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                        <span className={`text-sm font-bold ${order.paymentReceiptUploaded ? 'text-[#2d6358]' : 'text-[#71867c]'}`}>
+                                            {order.paymentReceiptUploaded ? 'Đã có ảnh bill chuyển khoản' : 'Chưa có ảnh bill chuyển khoản'}
+                                        </span>
+                                        {order.paymentReceiptUploaded && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (editingReceiptId === order.id) {
+                                                        clearReceiptPreview(order.id);
+                                                        setEditingReceiptId('');
+                                                    } else {
+                                                        setEditingReceiptId(order.id);
+                                                    }
+                                                }}
+                                                className="rounded-full border border-[#2d6358] px-4 py-2 text-sm font-bold text-[#2d6358]"
+                                            >
+                                                {editingReceiptId === order.id ? 'Hủy đổi bill' : 'Đổi bill'}
+                                            </button>
+                                        )}
+                                    </div>
+                                    {order.paymentReceiptUploaded ? (
                                         <button
                                             type="button"
                                             onClick={() => viewPaymentReceipt(order.id)}
-                                            className="rounded-full bg-[#2d6358] px-4 py-2 text-sm font-bold text-white"
+                                            className="mt-3 block w-full cursor-zoom-in overflow-hidden rounded-xl border border-[#dceadd] bg-white p-2 text-left"
+                                            aria-label="Mở ảnh bill chuyển khoản"
                                         >
-                                            Xem ảnh bill
+                                            <img
+                                                loading="lazy"
+                                                src={`/api/orders/${encodeURIComponent(order.id)}/payment-receipt?format=image`}
+                                                alt={`Ảnh bill chuyển khoản của đơn ${order.orderCode || order.id}`}
+                                                className="max-h-72 max-w-full rounded-lg object-contain"
+                                            />
+                                            <span className="mt-2 block text-xs font-bold text-[#2d6358]">Bấm vào ảnh để xem lớn</span>
                                         </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingReceiptId(order.id)}
+                                            className="mt-3 rounded-full bg-[#f47d52] px-4 py-2 text-sm font-bold text-white"
+                                        >
+                                            Thêm bill
+                                        </button>
+                                    )}
+                                    {editingReceiptId === order.id && (
+                                        <form onSubmit={event => uploadPaymentReceipt(order.id, event)} className="mt-3 flex flex-wrap items-end gap-3">
+                                            <label className="min-w-0 flex-1 text-sm font-bold text-[#526d64]">
+                                                {order.paymentReceiptUploaded ? 'Chọn ảnh bill mới' : 'Chọn ảnh bill'}
+                                                <input
+                                                    required
+                                                    type="file"
+                                                    name="receipt"
+                                                    accept="image/jpeg,image/png,image/webp"
+                                                    onChange={event => previewPaymentReceipt(order.id, event.currentTarget.files?.[0])}
+                                                    className="mt-2 block w-full text-sm font-normal text-[#71867c] file:mr-3 file:rounded-full file:border-0 file:bg-[#e9f3eb] file:px-4 file:py-2 file:font-bold file:text-[#2d6358]"
+                                                />
+                                            </label>
+                                            <button
+                                                type="submit"
+                                                disabled={uploadingReceiptId === order.id}
+                                                className="rounded-full bg-[#f47d52] px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+                                            >
+                                                {uploadingReceiptId === order.id ? 'Đang tải...' : 'Lưu ảnh bill'}
+                                            </button>
+                                        </form>
+                                    )}
+                                    {receiptPreviews[order.id] && (
+                                        <div className="mt-4">
+                                            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#83968c]">Xem trước ảnh bill</p>
+                                            <img
+                                                src={receiptPreviews[order.id]}
+                                                alt={`Xem trước ảnh bill của đơn ${order.orderCode || order.id}`}
+                                                className="max-h-64 max-w-full rounded-xl border border-[#dceadd] bg-white object-contain p-1"
+                                            />
+                                        </div>
+                                    )}
+                                    {receiptUploadMessage?.orderId === order.id && (
+                                        <p role="status" className="mt-2 text-sm font-bold text-[#526d64]">{receiptUploadMessage.text}</p>
+                                    )}
+                                    <p className="mt-2 text-xs text-[#71867c]">JPG, PNG hoặc WebP · tối đa 4 MB</p>
+                                </section>
+                                <section className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#dceadd] bg-white p-4">
+                                    <div>
+                                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#83968c]">Xác nhận thanh toán</p>
+                                        {order.paymentStatus === 'confirmed' ? (
+                                            <p className="mt-1 font-bold text-[#2d6358]">
+                                                Đã xác nhận thanh toán
+                                                {order.paymentConfirmedAt ? ` · ${dateTime(order.paymentConfirmedAt)}` : ''}
+                                            </p>
+                                        ) : (
+                                            <p className="mt-1 text-sm text-[#71867c]">Chưa xác nhận thanh toán</p>
+                                        )}
                                     </div>
-                                )}
+                                    {order.paymentStatus === 'confirmed' ? (
+                                        <span className="rounded-full bg-[#e9f3eb] px-4 py-2 text-sm font-bold text-[#2d6358]">Đã thanh toán</span>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => confirmPayment(order.id)}
+                                            disabled={confirmingPaymentId === order.id}
+                                            className="rounded-full bg-[#2d6358] px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+                                        >
+                                            {confirmingPaymentId === order.id ? 'Đang xác nhận...' : 'Xác nhận đã thanh toán'}
+                                        </button>
+                                    )}
+                                </section>
                                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf3ed] pt-4">
                                     <span className="text-sm text-[#71867c]">
                                         Cập nhật trạng thái chốt đơn:

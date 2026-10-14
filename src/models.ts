@@ -69,6 +69,9 @@ const orderSchema = new mongoose.Schema({
   items: [{ productId: String, packageId: String, name: String, price: Number, quantity: Number }],
   total: { type: Number, required: true },
   status: { type: String, default: 'new' },
+  paymentStatus: { type: String, enum: ['pending', 'confirmed'], default: 'pending', index: true },
+  paymentConfirmedAt: Date,
+  paymentConfirmedBy: String,
   paymentReceipt: {
     dataUrl: String,
     contentType: String,
