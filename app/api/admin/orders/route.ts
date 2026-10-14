@@ -57,9 +57,10 @@ export async function GET(request: Request) {
         const dateQuery: Record<string, Date> = {};
         if (fromDate) dateQuery.$gte = fromDate;
         if (toDate) dateQuery.$lt = new Date(toDate.getTime() + 24 * 60 * 60 * 1000);
+        const dateFilter = Object.keys(dateQuery).length ? { createdAt: dateQuery } : {};
         const query: Record<string, unknown> = {};
         if (status && statuses.includes(status as typeof statuses[number])) query.status = status;
-        if (Object.keys(dateQuery).length) query.createdAt = dateQuery;
+        Object.assign(query, dateFilter);
         if (paymentStatus === 'confirmed') query.paymentStatus = 'confirmed';
         if (paymentStatus === 'pending') {
             query.$or = [{ paymentStatus: 'pending' }, { paymentStatus: null }];
@@ -68,9 +69,9 @@ export async function GET(request: Request) {
         await connectMongo();
         const orders = await Order.find(query).select('-paymentReceipt.dataUrl').sort({ isRead: 1, createdAt: -1 }).limit(100).lean();
         const [countEntries, pendingPaymentCount, confirmedPaymentCount] = await Promise.all([
-            Promise.all(statuses.map(async currentStatus => [currentStatus, await Order.countDocuments({ ...dateQuery, status: currentStatus })] as const)),
-            Order.countDocuments({ ...dateQuery, $or: [{ paymentStatus: 'pending' }, { paymentStatus: null }] }),
-            Order.countDocuments({ ...dateQuery, paymentStatus: 'confirmed' }),
+            Promise.all(statuses.map(async currentStatus => [currentStatus, await Order.countDocuments({ ...dateFilter, status: currentStatus })] as const)),
+            Order.countDocuments({ ...dateFilter, $or: [{ paymentStatus: 'pending' }, { paymentStatus: null }] }),
+            Order.countDocuments({ ...dateFilter, paymentStatus: 'confirmed' }),
         ]);
 
         const rangeDays = range === '7' || range === '30' || range === '90' ? Number(range) : null;
