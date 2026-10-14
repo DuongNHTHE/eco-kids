@@ -28,16 +28,7 @@ export async function POST(request: Request) {
       const catalogItem = pack || product;
       if (!catalogItem) return null;
       const quantity = Math.max(1, Math.min(10, Number(item.quantity) || 1));
-      if (pack) {
-        pack.items?.forEach((packItem: { productId?: string; quantity?: number }) => {
-          if (packItem.productId) {
-            stockRequirements.set(
-              packItem.productId,
-              (stockRequirements.get(packItem.productId) || 0) + quantity * Math.max(1, Number(packItem.quantity) || 1),
-            );
-          }
-        });
-      } else {
+      if (!pack) {
         stockRequirements.set(itemId, (stockRequirements.get(itemId) || 0) + quantity);
       }
       return {
