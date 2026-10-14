@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { OrderPaymentStep, type OrderPayment } from '../../components/OrderPaymentStep';
 
@@ -49,6 +50,15 @@ type OrderHistory = {
 
 const money = (value: number) => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
 
+async function getShopData<T>(path: string): Promise<T> {
+    const response = await fetch(`/api/${path}`, { credentials: 'same-origin' });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+        throw new Error(payload?.message || 'Không thể tải dữ liệu cửa hàng.');
+    }
+    return payload as T;
+}
+
 const statusLabels: Record<string, string> = {
     new: 'Mới',
     confirmed: 'Đã chốt',
@@ -69,12 +79,16 @@ const statusStyles: Record<string, string> = {
 
 export default function ParentShopPage() {
     const { API } = useAPI();
+    const { data: session, status: sessionStatus } = useSession();
+    const isParent = sessionStatus === 'authenticated'
+        && (session?.user as { role?: string } | undefined)?.role === 'PARENT';
     const [products, setProducts] = useState<Product[]>([]);
     const [packages, setPackages] = useState<Package[]>([]);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [cartOpen, setCartOpen] = useState(false);
     const [ordersOpen, setOrdersOpen] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [cartReady, setCartReady] = useState(false);
     const [submittingOrder, setSubmittingOrder] = useState(false);
     const [message, setMessage] = useState('');
@@ -85,22 +99,82 @@ export default function ParentShopPage() {
     const cartSaveQueue = useRef<Promise<void>>(Promise.resolve());
 
     useEffect(() => {
-        Promise.all([
-            API.get('products', false, true, true),
-            API.get('packages', false, true, true),
-            API.get('orders', false, true, true),
-            API.get('cart', false, true, true),
-        ]).then(([nextProducts, nextPackages, nextOrders, nextCart]) => {
-            if (Array.isArray(nextProducts)) setProducts(nextProducts);
-            if (Array.isArray(nextPackages)) setPackages(nextPackages);
-            if (Array.isArray(nextOrders)) setOrders(nextOrders);
-            if (Array.isArray(nextCart?.items)) setCart(nextCart.items);
-            setLoading(false);
-            setCartReady(true);
-        });
-    }, [API]);
+        let cancelled = false;
+
+        async function loadShop() {
+            setLoading(true);
+
+            try {
+                const [nextProducts, nextPackages] = await Promise.all([
+                    getShopData<Product[]>('products'),
+                    getShopData<Package[]>('packages'),
+                ]);
+                if (cancelled) return;
+                setProducts(nextProducts);
+                setPackages(nextPackages);
+            } catch (error) {
+                if (!cancelled) {
+                    setLoadError(error instanceof Error ? error.message : 'Không thể tải sản phẩm cửa hàng.');
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        void loadShop();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (sessionStatus === 'loading') return;
+        let cancelled = false;
+        setCartReady(false);
+
+        async function loadAccountData() {
+            if (isParent) {
+                try {
+                    const [nextOrders, nextCart] = await Promise.all([
+                        getShopData<OrderHistory[]>('orders'),
+                        getShopData<{ items?: CartItem[] }>('cart'),
+                    ]);
+                    if (cancelled) return;
+                    setOrders(nextOrders);
+                    if (Array.isArray(nextCart.items)) setCart(nextCart.items);
+                } catch (error) {
+                    if (!cancelled) {
+                        setMessage(error instanceof Error ? error.message : 'Không thể tải giỏ hàng và lịch sử đơn.');
+                    }
+                }
+            } else {
+                setOrders([]);
+                try {
+                    const storedCart = JSON.parse(localStorage.getItem('eco-shop-cart') || '[]');
+                    setCart(Array.isArray(storedCart) ? storedCart : []);
+                } catch (error) {
+                    console.error('shop cart load error', error);
+                    setCart([]);
+                }
+            }
+
+            if (!cancelled) setCartReady(true);
+        }
+
+        void loadAccountData();
+        return () => {
+            cancelled = true;
+        };
+    }, [isParent, sessionStatus]);
 
     function persistCart(items: CartItem[]) {
+        if (!isParent) {
+            localStorage.setItem('eco-shop-cart', JSON.stringify(items));
+            return;
+        }
+
         const storedItems = items.map(item => ({ kind: item.kind, id: item.id, quantity: item.quantity }));
         cartSaveQueue.current = cartSaveQueue.current.then(async () => {
             const result = await API.put('cart', { items: storedItems }, false, true, false);
@@ -131,6 +205,11 @@ export default function ParentShopPage() {
 
     async function checkout(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (!isParent) {
+            setMessage('Vui lòng đăng nhập bằng tài khoản phụ huynh để đặt hàng.');
+            return;
+        }
+
         setSubmittingOrder(true);
         setMessage('Đang tạo đơn hàng...');
         try {
@@ -166,18 +245,22 @@ export default function ParentShopPage() {
             <header className="border-b border-[#dceadd] bg-white/90 px-5 py-5 backdrop-blur lg:px-10">
                 <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
                     <div>
-                        <Link href="/dashboard" className="text-sm font-bold text-[#6eaa83]">← Về dashboard</Link>
+                        <Link href={isParent ? '/dashboard' : '/'} className="text-sm font-bold text-[#6eaa83]">
+                            {isParent ? '← Về dashboard' : '← Về trang chủ'}
+                        </Link>
                         <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">Cửa hàng học liệu</h1>
                         <p className="mt-1 text-[#71867c]">Mô hình bán rời và package cho hành trình học của bé.</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setOrdersOpen(true)}
-                            className="rounded-full border border-[#cfe2d2] bg-white px-5 py-3 font-bold text-[#203b35] hover:bg-[#f4faf4]"
-                        >
-                            📦 Đơn đã đặt
-                        </button>
+                        {isParent && (
+                            <button
+                                type="button"
+                                onClick={() => setOrdersOpen(true)}
+                                className="rounded-full border border-[#cfe2d2] bg-white px-5 py-3 font-bold text-[#203b35] hover:bg-[#f4faf4]"
+                            >
+                                📦 Đơn đã đặt
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={() => setCartOpen(true)}
@@ -198,6 +281,17 @@ export default function ParentShopPage() {
                 {loading ? (
                     <div className="rounded-3xl bg-white p-10 text-center font-bold text-[#71867c]">
                         Đang tải sản phẩm...
+                    </div>
+                ) : loadError ? (
+                    <div role="alert" className="rounded-3xl bg-white p-10 text-center">
+                        <p className="font-bold text-[#a94438]">{loadError}</p>
+                        <button
+                            type="button"
+                            onClick={() => window.location.reload()}
+                            className="mt-4 rounded-full bg-[#203b35] px-5 py-3 font-bold text-white"
+                        >
+                            Tải lại cửa hàng
+                        </button>
                     </div>
                 ) : (
                     <>
@@ -493,38 +587,59 @@ export default function ParentShopPage() {
                                     <span className="font-bold text-[#526d64]">Tổng cộng</span>
                                     <strong className="text-lg">{money(total)}</strong>
                                 </div>
-                                <form onSubmit={checkout} className="space-y-3">
-                                    <input
-                                        required
-                                        value={customer.name}
-                                        onChange={event => setCustomer({ ...customer, name: event.target.value })}
-                                        placeholder="Họ tên người nhận"
-                                        className="w-full rounded-2xl border border-[#dceadd] px-4 py-3 outline-none focus:border-[#6eaa83] focus:ring-4 focus:ring-[#6eaa83]/15"
-                                    />
-                                    <input
-                                        required
-                                        value={customer.phone}
-                                        onChange={event => setCustomer({ ...customer, phone: event.target.value })}
-                                        placeholder="Số điện thoại"
-                                        className="w-full rounded-2xl border border-[#dceadd] px-4 py-3 outline-none focus:border-[#6eaa83] focus:ring-4 focus:ring-[#6eaa83]/15"
-                                    />
-                                    <textarea
-                                        required
-                                        value={customer.address}
-                                        onChange={event => setCustomer({ ...customer, address: event.target.value })}
-                                        placeholder="Địa chỉ nhận hàng"
-                                        rows={3}
-                                        className="w-full rounded-2xl border border-[#dceadd] px-4 py-3 outline-none focus:border-[#6eaa83] focus:ring-4 focus:ring-[#6eaa83]/15"
-                                    />
-                                    <button disabled={submittingOrder} type="submit" className="w-full rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white hover:bg-[#e36b40] disabled:opacity-50">
-                                        {submittingOrder ? 'Đang xử lý...' : 'Đặt hàng'}
-                                    </button>
-                                    {message && (
-                                        <p className="rounded-2xl bg-[#e9f3eb] px-4 py-3 text-sm font-bold text-[#2d6358]">
-                                            {message}
+                                {isParent ? (
+                                    <form onSubmit={checkout} className="space-y-3">
+                                        <input
+                                            required
+                                            value={customer.name}
+                                            onChange={event => setCustomer({ ...customer, name: event.target.value })}
+                                            placeholder="Họ tên người nhận"
+                                            className="w-full rounded-2xl border border-[#dceadd] px-4 py-3 outline-none focus:border-[#6eaa83] focus:ring-4 focus:ring-[#6eaa83]/15"
+                                        />
+                                        <input
+                                            required
+                                            value={customer.phone}
+                                            onChange={event => setCustomer({ ...customer, phone: event.target.value })}
+                                            placeholder="Số điện thoại"
+                                            className="w-full rounded-2xl border border-[#dceadd] px-4 py-3 outline-none focus:border-[#6eaa83] focus:ring-4 focus:ring-[#6eaa83]/15"
+                                        />
+                                        <textarea
+                                            required
+                                            value={customer.address}
+                                            onChange={event => setCustomer({ ...customer, address: event.target.value })}
+                                            placeholder="Địa chỉ nhận hàng"
+                                            rows={3}
+                                            className="w-full rounded-2xl border border-[#dceadd] px-4 py-3 outline-none focus:border-[#6eaa83] focus:ring-4 focus:ring-[#6eaa83]/15"
+                                        />
+                                        <button disabled={submittingOrder} type="submit" className="w-full rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white hover:bg-[#e36b40] disabled:opacity-50">
+                                            {submittingOrder ? 'Đang xử lý...' : 'Đặt hàng'}
+                                        </button>
+                                        {message && (
+                                            <p role="status" className="rounded-2xl bg-[#e9f3eb] px-4 py-3 text-sm font-bold text-[#2d6358]">
+                                                {message}
+                                            </p>
+                                        )}
+                                    </form>
+                                ) : (
+                                    <div className="space-y-3">
+                                        <p role="status" className="text-sm text-[#71867c]">
+                                            {sessionStatus === 'loading'
+                                                ? 'Đang kiểm tra phiên đăng nhập...'
+                                                : sessionStatus === 'authenticated'
+                                                    ? 'Chỉ tài khoản phụ huynh được phép đặt hàng.'
+                                                    : 'Đăng nhập bằng tài khoản phụ huynh để đặt hàng.'}
                                         </p>
-                                    )}
-                                </form>
+                                        {sessionStatus === 'unauthenticated' && (
+                                            <Link
+                                                href="/login"
+                                                onClick={() => localStorage.setItem('ru', '/shop')}
+                                                className="block w-full rounded-full bg-[#f47d52] px-5 py-3 text-center font-bold text-white hover:bg-[#e36b40]"
+                                            >
+                                                Đăng nhập để đặt hàng
+                                            </Link>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </aside>

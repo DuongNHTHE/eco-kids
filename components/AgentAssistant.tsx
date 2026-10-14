@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { getSelectedChildId, saveSelectedChild } from '../lib/child-session';
 
 type ChatRole = 'user' | 'assistant';
@@ -25,6 +26,9 @@ const initialMessages: ChatMessage[] = [
 ];
 
 export default function AgentAssistant() {
+    const { data: session, status: sessionStatus } = useSession();
+    const canLoadChild = sessionStatus === 'authenticated'
+        && (session?.user as { role?: string } | undefined)?.role === 'PARENT';
     const [open, setOpen] = useState(false);
     const [question, setQuestion] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -87,6 +91,8 @@ export default function AgentAssistant() {
     };
 
     useEffect(() => {
+        if (!canLoadChild) return;
+
         fetch('/api/children')
             .then((response) => response.ok ? response.json() : [])
             .then((children: ChildProfile[]) => {
@@ -97,7 +103,7 @@ export default function AgentAssistant() {
                 setChildId(selectedChild.id);
             })
             .catch(() => undefined);
-    }, []);
+    }, [canLoadChild]);
 
     useEffect(() => {
         const syncSelectedChild = () => {
@@ -110,7 +116,7 @@ export default function AgentAssistant() {
     }, []);
 
     useEffect(() => {
-        if (!childId) {
+        if (!canLoadChild || !childId) {
             setMessages(initialMessages);
             setQuestion('');
             setConversationId(null);
@@ -164,7 +170,7 @@ export default function AgentAssistant() {
         return () => {
             cancelled = true;
         };
-    }, [childId]);
+    }, [canLoadChild, childId]);
 
     async function handleSubmit(event: FormEvent) {
         event.preventDefault();

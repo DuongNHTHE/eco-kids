@@ -6,10 +6,6 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../lib/hooks/useAPI';
 import { resolveRoleHome } from '../lib/auth';
-import { OrderPaymentStep, type OrderPayment } from '../components/OrderPaymentStep';
-
-const money = value => new Intl.NumberFormat('vi-VN').format(value) + 'đ';
-const productIcon = id => id === 'premium' ? '✨' : id === 'explorer' ? '🚀' : '🦊';
 
 function Button({ children, className = '', ...props }) {
     return <button className={`rounded-full px-5 py-3 font-bold transition hover:-translate-y-0.5 hover:shadow-lg ${className}`} {...props}>{children}</button>;
@@ -22,41 +18,18 @@ export default function HomePage() {
     const accountName = session?.user?.name || session?.user?.email || 'Tài khoản';
     const accountRole = (session?.user as { role?: string } | undefined)?.role || 'PARENT';
     const [topics, setTopics] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [cart, setCart] = useState([]);
-    const [cartOpen, setCartOpen] = useState(false);
     const [toast, setToast] = useState('');
     const [partnerMessage, setPartnerMessage] = useState('');
-    const [checkoutMessage, setCheckoutMessage] = useState('');
-    const [checkoutPayment, setCheckoutPayment] = useState<{ orderId: string; payment: OrderPayment } | null>(null);
 
     useEffect(() => {
-        setCart(
-            JSON.parse(localStorage.getItem("eco-cart") || "[]")
-        );
-
-        Promise.all([
-            API.get("topics", false, false, true),
-            API.get("packages", false, false, true),
-        ]).then(([nextTopics, nextPackages]) => {
-            if (
-                !Array.isArray(nextTopics) ||
-                !Array.isArray(nextPackages)
-            ) {
+        API.get("topics", false, false, true).then((nextTopics) => {
+            if (!Array.isArray(nextTopics)) {
                 return setToast("Chưa tải được nội dung.");
             }
 
             setTopics(nextTopics);
-            setProducts(nextPackages);
         });
     }, [API]);
-
-    useEffect(() => {
-        localStorage.setItem(
-            "eco-cart",
-            JSON.stringify(cart)
-        );
-    }, [cart]);
 
     useEffect(() => {
         if (!toast) return;
@@ -67,54 +40,6 @@ export default function HomePage() {
 
         return () => clearTimeout(timer);
     }, [toast]);
-
-    const addToCart = (productId) => {
-        setCart((current) =>
-            current.some((item) => item.productId === productId)
-                ? current.map((item) =>
-                    item.productId === productId
-                        ? {
-                            ...item,
-                            quantity: item.quantity + 1,
-                        }
-                        : item
-                )
-                : [
-                    ...current,
-                    {
-                        productId,
-                        quantity: 1,
-                    },
-                ]
-        );
-
-        setCartOpen(true);
-        setToast("Đã thêm vào giỏ hàng 🌱");
-    };
-
-    const removeFromCart = (productId) => {
-        setCart((current) =>
-            current.filter(
-                (item) => item.productId !== productId
-            )
-        );
-    };
-
-    const cartCount = cart.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-    );
-
-    const total = cart.reduce((sum, item) => {
-        const product = products.find(
-            (p) => p.id === item.productId
-        );
-
-        return (
-            sum +
-            (product?.price || 0) * item.quantity
-        );
-    }, 0);
 
     async function submitPartner(event) {
         event.preventDefault();
@@ -136,44 +61,6 @@ export default function HomePage() {
 
         if (result.success) {
             event.currentTarget.reset();
-        }
-    }
-
-    async function checkout(event) {
-        event.preventDefault();
-        const form = event.currentTarget;
-
-        setCheckoutMessage("Đang tạo đơn…");
-
-        const customer = Object.fromEntries(
-            new FormData(form)
-        );
-
-        const result = await API.post(
-            "orders",
-            {
-                customer,
-                items: cart,
-            },
-            false,
-            false
-        );
-
-        setCheckoutMessage(
-            result.success
-                ? `${result.message} Mã đơn: ${result.orderId}`
-                : result.message
-        );
-
-        if (result.success) {
-            if (result.orderId && result.payment) {
-                setCheckoutPayment({ orderId: result.orderId, payment: result.payment });
-                setCart([]);
-                form.reset();
-                setToast("Đơn hàng đã được ghi nhận 🎉");
-            } else {
-                setCheckoutMessage('Không thể tải thông tin thanh toán. Vui lòng liên hệ cửa hàng.');
-            }
         }
     }
 
@@ -206,17 +93,12 @@ export default function HomePage() {
                 </nav>
 
                 <div className="flex items-center gap-3">
-                    <button
-                        aria-label="Mở giỏ hàng"
-                        onClick={() => setCartOpen(true)}
-                        className="relative text-xl"
+                    <Link
+                        href="/shop"
+                        className="rounded-full border border-[#d9e5da] px-4 py-2 font-bold text-[#203b35] transition hover:bg-[#eef8ef]"
                     >
-                        🛒
-
-                        <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#f47d52] text-xs text-white">
-                            {cartCount}
-                        </span>
-                    </button>
+                        🛒 Cửa hàng
+                    </Link>
 
                     <Link
                         href={isAuthenticated ? resolveRoleHome(accountRole) : '/login'}
@@ -491,74 +373,24 @@ export default function HomePage() {
             >
                 <div className="mx-auto max-w-2xl text-center">
                     <span className="font-bold text-[#ef7d32]">
-                        Bắt đầu hành trình
+                        Cửa hàng học liệu
                     </span>
 
                     <h2 className="mt-2 text-5xl font-extrabold">
-                        Chọn bộ học liệu{" "}
-                        <em className="text-[#f47d52]">phù hợp</em>
+                        Khám phá học liệu{" "}
+                        <em className="text-[#f47d52]">cho bé</em>
                     </h2>
 
                     <p className="mt-4 text-[#6c857c]">
-                        Mỗi package kết hợp các mô hình bán rời và nội dung học phù hợp.
+                        Xem các mô hình học tập và combo phù hợp tại cửa hàng ECO-KIDS.
                     </p>
-                </div>
 
-                <div className="mt-10 grid gap-5 md:grid-cols-3">
-                    {products.map((product) => (
-                        <article
-                            key={product.id}
-                            className={`relative rounded-3xl border-2 p-6 ${product.featured
-                                ? "border-[#f47d52] bg-[#fff6e8] shadow-soft"
-                                : "border-[#e3ece4] bg-white"
-                                }`}
-                        >
-                            <span
-                                className="rounded-full px-3 py-1 text-xs font-black text-white"
-                                style={{ backgroundColor: product.color }}
-                            >
-                                {product.badge}
-                            </span>
-
-                            <div className="my-6 text-6xl">
-                                {productIcon(product.id)}
-                            </div>
-
-                            <h3 className="text-3xl font-extrabold">
-                                {product.name}
-                            </h3>
-
-                            <p className="text-[#74877f]">
-                                {product.subtitle}
-                            </p>
-
-                            <div className="mt-5 text-3xl font-black">
-                                {money(product.price)}{" "}
-                                <small className="text-sm font-normal">
-                                    {product.period}
-                                </small>
-                            </div>
-
-                            <ul className="my-6 space-y-2 text-sm text-[#5d746a]">
-                                {product.items.map((item) => (
-                                    <li key={item.productId}>
-                                        ✓ {item.quantity} ×{" "}
-                                        {item.product?.name || "Mô hình"}
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Button
-                                onClick={() => addToCart(product.id)}
-                                className={`w-full ${product.featured
-                                    ? "bg-[#f47d52] text-white"
-                                    : "bg-[#203b35] text-white"
-                                    }`}
-                            >
-                                Chọn sản phẩm
-                            </Button>
-                        </article>
-                    ))}
+                    <Link
+                        href="/shop"
+                        className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#f47d52] px-7 py-3 font-bold text-white shadow-lg shadow-[#f47d52]/20 transition hover:-translate-y-0.5 hover:bg-[#e36b40]"
+                    >
+                        Đến cửa hàng <span aria-hidden="true">→</span>
+                    </Link>
                 </div>
             </section>
 
@@ -879,155 +711,6 @@ export default function HomePage() {
                 © 2026 ECO-KIDS. Made with love for little explorers.
             </div>
         </footer>
-        {cartOpen && (
-            <div className="fixed inset-0 z-30">
-                <button
-                    aria-label="Đóng giỏ hàng"
-                    className="absolute inset-0 bg-[#203b35]/40"
-                    onClick={() => setCartOpen(false)}
-                />
-
-                <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-[#fffdf8] p-6 shadow-2xl">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-3xl font-extrabold">
-                            Giỏ hàng của bạn
-                        </h2>
-
-                        <button
-                            aria-label="Đóng"
-                            className="text-3xl"
-                            onClick={() => setCartOpen(false)}
-                        >
-                            ×
-                        </button>
-                    </div>
-
-                    <div className="flex-1 py-8">
-                        {checkoutPayment ? (
-                            <div className="space-y-4">
-                                <p role="status" className="rounded-2xl bg-[#e9f3eb] px-4 py-3 text-sm font-bold text-[#2d6358]">
-                                    {checkoutMessage}
-                                </p>
-                                <OrderPaymentStep
-                                    orderId={checkoutPayment.orderId}
-                                    payment={checkoutPayment.payment}
-                                    onUploaded={() => {
-                                        setCheckoutPayment(null);
-                                        setToast('Đã gửi bill chuyển khoản thành công.');
-                                    }}
-                                />
-                            </div>
-                        ) : cartCount ? (
-                            cart.map((item) => {
-                                const product = products.find(
-                                    (p) => p.id === item.productId
-                                );
-
-                                return (
-                                    product && (
-                                        <div
-                                            key={item.productId}
-                                            className="flex items-center gap-3 border-b border-[#e4eee3] py-4"
-                                        >
-                                            <span className="text-3xl">
-                                                {productIcon(product.id)}
-                                            </span>
-
-                                            <div className="flex-1">
-                                                <b>{product.name}</b>
-
-                                                <small className="block">
-                                                    {item.quantity} ×{" "}
-                                                    {money(product.price)}
-                                                </small>
-                                            </div>
-
-                                            <button
-                                                onClick={() =>
-                                                    removeFromCart(item.productId)
-                                                }
-                                                aria-label={`Xóa ${product.name}`}
-                                                className="text-2xl"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    )
-                                );
-                            })
-                        ) : (
-                            <div className="flex h-full flex-col items-center justify-center text-center">
-                                <span className="text-6xl">🛒</span>
-
-                                <b className="mt-4 text-xl">
-                                    Giỏ hàng đang trống
-                                </b>
-
-                                <small>
-                                    Chọn một bộ học liệu để bắt đầu nhé!
-                                </small>
-                            </div>
-                        )}
-                    </div>
-
-                    {cartCount > 0 && (
-                        <div>
-                            <div className="flex justify-between border-t border-[#dbe7dc] py-4">
-                                <span>Tạm tính</span>
-                                <b>{money(total)}</b>
-                            </div>
-
-                            <details>
-                                <summary className="cursor-pointer font-bold">
-                                    Tiến hành đặt hàng
-                                </summary>
-
-                                <form
-                                    onSubmit={checkout}
-                                    className="space-y-3 pt-4"
-                                >
-                                    <input
-                                        name="name"
-                                        required
-                                        placeholder="Họ tên phụ huynh"
-                                        className="w-full rounded-xl border p-3"
-                                    />
-
-                                    <input
-                                        name="phone"
-                                        required
-                                        placeholder="Số điện thoại"
-                                        className="w-full rounded-xl border p-3"
-                                    />
-
-                                    <textarea
-                                        name="address"
-                                        required
-                                        placeholder="Địa chỉ nhận hàng"
-                                        rows={3}
-                                        className="w-full rounded-xl border p-3"
-                                    />
-
-                                    <Button
-                                        type="submit"
-                                        className="w-full bg-[#f47d52] text-white"
-                                    >
-                                        Xác nhận đặt hàng
-                                    </Button>
-
-                                    <p
-                                        className="text-sm"
-                                        role="status"
-                                    >
-                                        {checkoutMessage}
-                                    </p>
-                                </form>
-                            </details>
-                        </div>
-                    )}
-                </aside>
-            </div>
-        )}
         {toast && (
             <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full bg-[#203b35] px-5 py-3 text-sm font-bold text-white shadow-lg">
                 {toast}
