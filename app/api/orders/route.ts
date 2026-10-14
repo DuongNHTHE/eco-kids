@@ -1,10 +1,11 @@
-import { Cart, Notification, Order, Package, Product } from '../../../src/models';
+import { Cart, Notification, Order, Package, Product, Topic } from '../../../src/models';
 import { connectMongo } from '../../../src/models';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { writeAuditLog } from '../../../src/audit';
 import mongoose from 'mongoose';
 import { createOrderPayment, generateOrderCode } from '../../../src/order-payment';
+import { requiresLearningTopic } from '../../../src/package-topic';
 
 export async function POST(request: Request) {
   try {
@@ -27,6 +28,25 @@ export async function POST(request: Request) {
         : null;
       const catalogItem = pack || product;
       if (!catalogItem) return null;
+      let selectedTopic: { slug: string; title: string } | null = null;
+      if (pack && requiresLearningTopic(pack)) {
+        const topicId = String(item.topicId || '').trim();
+        if (!topicId) {
+          const error = new Error(`Vui lòng chọn chủ đề học cho ${pack.name}.`) as Error & { status?: number };
+          error.status = 400;
+          throw error;
+        }
+        const topic = await Topic.findOne({ slug: topicId }).select('slug title vietnamese').lean();
+        if (!topic || Array.isArray(topic) || typeof topic.slug !== 'string' || typeof topic.title !== 'string') {
+          const error = new Error('Chủ đề học đã chọn không hợp lệ. Vui lòng chọn lại.') as Error & { status?: number };
+          error.status = 400;
+          throw error;
+        }
+        selectedTopic = {
+          slug: topic.slug,
+          title: typeof topic.vietnamese === 'string' && topic.vietnamese ? topic.vietnamese : topic.title,
+        };
+      }
       const quantity = Math.max(1, Math.min(10, Number(item.quantity) || 1));
       if (!pack) {
         stockRequirements.set(itemId, (stockRequirements.get(itemId) || 0) + quantity);
@@ -36,6 +56,7 @@ export async function POST(request: Request) {
         name: catalogItem.name,
         price: catalogItem.price,
         quantity,
+        ...(selectedTopic ? { topicId: selectedTopic.slug, topicName: selectedTopic.title } : {}),
       };
     }))).filter(Boolean);
     if (!normalizedItems.length) return Response.json({ message: 'Sản phẩm không hợp lệ.' }, { status: 400 });
@@ -67,6 +88,11 @@ export async function POST(request: Request) {
             total,
           }], { session: dbSession });
           order = created[0];
+          await Order.collection.updateOne(
+            { _id: order._id },
+            { $set: { items: normalizedItems } },
+            { session: dbSession },
+          );
           await Cart.deleteOne({ userId: user.id }, { session: dbSession });
         });
         break;
@@ -113,7 +139,8 @@ export async function POST(request: Request) {
       total,
       payment: createOrderPayment(orderCode, total),
     }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.status === 400) return Response.json({ message: error.message }, { status: 400 });
     console.error(error);
     return Response.json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.' }, { status: 500 });
   }

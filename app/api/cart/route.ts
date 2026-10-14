@@ -2,8 +2,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { Cart, connectMongo, Package, Product } from '../../../src/models';
 
-type CartItemInput = { kind: 'product' | 'package'; id: string; quantity: number };
-type StoredCartItem = { kind: 'product' | 'package'; itemId: string; quantity: number };
+type CartItemInput = { kind: 'product' | 'package'; id: string; quantity: number; topicId?: string; topicName?: string };
+type StoredCartItem = { kind: 'product' | 'package'; itemId: string; quantity: number; topicId?: string; topicName?: string };
 type CatalogItem = { slug: string; name: string; price: number };
 
 async function getParent() {
@@ -36,6 +36,7 @@ async function hydrateItems(items: CartItemInput[]) {
       name: catalogItem.name,
       price: Number(catalogItem.price),
       quantity: item.quantity,
+      ...(item.topicId ? { topicId: item.topicId, topicName: item.topicName } : {}),
     } : null;
   });
 }
@@ -51,6 +52,8 @@ export async function GET() {
       kind: item.kind,
       id: item.itemId,
       quantity: Number(item.quantity),
+      topicId: item.topicId,
+      topicName: item.topicName,
     })) as CartItemInput[];
     const hydratedItems = (await hydrateItems(items)).filter(Boolean);
     return Response.json({ items: hydratedItems });
@@ -74,18 +77,20 @@ export async function PUT(request: Request) {
     for (const item of body.items) {
       const kind = item?.kind;
       const id = typeof item?.id === 'string' ? item.id.trim() : '';
+      const topicId = typeof item?.topicId === 'string' ? item.topicId.trim() : '';
+      const topicName = typeof item?.topicName === 'string' ? item.topicName.trim() : '';
       const quantity = Number(item?.quantity);
-      if (!['product', 'package'].includes(kind) || !id || id.length > 120 || !Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
+      if (!['product', 'package'].includes(kind) || !id || id.length > 120 || topicId.length > 120 || topicName.length > 160 || !Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
         return Response.json({ message: 'Sản phẩm hoặc số lượng trong giỏ hàng không hợp lệ.' }, { status: 400 });
       }
 
-      const key = `${kind}:${id}`;
+      const key = `${kind}:${id}:${topicId}`;
       const existing = combinedItems.get(key);
       const totalQuantity = (existing?.quantity || 0) + quantity;
       if (totalQuantity > 100) {
         return Response.json({ message: 'Số lượng mỗi sản phẩm không được vượt quá 100.' }, { status: 400 });
       }
-      combinedItems.set(key, { kind, id, quantity: totalQuantity });
+      combinedItems.set(key, { kind, id, quantity: totalQuantity, ...(topicId ? { topicId, topicName } : {}) });
     }
 
     const items = [...combinedItems.values()];
@@ -101,7 +106,12 @@ export async function PUT(request: Request) {
       return Response.json({ items: [] });
     }
 
-    const cartItems = items.map(({ kind, id, quantity }) => ({ kind, itemId: id, quantity }));
+    const cartItems = items.map(({ kind, id, quantity, topicId, topicName }) => ({
+      kind,
+      itemId: id,
+      quantity,
+      ...(topicId ? { topicId, topicName } : {}),
+    }));
     try {
       await Cart.findOneAndUpdate(
         { userId: user.id },

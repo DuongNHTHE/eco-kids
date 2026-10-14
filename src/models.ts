@@ -66,7 +66,7 @@ const orderSchema = new mongoose.Schema({
     phone: { type: String, required: true },
     address: { type: String, required: true }
   },
-  items: [{ productId: String, packageId: String, name: String, price: Number, quantity: Number }],
+  items: [{ productId: String, packageId: String, name: String, price: Number, quantity: Number, topicId: String, topicName: String }],
   total: { type: Number, required: true },
   status: { type: String, default: 'new' },
   paymentStatus: { type: String, enum: ['pending', 'confirmed'], default: 'pending', index: true },
@@ -84,6 +84,8 @@ const cartItemSchema = new mongoose.Schema({
   kind: { type: String, enum: ['product', 'package'], required: true },
   itemId: { type: String, required: true },
   quantity: { type: Number, min: 1, max: 100, required: true },
+  topicId: String,
+  topicName: String,
 }, { _id: false });
 
 const cartSchema = new mongoose.Schema({

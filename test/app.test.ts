@@ -10,6 +10,13 @@ import { POST as saveProgress } from '../app/api/progress/route';
 import { POST as createOrder } from '../app/api/orders/route';
 import { hashParentCode, verifyParentCode } from '../src/parent-settings-code';
 import { createOrderPayment, generateOrderCode, isSupportedPaymentReceipt } from '../src/order-payment';
+import { requiresLearningTopic } from '../src/package-topic';
+
+test('requires learning topics for the retail book and Started Kit packages', () => {
+  assert.equal(requiresLearningTopic({ slug: 'starter', name: 'Sách Bán Lẻ' }), true);
+  assert.equal(requiresLearningTopic({ slug: 'explorer', name: 'Combo Started Kit' }), true);
+  assert.equal(requiresLearningTopic({ slug: 'premium', name: 'Mô Hình' }), false);
+});
 
 test('stores parent codes as salted hashes and verifies without retaining the plain code', async () => {
   const code = '736184';

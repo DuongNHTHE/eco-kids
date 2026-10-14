@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { OrderPaymentStep, type OrderPayment } from '../../components/OrderPaymentStep';
+import { requiresLearningTopic } from '../../src/package-topic';
 
 type Product = {
     id: string;
@@ -29,18 +30,28 @@ type Package = {
     items: { productId?: string; quantity: number; product?: Product | null }[];
 };
 
+type Topic = {
+    id: string;
+    slug: string;
+    title: string;
+    vietnamese: string;
+    icon?: string;
+};
+
 type CartItem = {
     id: string;
     kind: 'product' | 'package';
     name: string;
     price: number;
     quantity: number;
+    topicId?: string;
+    topicName?: string;
 };
 
 type OrderHistory = {
     id: string;
     orderCode?: string | null;
-    items: { name: string; price: number; quantity: number }[];
+    items: { name: string; price: number; quantity: number; topicId?: string; topicName?: string }[];
     total: number;
     status: string;
     createdAt: string;
@@ -84,6 +95,8 @@ export default function ParentShopPage() {
         && (session?.user as { role?: string } | undefined)?.role === 'PARENT';
     const [products, setProducts] = useState<Product[]>([]);
     const [packages, setPackages] = useState<Package[]>([]);
+    const [topics, setTopics] = useState<Topic[]>([]);
+    const [selectedTopics, setSelectedTopics] = useState<Record<string, string>>({});
     const [cart, setCart] = useState<CartItem[]>([]);
     const [cartOpen, setCartOpen] = useState(false);
     const [ordersOpen, setOrdersOpen] = useState(false);
@@ -112,6 +125,14 @@ export default function ParentShopPage() {
                 if (cancelled) return;
                 setProducts(nextProducts);
                 setPackages(nextPackages);
+                try {
+                    const nextTopics = await getShopData<Topic[]>('topics');
+                    if (!cancelled) setTopics(nextTopics);
+                } catch (error) {
+                    if (!cancelled) {
+                        setMessage(error instanceof Error ? error.message : 'Không thể tải danh sách chủ đề học.');
+                    }
+                }
             } catch (error) {
                 if (!cancelled) {
                     setLoadError(error instanceof Error ? error.message : 'Không thể tải sản phẩm cửa hàng.');
@@ -175,7 +196,12 @@ export default function ParentShopPage() {
             return;
         }
 
-        const storedItems = items.map(item => ({ kind: item.kind, id: item.id, quantity: item.quantity }));
+        const storedItems = items.map(item => ({
+            kind: item.kind,
+            id: item.id,
+            quantity: item.quantity,
+            ...(item.topicId ? { topicId: item.topicId, topicName: item.topicName } : {}),
+        }));
         cartSaveQueue.current = cartSaveQueue.current.then(async () => {
             const result = await API.put('cart', { items: storedItems }, false, true, false);
             if (result?.success === false) setMessage(result.message || 'Không thể lưu giỏ hàng.');
@@ -186,9 +212,15 @@ export default function ParentShopPage() {
     }
 
     function addToCart(item: Omit<CartItem, 'quantity'>) {
-        const found = cart.find(cartItem => cartItem.id === item.id && cartItem.kind === item.kind);
+        const found = cart.find(cartItem => cartItem.id === item.id
+            && cartItem.kind === item.kind
+            && cartItem.topicId === item.topicId);
         const nextCart = found
-            ? cart.map(cartItem => cartItem.id === item.id && cartItem.kind === item.kind ? { ...cartItem, quantity: Math.min(100, cartItem.quantity + 1) } : cartItem)
+            ? cart.map(cartItem => cartItem.id === item.id
+                && cartItem.kind === item.kind
+                && cartItem.topicId === item.topicId
+                ? { ...cartItem, quantity: Math.min(100, cartItem.quantity + 1) }
+                : cartItem)
             : [...cart, { ...item, quantity: 1 }];
         setCart(nextCart);
         if (cartReady) persistCart(nextCart);
@@ -197,8 +229,10 @@ export default function ParentShopPage() {
 
     function changeQuantity(item: CartItem, quantity: number) {
         const nextCart = quantity <= 0
-            ? cart.filter(cartItem => !(cartItem.id === item.id && cartItem.kind === item.kind))
-            : cart.map(cartItem => cartItem.id === item.id && cartItem.kind === item.kind ? { ...cartItem, quantity: Math.min(100, quantity) } : cartItem);
+            ? cart.filter(cartItem => !(cartItem.id === item.id && cartItem.kind === item.kind && cartItem.topicId === item.topicId))
+            : cart.map(cartItem => cartItem.id === item.id && cartItem.kind === item.kind && cartItem.topicId === item.topicId
+                ? { ...cartItem, quantity: Math.min(100, quantity) }
+                : cartItem);
         setCart(nextCart);
         if (cartReady) persistCart(nextCart);
     }
@@ -219,6 +253,7 @@ export default function ParentShopPage() {
                 items: cart.map(item => ({
                     ...(item.kind === 'package' ? { packageId: item.id } : { productId: item.id }),
                     quantity: item.quantity,
+                    ...(item.topicId ? { topicId: item.topicId } : {}),
                 })),
             }, false, true, true);
             if (result?.success !== false && result?.orderId) {
@@ -376,10 +411,51 @@ export default function ParentShopPage() {
                                                 </span>
                                             ))}
                                         </div>
+                                        {requiresLearningTopic(pack) && (
+                                            <label className="mb-4 block">
+                                                <span className="mb-2 block text-sm font-bold text-[#203b35]">
+                                                    Chọn chủ đề học cho bé
+                                                </span>
+                                                <select
+                                                    value={selectedTopics[pack.slug] || ''}
+                                                    onChange={event => setSelectedTopics(current => ({
+                                                        ...current,
+                                                        [pack.slug]: event.target.value,
+                                                    }))}
+                                                    className="w-full rounded-xl border border-[#dceadd] bg-white px-4 py-3 outline-none focus:border-[#6eaa83]"
+                                                >
+                                                    <option value="">-- Chọn chủ đề --</option>
+                                                    {topics.map(topic => (
+                                                        <option key={topic.id || topic.slug} value={topic.slug || topic.id}>
+                                                            {topic.icon ? `${topic.icon} ` : ''}{topic.vietnamese || topic.title}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {!topics.length && (
+                                                    <span className="mt-1 block text-xs text-[#a94438]">
+                                                        Danh sách chủ đề chưa tải được. Vui lòng tải lại trang.
+                                                    </span>
+                                                )}
+                                            </label>
+                                        )}
                                         <button
                                             type="button"
-                                            onClick={() => addToCart({ id: pack.slug, kind: 'package', name: pack.name, price: pack.price })}
-                                            className="w-full rounded-full bg-[#203b35] px-5 py-3 font-bold text-white hover:bg-[#152722]"
+                                            disabled={requiresLearningTopic(pack) && (!topics.length || !selectedTopics[pack.slug])}
+                                            onClick={() => {
+                                                const topicId = selectedTopics[pack.slug];
+                                                const selectedTopic = topics.find(topic => (topic.slug || topic.id) === topicId);
+                                                addToCart({
+                                                    id: pack.slug,
+                                                    kind: 'package',
+                                                    name: pack.name,
+                                                    price: pack.price,
+                                                    ...(selectedTopic ? {
+                                                        topicId: selectedTopic.slug || selectedTopic.id,
+                                                        topicName: selectedTopic.vietnamese || selectedTopic.title,
+                                                    } : {}),
+                                                });
+                                            }}
+                                            className="w-full rounded-full bg-[#203b35] px-5 py-3 font-bold text-white hover:bg-[#152722] disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             Thêm package vào giỏ
                                         </button>
@@ -460,7 +536,7 @@ export default function ParentShopPage() {
                                             <div className="mt-4 flex flex-wrap gap-2">
                                                 {order.items.map((item, index) => (
                                                     <span key={`${item.name}-${index}`} className="rounded-full bg-[#f4faf4] px-3 py-2 text-sm font-bold text-[#527067]">
-                                                        {item.name} × {item.quantity}
+                                                        {item.name}{item.topicName || item.topicId ? ` · ${item.topicName || item.topicId}` : ''} × {item.quantity}
                                                     </span>
                                                 ))}
                                             </div>
@@ -519,13 +595,16 @@ export default function ParentShopPage() {
                         <div className="flex-1 px-6 py-4">
                             {cart.length ? (
                                 cart.map(item => (
-                                    <div key={`${item.kind}-${item.id}`} className="flex items-center gap-3 border-b border-[#e4eee3] py-4">
+                                    <div key={`${item.kind}-${item.id}-${item.topicId || ''}`} className="flex items-center gap-3 border-b border-[#e4eee3] py-4">
                                         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eef8ef] text-lg" aria-hidden="true">
                                             {item.kind === 'package' ? '🎁' : '🧸'}
                                         </div>
                                         <div className="flex-1">
                                             <b>{item.name}</b>
                                             <small className="block text-[#71867c]">{money(item.price)} · {item.kind === 'package' ? 'Package' : 'Mô hình'}</small>
+                                            {(item.topicName || item.topicId) && (
+                                                <small className="block font-bold text-[#2d6358]">Chủ đề: {item.topicName || item.topicId}</small>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button

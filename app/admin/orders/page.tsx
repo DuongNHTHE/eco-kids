@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useAPI } from '../../../lib/hooks/useAPI';
 
-type OrderItem = { productId?: string; packageId?: string; name: string; price: number; quantity: number };
+type OrderItem = { productId?: string; packageId?: string; name: string; price: number; quantity: number; topicId?: string; topicName?: string };
 type OrderInvoice = {
     number: string;
     issuedAt: string;
@@ -618,6 +618,11 @@ export default function AdminOrdersPage() {
                                                                 : "Mô hình"}{" "}
                                                             · SL {item.quantity}
                                                         </small>
+                                                        {(item.topicName || item.topicId) && (
+                                                            <small className="block text-[#2d6358]">
+                                                                Chủ đề học: {item.topicName || item.topicId}
+                                                            </small>
+                                                        )}
                                                     </div>
 
                                                     <strong>
@@ -810,7 +815,10 @@ export default function AdminOrdersPage() {
                                 <tbody>
                                     {invoiceView.items.map((item, index) => (
                                         <tr key={`${item.name}-${index}`} className="border-b border-[#edf3ed]">
-                                            <td className="py-3 pr-2 font-bold">{item.name}</td>
+                                            <td className="py-3 pr-2 font-bold">
+                                                {item.name}
+                                                {(item.topicName || item.topicId) && <small className="block font-normal text-[#2d6358]">Chủ đề học: {item.topicName || item.topicId}</small>}
+                                            </td>
                                             <td className="px-2 py-3 text-right">{item.quantity}</td>
                                             <td className="px-2 py-3 text-right">{money(item.price)}</td>
                                             <td className="py-3 pl-2 text-right font-bold">{money(item.lineTotal)}</td>
