@@ -9,7 +9,7 @@ import { GET as getProgress } from '../app/api/progress/[childName]/route';
 import { POST as saveProgress } from '../app/api/progress/route';
 import { POST as createOrder } from '../app/api/orders/route';
 import { hashParentCode, verifyParentCode } from '../src/parent-settings-code';
-import { createOrderPayment, isSupportedPaymentReceipt } from '../src/order-payment';
+import { createOrderPayment, generateOrderCode, isSupportedPaymentReceipt } from '../src/order-payment';
 
 test('stores parent codes as salted hashes and verifies without retaining the plain code', async () => {
   const code = '736184';
@@ -30,6 +30,16 @@ test('creates a VietQR transfer code with the order amount and reference', () =>
   assert.equal(payment.transferContent, 'ECO KIDS 12345678');
   assert.equal(qrUrl.searchParams.get('amount'), '125000');
   assert.equal(qrUrl.searchParams.get('addInfo'), 'ECO KIDS 12345678');
+});
+
+test('generates order keys in the ECOKIDS format and uses them as payment references', () => {
+  const orderCode = generateOrderCode();
+  const payment = createOrderPayment(orderCode, 125000);
+  const qrUrl = new URL(payment.qrUrl);
+
+  assert.match(orderCode, /^ECOKIDS[A-Z]{5}$/);
+  assert.equal(payment.transferContent, orderCode);
+  assert.equal(qrUrl.searchParams.get('addInfo'), orderCode);
 });
 
 test('accepts only receipt images whose bytes match a supported image format', () => {

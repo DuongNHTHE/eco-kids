@@ -1,10 +1,10 @@
-import { Notification, Order, Package, Product } from '../../../src/models';
+import { Cart, Notification, Order, Package, Product } from '../../../src/models';
 import { connectMongo } from '../../../src/models';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
 import { writeAuditLog } from '../../../src/audit';
 import mongoose from 'mongoose';
-import { createOrderPayment } from '../../../src/order-payment';
+import { createOrderPayment, generateOrderCode } from '../../../src/order-payment';
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +15,6 @@ export async function POST(request: Request) {
     const authSession = await getServerSession(authOptions);
     const user = authSession?.user as { id?: string; email?: string | null; role?: string } | undefined;
     if (user?.role !== 'PARENT' || !user.id) return Response.json({ message: 'Vui lòng đăng nhập bằng tài khoản phụ huynh.' }, { status: 401 });
-    console.log(user);
     await connectMongo();
     const stockRequirements = new Map<string, number>();
     const normalizedItems = (await Promise.all(items.map(async item => {
@@ -50,30 +49,44 @@ export async function POST(request: Request) {
     }))).filter(Boolean);
     if (!normalizedItems.length) return Response.json({ message: 'Sản phẩm không hợp lệ.' }, { status: 400 });
     const total = normalizedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const dbSession = await mongoose.connection.startSession();
     let order: any;
-    try {
-      await dbSession.withTransaction(async () => {
-        for (const [slug, quantity] of stockRequirements) {
-          const updated = await Product.findOneAndUpdate(
-            { slug, isActive: true, stock: { $gte: quantity } },
-            { $inc: { stock: -quantity } },
-            { new: true, session: dbSession },
-          ).lean();
-          if (!updated) {
-            const error = new Error(`Sản phẩm ${slug} không đủ tồn kho.`) as Error & { status?: number };
-            error.status = 409;
-            throw error;
+    await Order.collection.createIndex({ orderCode: 1 }, { unique: true, sparse: true });
+    await Cart.collection.createIndex({ userId: 1 }, { unique: true });
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const dbSession = await mongoose.connection.startSession();
+      try {
+        await dbSession.withTransaction(async () => {
+          for (const [slug, quantity] of stockRequirements) {
+            const updated = await Product.findOneAndUpdate(
+              { slug, isActive: true, stock: { $gte: quantity } },
+              { $inc: { stock: -quantity } },
+              { new: true, session: dbSession },
+            ).lean();
+            if (!updated) {
+              const error = new Error(`Sản phẩm ${slug} không đủ tồn kho.`) as Error & { status?: number };
+              error.status = 409;
+              throw error;
+            }
           }
-        }
-        const created = await Order.create([{ user_id: user.id, customer, items: normalizedItems, total }], { session: dbSession });
-        order = created[0];
-      });
-    } catch (error: any) {
-      if (error?.status === 409) return Response.json({ message: error.message }, { status: 409 });
-      throw error;
-    } finally {
-      await dbSession.endSession();
+          const created = await Order.create([{
+            user_id: user.id,
+            orderCode: generateOrderCode(),
+            customer,
+            items: normalizedItems,
+            total,
+          }], { session: dbSession });
+          order = created[0];
+          await Cart.deleteOne({ userId: user.id }, { session: dbSession });
+        });
+        break;
+      } catch (error: any) {
+        if (error?.status === 409) return Response.json({ message: error.message }, { status: 409 });
+        const orderCodeCollision = error?.code === 11000
+          && (error?.keyPattern?.orderCode || error?.keyValue?.orderCode);
+        if (!orderCodeCollision || attempt === 4) throw error;
+      } finally {
+        await dbSession.endSession();
+      }
     }
     try {
       await Notification.create({
@@ -101,11 +114,13 @@ export async function POST(request: Request) {
       metadata: { itemCount: normalizedItems.length, total },
     });
     const orderId = String(order._id || order.id);
+    const orderCode = String(order.orderCode);
     return Response.json({
       message: 'Đặt hàng thành công!',
       orderId,
+      orderCode,
       total,
-      payment: createOrderPayment(orderId, total),
+      payment: createOrderPayment(orderCode, total),
     }, { status: 201 });
   } catch (error) {
     console.error(error);
@@ -124,6 +139,7 @@ export async function GET() {
     const orders = await Order.find({ user_id: user.id }).select('-paymentReceipt.dataUrl').sort({ createdAt: -1 }).lean();
     return Response.json(orders.map((order: any) => ({
       id: String(order._id || order.id),
+      orderCode: order.orderCode || null,
       customer: order.customer,
       items: order.items || [],
       total: Number(order.total || 0),
@@ -131,7 +147,7 @@ export async function GET() {
       createdAt: order.createdAt,
       paymentReceiptUploaded: Boolean(order.paymentReceipt?.uploadedAt),
       payment: (order.status || 'new') === 'new'
-        ? createOrderPayment(String(order._id || order.id), Number(order.total || 0))
+        ? createOrderPayment(order.orderCode || String(order._id || order.id), Number(order.total || 0))
         : null,
     })));
   } catch (error) {

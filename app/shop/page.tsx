@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { OrderPaymentStep, type OrderPayment } from '../../components/OrderPaymentStep';
 
@@ -38,6 +38,7 @@ type CartItem = {
 
 type OrderHistory = {
     id: string;
+    orderCode?: string | null;
     items: { name: string; price: number; quantity: number }[];
     total: number;
     status: string;
@@ -74,66 +75,86 @@ export default function ParentShopPage() {
     const [cartOpen, setCartOpen] = useState(false);
     const [ordersOpen, setOrdersOpen] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [cartReady, setCartReady] = useState(false);
+    const [submittingOrder, setSubmittingOrder] = useState(false);
     const [message, setMessage] = useState('');
     const [paymentInfo, setPaymentInfo] = useState<OrderPayment | null>(null);
     const [paymentOrderId, setPaymentOrderId] = useState('');
     const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
     const [orders, setOrders] = useState<OrderHistory[]>([]);
+    const cartSaveQueue = useRef<Promise<void>>(Promise.resolve());
 
     useEffect(() => {
-        const savedCart = localStorage.getItem('eco-parent-cart');
-        if (savedCart) setCart(JSON.parse(savedCart));
         Promise.all([
             API.get('products', false, true, true),
             API.get('packages', false, true, true),
             API.get('orders', false, true, true),
-        ]).then(([nextProducts, nextPackages, nextOrders]) => {
+            API.get('cart', false, true, true),
+        ]).then(([nextProducts, nextPackages, nextOrders, nextCart]) => {
             if (Array.isArray(nextProducts)) setProducts(nextProducts);
             if (Array.isArray(nextPackages)) setPackages(nextPackages);
             if (Array.isArray(nextOrders)) setOrders(nextOrders);
+            if (Array.isArray(nextCart?.items)) setCart(nextCart.items);
             setLoading(false);
+            setCartReady(true);
         });
     }, [API]);
 
-    useEffect(() => {
-        localStorage.setItem('eco-parent-cart', JSON.stringify(cart));
-    }, [cart]);
+    function persistCart(items: CartItem[]) {
+        const storedItems = items.map(item => ({ kind: item.kind, id: item.id, quantity: item.quantity }));
+        cartSaveQueue.current = cartSaveQueue.current.then(async () => {
+            const result = await API.put('cart', { items: storedItems }, false, true, false);
+            if (result?.success === false) setMessage(result.message || 'Không thể lưu giỏ hàng.');
+        }).catch(error => {
+            console.error('cart save error', error);
+            setMessage('Không thể lưu giỏ hàng.');
+        });
+    }
 
     function addToCart(item: Omit<CartItem, 'quantity'>) {
-        setCart(current => {
-            const found = current.find(cartItem => cartItem.id === item.id && cartItem.kind === item.kind);
-            return found
-                ? current.map(cartItem => cartItem.id === item.id && cartItem.kind === item.kind ? { ...cartItem, quantity: Math.min(100, cartItem.quantity + 1) } : cartItem)
-                : [...current, { ...item, quantity: 1 }];
-        });
+        const found = cart.find(cartItem => cartItem.id === item.id && cartItem.kind === item.kind);
+        const nextCart = found
+            ? cart.map(cartItem => cartItem.id === item.id && cartItem.kind === item.kind ? { ...cartItem, quantity: Math.min(100, cartItem.quantity + 1) } : cartItem)
+            : [...cart, { ...item, quantity: 1 }];
+        setCart(nextCart);
+        if (cartReady) persistCart(nextCart);
         // setCartOpen(true);
     }
 
     function changeQuantity(item: CartItem, quantity: number) {
-        if (quantity <= 0) setCart(current => current.filter(cartItem => !(cartItem.id === item.id && cartItem.kind === item.kind)));
-        else setCart(current => current.map(cartItem => cartItem.id === item.id && cartItem.kind === item.kind ? { ...cartItem, quantity: Math.min(100, quantity) } : cartItem));
+        const nextCart = quantity <= 0
+            ? cart.filter(cartItem => !(cartItem.id === item.id && cartItem.kind === item.kind))
+            : cart.map(cartItem => cartItem.id === item.id && cartItem.kind === item.kind ? { ...cartItem, quantity: Math.min(100, quantity) } : cartItem);
+        setCart(nextCart);
+        if (cartReady) persistCart(nextCart);
     }
 
     async function checkout(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setSubmittingOrder(true);
         setMessage('Đang tạo đơn hàng...');
-        const result = await API.post('orders', {
-            customer,
-            items: cart.map(item => ({
-                ...(item.kind === 'package' ? { packageId: item.id } : { productId: item.id }),
-                quantity: item.quantity,
-            })),
-        }, false, true, true);
-        if (result?.success !== false && result?.orderId) {
-            setCart([]);
-            setCustomer({ name: '', phone: '', address: '' });
-            setMessage(`Đặt hàng thành công. Mã đơn: ${result.orderId}`);
-            setPaymentInfo(result.payment || null);
-            setPaymentOrderId(result.orderId);
-            const nextOrders = await API.get('orders', false, true, false);
-            if (Array.isArray(nextOrders)) setOrders(nextOrders);
-        } else {
-            setMessage(result?.message || 'Không thể tạo đơn hàng.');
+        try {
+            await cartSaveQueue.current;
+            const result = await API.post('orders', {
+                customer,
+                items: cart.map(item => ({
+                    ...(item.kind === 'package' ? { packageId: item.id } : { productId: item.id }),
+                    quantity: item.quantity,
+                })),
+            }, false, true, true);
+            if (result?.success !== false && result?.orderId) {
+                setCart([]);
+                setCustomer({ name: '', phone: '', address: '' });
+                setMessage(`Đặt hàng thành công. Mã đơn: ${result.orderCode || result.orderId}`);
+                setPaymentInfo(result.payment || null);
+                setPaymentOrderId(result.orderId);
+                const nextOrders = await API.get('orders', false, true, false);
+                if (Array.isArray(nextOrders)) setOrders(nextOrders);
+            } else {
+                setMessage(result?.message || 'Không thể tạo đơn hàng.');
+            }
+        } finally {
+            setSubmittingOrder(false);
         }
     }
 
@@ -330,7 +351,7 @@ export default function ParentShopPage() {
                                         <article key={order.id} className="rounded-2xl border border-[#e4eee3] bg-white p-4">
                                             <div className="flex flex-wrap items-start justify-between gap-3">
                                                 <div>
-                                                    <h3 className="font-extrabold">Đơn #{order.id.slice(-8).toUpperCase()}</h3>
+                                                    <h3 className="font-extrabold">Đơn #{order.orderCode || order.id.slice(-8).toUpperCase()}</h3>
                                                     <p className="mt-1 text-sm text-[#71867c]">
                                                         {new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(order.createdAt))}
                                                     </p>
@@ -415,16 +436,18 @@ export default function ParentShopPage() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 type="button"
+                                                disabled={submittingOrder}
                                                 onClick={() => changeQuantity(item, item.quantity - 1)}
-                                                className="h-8 w-8 rounded-full bg-[#eef8ef] font-bold hover:bg-[#dceadd]"
+                                                className="h-8 w-8 rounded-full bg-[#eef8ef] font-bold hover:bg-[#dceadd] disabled:opacity-50"
                                             >
                                                 −
                                             </button>
                                             <b className="w-4 text-center">{item.quantity}</b>
                                             <button
                                                 type="button"
+                                                disabled={submittingOrder}
                                                 onClick={() => changeQuantity(item, item.quantity + 1)}
-                                                className="h-8 w-8 rounded-full bg-[#eef8ef] font-bold hover:bg-[#dceadd]"
+                                                className="h-8 w-8 rounded-full bg-[#eef8ef] font-bold hover:bg-[#dceadd] disabled:opacity-50"
                                             >
                                                 +
                                             </button>
@@ -493,8 +516,8 @@ export default function ParentShopPage() {
                                         rows={3}
                                         className="w-full rounded-2xl border border-[#dceadd] px-4 py-3 outline-none focus:border-[#6eaa83] focus:ring-4 focus:ring-[#6eaa83]/15"
                                     />
-                                    <button type="submit" className="w-full rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white hover:bg-[#e36b40]">
-                                        Đặt hàng
+                                    <button disabled={submittingOrder} type="submit" className="w-full rounded-full bg-[#f47d52] px-5 py-3 font-bold text-white hover:bg-[#e36b40] disabled:opacity-50">
+                                        {submittingOrder ? 'Đang xử lý...' : 'Đặt hàng'}
                                     </button>
                                     {message && (
                                         <p className="rounded-2xl bg-[#e9f3eb] px-4 py-3 text-sm font-bold text-[#2d6358]">

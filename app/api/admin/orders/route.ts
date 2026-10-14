@@ -15,6 +15,7 @@ async function getAdminUser() {
 function serializeOrder(order: any) {
     return {
         id: String(order._id || order.id),
+        orderCode: order.orderCode || null,
         customer: order.customer || {},
         items: order.items || [],
         total: Number(order.total || 0),

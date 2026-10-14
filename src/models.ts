@@ -60,6 +60,7 @@ const reviewExerciseSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema({
   user_id: { type: String, index: true },
+  orderCode: { type: String, unique: true, sparse: true },
   customer: {
     name: { type: String, required: true },
     phone: { type: String, required: true },
@@ -75,6 +76,17 @@ const orderSchema = new mongoose.Schema({
   },
   invoice: mongoose.Schema.Types.Mixed
 }, { timestamps: true });
+
+const cartItemSchema = new mongoose.Schema({
+  kind: { type: String, enum: ['product', 'package'], required: true },
+  itemId: { type: String, required: true },
+  quantity: { type: Number, min: 1, max: 100, required: true },
+}, { _id: false });
+
+const cartSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  items: { type: [cartItemSchema], default: [] },
+}, { timestamps: true, collection: 'carts' });
 
 const partnerSchema = new mongoose.Schema({
   organization: { type: String, required: true, trim: true, maxlength: 160 },
@@ -128,6 +140,7 @@ export const Child = (mongoose.models.Child || mongoose.model('Child', childSche
 export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
 export const ReviewExercise = (mongoose.models.ReviewExercise || mongoose.model('ReviewExercise', reviewExerciseSchema)) as mongoose.Model<any>;
 export const Order = (mongoose.models.Order || mongoose.model('Order', orderSchema)) as mongoose.Model<any>;
+export const Cart = (mongoose.models.Cart || mongoose.model('Cart', cartSchema)) as mongoose.Model<any>;
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;
 export const Notification = (mongoose.models.Notification || mongoose.model('Notification', notificationSchema)) as mongoose.Model<any>;
 export const AuditLog = (mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema)) as mongoose.Model<any>;

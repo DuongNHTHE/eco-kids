@@ -16,6 +16,7 @@ type OrderInvoice = {
 };
 type Order = {
     id: string;
+    orderCode?: string | null;
     customer: { name?: string; phone?: string; address?: string };
     items: OrderItem[];
     total: number;
@@ -267,7 +268,7 @@ export default function AdminOrdersPage() {
                                     <div>
                                         <div className="flex flex-wrap items-center gap-3">
                                             <h2 className="text-xl font-extrabold">
-                                                Đơn #{order.id.slice(-8).toUpperCase()}
+                                                Đơn #{order.orderCode || order.id.slice(-8).toUpperCase()}
                                             </h2>
 
                                             <span className="rounded-full bg-[#fff2d5] px-3 py-1 text-xs font-bold text-[#9a7d3a]">

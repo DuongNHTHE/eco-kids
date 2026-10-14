@@ -81,7 +81,7 @@ export async function GET() {
         const maxTrend = Math.max(...trend.map(item => item.value), 1);
 
         const recentOrders = orders.slice(0, 5).map(order => ({
-            id: String(order._id || order.id || '').slice(-8),
+            id: order.orderCode || String(order._id || order.id || '').slice(-8),
             customer: order.customer?.name || 'Khách hàng',
             total: formatCurrency(Number(order.total || 0)),
             status: order.status || 'new',

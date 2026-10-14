@@ -1,6 +1,13 @@
+import { randomInt } from 'node:crypto';
+
 const BANK_ID = process.env.PAYMENT_BANK_ID || '970436';
-const BANK_NAME = process.env.PAYMENT_BANK_NAME || 'Vietcombank';
-const ACCOUNT_NUMBER = process.env.PAYMENT_ACCOUNT_NUMBER || '188688788';
+const BANK_NAME = process.env.PAYMENT_BANK_NAME || 'BIDV';
+const ACCOUNT_NUMBER = process.env.PAYMENT_ACCOUNT_NUMBER || '8882002555';
+
+export function generateOrderCode(): string {
+    const suffix = Array.from({ length: 5 }, () => String.fromCharCode(65 + randomInt(26))).join('');
+    return `ECOKIDS${suffix}`;
+}
 
 export type OrderPayment = {
     bankName: string;
@@ -13,8 +20,10 @@ export type OrderPayment = {
 
 export function createOrderPayment(orderId: string, amount: number): OrderPayment {
     const orderReference = orderId.replace(/[^a-z\d]/gi, '').slice(-8).toUpperCase();
-    const transferContent = `ECO KIDS ${orderReference}`;
-    const qrUrl = new URL(`https://img.vietqr.io/image/BIDV-880419666-compact2.png`);
+    const transferContent = /^ECOKIDS[A-Z]{5}$/.test(orderId)
+        ? orderId
+        : `ECO KIDS ${orderReference}`;
+    const qrUrl = new URL(`https://img.vietqr.io/image/BIDV-8882002555-compact2.png`);
     qrUrl.searchParams.set('amount', String(Math.round(amount)));
     qrUrl.searchParams.set('addInfo', transferContent);
 

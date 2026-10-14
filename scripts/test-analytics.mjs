@@ -2,7 +2,10 @@ import { chromium } from "playwright";
 
 const SITE_URL = "https://lupinh.vercel.app";
 
-const USERS = 30;
+// Thêm UTM để GA4 ghi nhận nguồn = facebook
+const TARGET_URL =
+  `${SITE_URL}/?utm_source=facebook&utm_medium=social&utm_campaign=test_facebook`;
+const USERS = 101;
 
 const WAIT_AFTER_LOAD = 15000;
 const WAIT_BEFORE_CLOSE = 5000;
@@ -63,7 +66,7 @@ for (let i = 0; i < USERS; i++) {
   });
 
   try {
-    await page.goto(SITE_URL, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(TARGET_URL, { waitUntil: "networkidle", timeout: 60000 });
     await page.waitForTimeout(WAIT_AFTER_LOAD);
 
     const cookies = await context.cookies();
