@@ -1,7 +1,10 @@
 import { chromium } from "playwright";
+import "dotenv/config";
 
 const SITE_URL = "https://lupinh.vercel.app";
 const TARGET_URL = `${SITE_URL}/?utm_source=www.facebook.com&utm_medium=social&utm_campaign=test_facebook`;
+const TEST_EMAIL = process.env.ANALYTICS_TEST_EMAIL;
+const TEST_PASSWORD = process.env.ANALYTICS_TEST_PASSWORD;
 
 const USER_COUNT = 30; // số người dùng giả lập
 const CONCURRENCY = 5; // số người chạy song song
@@ -23,6 +26,11 @@ const VIEWPORTS = [
     { width: 390, height: 844 },
 ];
 
+if (!TEST_EMAIL || !TEST_PASSWORD) {
+    console.error("Cần đặt ANALYTICS_TEST_EMAIL và ANALYTICS_TEST_PASSWORD để truy cập dashboard.");
+    process.exit(1);
+}
+
 const browser = await chromium.launch({ headless: HEADLESS });
 
 const createVisitContext = async (cookies, viewport) => {
@@ -40,8 +48,13 @@ const createVisitContext = async (cookies, viewport) => {
             requests.push({
                 cid: parsed.searchParams.get("cid"),
                 sid: parsed.searchParams.get("sid"),
+                measurementId: parsed.searchParams.get("tid"),
                 event: parsed.searchParams.get("en"),
                 sessionStart: parsed.searchParams.get("_ss"),
+                pagePath: (() => {
+                    const location = parsed.searchParams.get("dl");
+                    return location ? new URL(location).pathname : null;
+                })(),
             });
         } catch {
         }
@@ -50,19 +63,32 @@ const createVisitContext = async (cookies, viewport) => {
     return { context, page, requests };
 };
 
-const visit = async ({ page, requests }, label) => {
-    await page.goto(TARGET_URL, { waitUntil: "networkidle", timeout: 60000 });
-    await page.waitForTimeout(WAIT_AFTER_LOAD);
+const visit = async ({ page, requests }, path, label) => {
+    const requestOffset = requests.length;
+    const targetUrl = path === "/" ? TARGET_URL : `${SITE_URL}${path}`;
+    await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 60000 });
+    await page.waitForTimeout(3000);
+    const visitRequests = requests.slice(requestOffset);
 
     return {
         label,
-        clientId: requests.find((r) => r.cid)?.cid ?? null,
-        sessionId: requests.find((r) => r.sid)?.sid ?? null,
-        sessionStart:
-            requests.some((r) => r.event === "session_start") ||
-            requests.some((r) => r.sessionStart === "1"),
-        events: [...new Set(requests.map((r) => r.event).filter(Boolean))],
+        path,
+        finalPath: new URL(page.url()).pathname,
+        pageView: visitRequests.some((r) => r.event === "page_view" && r.pagePath === path),
+        clientId: visitRequests.find((r) => r.cid)?.cid ?? null,
+        sessionId: visitRequests.find((r) => r.sid)?.sid ?? null,
+        events: [...new Set(visitRequests.map((r) => r.event).filter(Boolean))],
     };
+};
+
+const login = async (page) => {
+    await page.goto(`${SITE_URL}/login`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.locator('input[type="email"]').fill(TEST_EMAIL);
+    await page.locator('input[type="password"]').fill(TEST_PASSWORD);
+    await Promise.all([
+        page.waitForURL((url) => url.pathname !== "/login", { timeout: 30000 }),
+        page.locator('button[type="submit"]').click(),
+    ]);
 };
 
 const runUser = async (index) => {
@@ -71,7 +97,7 @@ const runUser = async (index) => {
 
     try {
         let ctx = await createVisitContext([], viewport);
-        const first = await visit(ctx, "First");
+        const first = await visit(ctx, "/", "First");
 
         const gaCookie = (await ctx.context.cookies(SITE_URL)).find(
             (c) => c.name === "_ga"
@@ -82,7 +108,19 @@ const runUser = async (index) => {
         await sleep(rand(1000, 5000));
 
         ctx = await createVisitContext([gaCookie], viewport);
-        const ret = await visit(ctx, "Return");
+        await login(ctx.page);
+        const dashboard = await visit(ctx, "/dashboard", "Return dashboard");
+        const learn = await visit(ctx, "/learn", "Return learn");
+        const returnRequests = ctx.requests;
+        const sessionStartRequest = returnRequests.find(
+            (r) => r.event === "session_start" || r.sessionStart === "1"
+        );
+        const ret = {
+            clientId: returnRequests.find((r) => r.cid)?.cid ?? null,
+            sessionId: returnRequests.find((r) => r.sid)?.sid ?? null,
+            sessionStart: Boolean(sessionStartRequest),
+            sessionStartPath: sessionStartRequest?.pagePath ?? null,
+        };
         await ctx.context.close();
 
         const errors = [];
@@ -93,10 +131,25 @@ const runUser = async (index) => {
         else if (first.sessionId === ret.sessionId)
             errors.push(`Session ID bị dùng lại: ${first.sessionId}`);
         if (!ret.sessionStart) errors.push("Lần quay lại không có session_start");
+        for (const routeVisit of [dashboard, learn]) {
+            if (routeVisit.finalPath !== routeVisit.path)
+                errors.push(`${routeVisit.path} bị chuyển hướng tới ${routeVisit.finalPath}`);
+            if (!routeVisit.pageView)
+                errors.push(`Không ghi nhận page_view cho ${routeVisit.path}`);
+        }
 
         const ok = errors.length === 0;
-        console.log(`${tag} ${ok ? "PASS" : "FAIL"} cid=${first.clientId}`, ok ? "" : errors);
-        return { index, ok, errors, first, ret };
+        console.log(`${tag} ${ok ? "PASS" : "FAIL"} cid=${first.clientId}`, {
+            returnSession: {
+                sessionId: ret.sessionId,
+                sessionStart: ret.sessionStart,
+                sessionStartPath: ret.sessionStartPath,
+            },
+            dashboard,
+            learn,
+            errors,
+        });
+        return { index, ok, errors, first, ret, dashboard, learn };
     } catch (error) {
         console.log(`${tag} ERROR: ${error.message}`);
         return { index, ok: false, errors: [error.message], first: null, ret: null };
