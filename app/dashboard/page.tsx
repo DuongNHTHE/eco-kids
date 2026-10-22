@@ -198,6 +198,14 @@ export default function DashboardPage() {
             {t('Classroom')}
           </Link>
 
+          <Link
+            href="/games"
+            className="flex gap-3 rounded-xl px-4 py-3 font-bold text-[#bfe8c6]"
+          >
+            <span>🎮</span>
+            Trò chơi
+          </Link>
+
           <Link href="/shop" className="flex gap-3 rounded-xl px-4 py-3 font-bold text-[#f7c6a6]">
             <span>🛍</span>
             Cửa hàng học liệu
@@ -286,8 +294,8 @@ export default function DashboardPage() {
                         key={child.id}
                         onClick={() => chooseChild(child)}
                         className={`inline-flex min-h-[48px] items-center gap-2 rounded-full border-2 py-1.5 pl-1.5 pr-4 font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2d6358] ${active
-                            ? 'border-[#2d6358] bg-[#2d6358] text-white shadow-md'
-                            : 'border-[#d9eadc] bg-white text-[#203b35] hover:border-[#2d6358]'
+                          ? 'border-[#2d6358] bg-[#2d6358] text-white shadow-md'
+                          : 'border-[#d9eadc] bg-white text-[#203b35] hover:border-[#2d6358]'
                           }`}
                       >
                         <span

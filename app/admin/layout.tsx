@@ -33,6 +33,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
         { icon: '⌂', label: t('Overview'), href: '/admin/dashboard' },
         // { icon: '▣', label: t('Courses'), href: '/admin/dashboard' },
         { icon: '▶', label: t('Classroom'), href: '/learn', accent: 'highlight' },
+        { icon: '🎮', label: 'Trò chơi', href: '/admin/games' },
         { icon: '＋', label: t('Topics'), href: '/admin/topics' },
         // { icon: '📝', label: 'Bài ôn luyện', href: '/admin/exercises' },
         // { icon: '🔔', label: 'Thông báo', href: '/admin/notifications' },

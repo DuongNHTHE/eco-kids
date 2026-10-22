@@ -140,6 +140,31 @@ const parentSettingsSchema = new mongoose.Schema({
   parentCodeLockedUntil: Date,
 }, { collection: 'parent_settings', timestamps: true });
 
+const gameConfigSchema = new mongoose.Schema({
+  gameId: { type: String, required: true, unique: true, index: true },
+  title: { type: String, required: true, trim: true, maxlength: 100 },
+  description: { type: String, trim: true, maxlength: 300 },
+  icon: { type: String, default: '🎧' },
+  isActive: { type: Boolean, default: true },
+  themes: {
+    type: [{
+      id: { type: String, required: true },
+      title: { type: String, required: true, trim: true, maxlength: 80 },
+      items: {
+        type: [{
+          id: { type: String, required: true },
+          name: { type: String, required: true, trim: true, maxlength: 60 },
+          translation: { type: String, trim: true, maxlength: 60 },
+          emoji: { type: String, trim: true, maxlength: 12 },
+          imageUrl: { type: String, trim: true, maxlength: 500 },
+        }],
+        default: [],
+      },
+    }],
+    default: [],
+  },
+}, { collection: 'game_configs', timestamps: true });
+
 export const User = (mongoose.models.User || mongoose.model('User', userSchema)) as mongoose.Model<any>;
 export const Child = (mongoose.models.Child || mongoose.model('Child', childSchema)) as mongoose.Model<any>;
 export const Progress = (mongoose.models.Progress || mongoose.model('Progress', progressSchema)) as mongoose.Model<any>;
@@ -150,6 +175,7 @@ export const Partner = (mongoose.models.Partner || mongoose.model('Partner', par
 export const Notification = (mongoose.models.Notification || mongoose.model('Notification', notificationSchema)) as mongoose.Model<any>;
 export const AuditLog = (mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema)) as mongoose.Model<any>;
 export const ParentSettings = (mongoose.models.ParentSettings || mongoose.model('ParentSettings', parentSettingsSchema)) as mongoose.Model<any>;
+export const GameConfig = (mongoose.models.GameConfig || mongoose.model('GameConfig', gameConfigSchema)) as mongoose.Model<any>;
 
 const vocabularySchema = new mongoose.Schema({
   id: String,
