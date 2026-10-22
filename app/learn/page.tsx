@@ -99,6 +99,11 @@ export default function LearnPage() {
         speechSynthesis.speak(voice);
     };
 
+    const showPronunciationAdvice = (advice: string) => {
+        setPronunciationAdvice(advice);
+        speak(advice, 'vi-VN');
+    };
+
     useEffect(() => () => {
         if ('speechSynthesis' in window) speechSynthesis.cancel();
     }, []);
@@ -525,7 +530,7 @@ export default function LearnPage() {
             if (requestId !== adviceRequestId.current) return;
             const assessedScore = normalizePronunciationScore(result);
             if (assessedScore === null) {
-                setPronunciationAdvice('Mình chưa nghe rõ từ này. Bé thử đưa micro gần hơn, nói chậm và rõ từng âm rồi chạm ghi âm lại nhé!');
+                showPronunciationAdvice('Mình chưa nghe rõ từ này. Bé thử đưa micro gần hơn, nói chậm và rõ từng âm rồi chạm ghi âm lại nhé!');
                 return;
             }
             setScore(assessedScore);
@@ -537,11 +542,10 @@ export default function LearnPage() {
                 azureResponse: result,
             }, false, false, false);
             if (requestId === adviceRequestId.current) {
-                setPronunciationAdvice(
-                    feedback.success && typeof feedback.text === 'string'
-                        ? feedback.text
-                        : 'Bé hãy nghe mẫu một lần, rồi đọc chậm từ này và chú ý từng âm nhé!'
-                );
+                const advice = feedback.success && typeof feedback.text === 'string'
+                    ? feedback.text
+                    : 'Bé hãy nghe mẫu một lần, rồi đọc chậm từ này và chú ý từng âm nhé!';
+                showPronunciationAdvice(advice);
                 setIsGeneratingAdvice(false);
             }
         } catch (error) {
@@ -805,9 +809,19 @@ export default function LearnPage() {
                                     </div>
                                 )}
                                 {pronunciationAdvice && (
-                                    <p role="status" className="mt-3 rounded-2xl bg-white p-4 text-left font-bold text-[#2d6358]">
-                                        🐿️ {pronunciationAdvice}
-                                    </p>
+                                    <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-4">
+                                        <p role="status" className="flex-1 text-left font-bold text-[#2d6358]">
+                                            🐿️ {pronunciationAdvice}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => speak(pronunciationAdvice, 'vi-VN')}
+                                            aria-label="Nghe lại lời khuyên"
+                                            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#e8f4e9] text-2xl"
+                                        >
+                                            🔊
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
