@@ -1,4 +1,5 @@
 export const LISTEN_AND_MATCH_ID = 'listen-and-match';
+export const SAY_IT_WITH_AI_ID = 'say-it-with-ai';
 
 export const DEFAULT_LISTEN_AND_MATCH_CONFIG = {
   gameId: LISTEN_AND_MATCH_ID,

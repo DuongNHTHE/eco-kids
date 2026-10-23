@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { resolveRoleHome } from '../../lib/auth';
-import { LISTEN_AND_MATCH_ID } from '../../src/game-config';
+import { LISTEN_AND_MATCH_ID, SAY_IT_WITH_AI_ID } from '../../src/game-config';
 
 type Game = {
     gameId: string;
@@ -85,6 +85,30 @@ export default function GamesPage() {
                                         className="mt-5 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full border-b-4 border-[#e0742a] bg-[#ff9a3c] px-6 font-black text-white transition hover:brightness-105 active:translate-y-1 active:border-b-0"
                                     >
                                         Chơi ngay <span aria-hidden>▶</span>
+                                    </Link>
+                                ) : (
+                                    <p role="status" className="mt-5 rounded-2xl bg-[#fff2d5] p-4 text-sm font-bold text-[#80683c]">
+                                        {loadError || 'Trò chơi hiện chưa được mở.'}
+                                    </p>
+                                )}
+                            </div>
+                        </article>
+                        <article className="overflow-hidden rounded-[2rem] border-4 border-white bg-white shadow-soft">
+                            <div className="grid min-h-48 place-items-center bg-gradient-to-br from-[#d7e8ff] to-[#ffe0e9]">
+                                <span aria-hidden className="text-8xl drop-shadow-sm">🎙️</span>
+                            </div>
+                            <div className="p-6">
+                                <span className="text-xs font-black tracking-widest text-[#ef7d32]">LUYỆN NÓI · 3-8 TUỔI</span>
+                                <h2 className="mt-2 text-2xl font-extrabold">Say It with AI</h2>
+                                <p className="mt-2 min-h-12 text-[#71867c]">
+                                    Bé nhìn hình, trả lời bằng tiếng Anh và nhận lời động viên từ AI.
+                                </p>
+                                {game ? (
+                                    <Link
+                                        href={`/games/${SAY_IT_WITH_AI_ID}`}
+                                        className="mt-5 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full border-b-4 border-[#397ad7] bg-[#5795ef] px-6 font-black text-white transition hover:brightness-105 active:translate-y-1 active:border-b-0"
+                                    >
+                                        Chơi ngay <span aria-hidden>🎤</span>
                                     </Link>
                                 ) : (
                                     <p role="status" className="mt-5 rounded-2xl bg-[#fff2d5] p-4 text-sm font-bold text-[#80683c]">
