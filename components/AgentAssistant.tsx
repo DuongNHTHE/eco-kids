@@ -36,6 +36,9 @@ export default function AgentAssistant() {
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [childId, setChildId] = useState<string | null>(null);
     const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+    const [speechError, setSpeechError] = useState('');
+    const speechUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
     const dragState = useRef<{ pointerId: number; startX: number; startY: number; startPosX: number; startPosY: number } | null>(null);
     const dragMovedRef = useRef(false);
 
@@ -89,6 +92,64 @@ export default function AgentAssistant() {
 
         setOpen((current) => !current);
     };
+
+    const handleSpeak = (message: ChatMessage) => {
+        if (!('speechSynthesis' in window)) {
+            setSpeechError('Trình duyệt chưa hỗ trợ đọc giọng nói. Bé hãy thử dùng Chrome hoặc Edge nhé!');
+            return;
+        }
+
+        if (speakingMessageId === message.id) {
+            window.speechSynthesis.cancel();
+            speechUtteranceRef.current = null;
+            setSpeakingMessageId(null);
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(message.text);
+        utterance.lang = 'vi-VN';
+        utterance.rate = 0.92;
+        utterance.pitch = 1;
+        speechUtteranceRef.current = utterance;
+        setSpeakingMessageId(message.id);
+        setSpeechError('');
+
+        utterance.onend = () => {
+            if (speechUtteranceRef.current === utterance) {
+                speechUtteranceRef.current = null;
+                setSpeakingMessageId(null);
+            }
+        };
+        utterance.onerror = (event) => {
+            if (speechUtteranceRef.current === utterance) {
+                console.error('[AgentAssistant] speech playback failed:', event.error);
+                speechUtteranceRef.current = null;
+                setSpeakingMessageId(null);
+                setSpeechError('Chưa thể phát giọng đọc lúc này. Bé hãy thử lại nhé!');
+            }
+        };
+
+        try {
+            window.speechSynthesis.speak(utterance);
+        } catch (error) {
+            console.error('[AgentAssistant] speech playback failed:', error);
+            speechUtteranceRef.current = null;
+            setSpeakingMessageId(null);
+            setSpeechError('Chưa thể phát giọng đọc lúc này. Bé hãy thử lại nhé!');
+        }
+    };
+
+    useEffect(() => () => {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }, []);
+
+    useEffect(() => {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        speechUtteranceRef.current = null;
+        setSpeakingMessageId(null);
+        setSpeechError('');
+    }, [childId]);
 
     useEffect(() => {
         if (!canLoadChild) return;
@@ -271,8 +332,24 @@ export default function AgentAssistant() {
                                         }`}
                                 >
                                     {message.text}
+                                    {message.role === 'assistant' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSpeak(message)}
+                                            aria-label={`${speakingMessageId === message.id ? 'Dừng đọc' : 'Đọc'} lời nhắn của Lupinh`}
+                                            className="mt-1 flex min-h-9 items-center gap-1 rounded-full px-2 text-xs font-bold text-[#2d6358] transition hover:bg-[#edf6ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6eaa83]"
+                                        >
+                                            <span aria-hidden>{speakingMessageId === message.id ? '⏹️' : '🔊'}</span>
+                                            {speakingMessageId === message.id ? 'Dừng đọc' : 'Nghe'}
+                                        </button>
+                                    )}
                                 </div>
                             ))}
+                            {speechError && (
+                                <p role="alert" className="text-xs font-semibold text-[#a33d2c]">
+                                    {speechError}
+                                </p>
+                            )}
                             {loading && (
                                 <div className="max-w-[85%] rounded-2xl bg-white px-3 py-2 text-sm text-[#537267] shadow-sm">
                                     Lupinh đang suy nghĩ...
