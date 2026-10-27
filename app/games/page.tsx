@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAPI } from '../../lib/hooks/useAPI';
 import { resolveRoleHome } from '../../lib/auth';
-import { LISTEN_AND_MATCH_ID, SAY_IT_WITH_AI_ID } from '../../src/game-config';
+import { LISTEN_AND_MATCH_ID, MEMORY_MATCH_ID, SAY_IT_WITH_AI_ID } from '../../src/game-config';
 
 type Game = {
     gameId: string;
@@ -22,8 +22,10 @@ export default function GamesPage() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const [game, setGame] = useState<Game | null>(null);
+    const [memoryGame, setMemoryGame] = useState<Game | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
+    const [memoryLoadError, setMemoryLoadError] = useState('');
     const role = (session?.user as { role?: string } | undefined)?.role;
 
     useEffect(() => {
@@ -34,10 +36,15 @@ export default function GamesPage() {
     useEffect(() => {
         if (status !== 'authenticated' || role !== 'PARENT') return;
         let current = true;
-        API.get('games', false, false, false).then(result => {
+        Promise.all([
+            API.get('games', false, false, false),
+            API.get(`games?gameId=${MEMORY_MATCH_ID}`, false, false, false),
+        ]).then(([result, memoryResult]) => {
             if (!current) return;
             if (result?.game) setGame(result.game);
             else setLoadError(result?.message || 'Trò chơi hiện chưa được mở.');
+            if (memoryResult?.game) setMemoryGame(memoryResult.game);
+            else setMemoryLoadError(memoryResult?.message || 'Trò chơi hiện chưa được mở.');
         }).finally(() => {
             if (current) setLoading(false);
         });
@@ -113,6 +120,35 @@ export default function GamesPage() {
                                 ) : (
                                     <p role="status" className="mt-5 rounded-2xl bg-[#fff2d5] p-4 text-sm font-bold text-[#80683c]">
                                         {loadError || 'Trò chơi hiện chưa được mở.'}
+                                    </p>
+                                )}
+                            </div>
+                        </article>
+                        <article className="overflow-hidden rounded-[2rem] border-4 border-white bg-white shadow-soft">
+                            <div className="grid min-h-48 place-items-center bg-gradient-to-br from-[#ffe5b5] to-[#e9dcff]">
+                                <span aria-hidden className="text-8xl drop-shadow-sm">{memoryGame?.icon || '🧠'}</span>
+                            </div>
+                            <div className="p-6">
+                                <span className="text-xs font-black tracking-widest text-[#ef7d32]">TRÍ NHỚ · 3-8 TUỔI</span>
+                                <h2 className="mt-2 text-2xl font-extrabold">{memoryGame?.title || 'Memory Match'}</h2>
+                                <p className="mt-2 min-h-12 text-[#71867c]">
+                                    {memoryGame?.description || 'Lật thẻ tìm cặp hình giống nhau và học từ tiếng Anh.'}
+                                </p>
+                                {memoryGame?.themes?.length ? (
+                                    <p className="mt-4 text-sm font-bold text-[#2d6358]">
+                                        {memoryGame.themes.length} chủ đề: {memoryGame.themes.slice(0, 2).map(theme => theme.title).join(' · ')}
+                                    </p>
+                                ) : null}
+                                {memoryGame ? (
+                                    <Link
+                                        href={`/games/${MEMORY_MATCH_ID}`}
+                                        className="mt-5 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full border-b-4 border-[#7a61c7] bg-[#9278df] px-6 font-black text-white transition hover:brightness-105 active:translate-y-1 active:border-b-0"
+                                    >
+                                        Chơi ngay <span aria-hidden>🧠</span>
+                                    </Link>
+                                ) : (
+                                    <p role="status" className="mt-5 rounded-2xl bg-[#fff2d5] p-4 text-sm font-bold text-[#80683c]">
+                                        {memoryLoadError || 'Trò chơi hiện chưa được mở.'}
                                     </p>
                                 )}
                             </div>

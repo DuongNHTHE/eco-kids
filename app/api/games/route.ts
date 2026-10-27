@@ -1,6 +1,11 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/next-auth';
-import { DEFAULT_LISTEN_AND_MATCH_CONFIG, LISTEN_AND_MATCH_ID } from '../../../src/game-config';
+import {
+  DEFAULT_LISTEN_AND_MATCH_CONFIG,
+  DEFAULT_MEMORY_MATCH_CONFIG,
+  LISTEN_AND_MATCH_ID,
+  MEMORY_MATCH_ID,
+} from '../../../src/game-config';
 import { connectMongo, GameConfig } from '../../../src/models';
 
 type SessionUser = { id?: string; role?: string | null };
@@ -55,8 +60,11 @@ function isSafeImageUrl(value: string) {
 function normalizeConfig(body: any) {
   const title = String(body?.title || '').trim();
   const description = String(body?.description || '').trim();
-  const icon = String(body?.icon || '🎧').trim();
-  if (body?.gameId !== LISTEN_AND_MATCH_ID) return { error: 'Mã trò chơi không hợp lệ.' };
+  const isMemoryMatch = body?.gameId === MEMORY_MATCH_ID;
+  const icon = String(body?.icon || (isMemoryMatch ? '🧠' : '🎧')).trim();
+  if (![LISTEN_AND_MATCH_ID, MEMORY_MATCH_ID].includes(body?.gameId)) {
+    return { error: 'Mã trò chơi không hợp lệ.' };
+  }
   if (!title || title.length > 100 || description.length > 300 || !icon || icon.length > 12) {
     return { error: 'Tên, mô tả hoặc biểu tượng trò chơi không hợp lệ.' };
   }
@@ -75,8 +83,9 @@ function normalizeConfig(body: any) {
     if (!id || id.length > 80 || themeIds.has(id) || !themeTitle || themeTitle.length > 80) {
       return { error: 'Mỗi chủ đề cần có mã và tên riêng hợp lệ.' };
     }
-    if (!Array.isArray(theme?.items) || theme.items.length < 2 || theme.items.length > 20) {
-      return { error: `Chủ đề "${themeTitle}" cần có từ 2 đến 20 hình ảnh.` };
+    const minItems = isMemoryMatch ? 3 : 2;
+    if (!Array.isArray(theme?.items) || theme.items.length < minItems || theme.items.length > 20) {
+      return { error: `Chủ đề "${themeTitle}" cần có từ ${minItems} đến 20 hình ảnh.` };
     }
     themeIds.add(id);
 
@@ -100,7 +109,7 @@ function normalizeConfig(body: any) {
 
   return {
     value: {
-      gameId: LISTEN_AND_MATCH_ID,
+      gameId: body.gameId,
       title,
       description,
       icon,
@@ -110,7 +119,7 @@ function normalizeConfig(body: any) {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getUser();
     if (!user?.id) return Response.json({ message: 'Cần đăng nhập để xem trò chơi.' }, { status: 401 });
@@ -118,10 +127,18 @@ export async function GET() {
       return Response.json({ message: 'Bạn không có quyền xem trò chơi.' }, { status: 403 });
     }
 
+    const gameId = new URL(request.url).searchParams.get('gameId') || LISTEN_AND_MATCH_ID;
+    const defaults = gameId === MEMORY_MATCH_ID
+      ? DEFAULT_MEMORY_MATCH_CONFIG
+      : gameId === LISTEN_AND_MATCH_ID
+        ? DEFAULT_LISTEN_AND_MATCH_CONFIG
+        : null;
+    if (!defaults) return Response.json({ message: 'Mã trò chơi không hợp lệ.' }, { status: 400 });
+
     await connectMongo();
     const config = await GameConfig.findOneAndUpdate(
-      { gameId: LISTEN_AND_MATCH_ID },
-      { $setOnInsert: DEFAULT_LISTEN_AND_MATCH_CONFIG },
+      { gameId },
+      { $setOnInsert: defaults },
       { new: true, upsert: true, setDefaultsOnInsert: true },
     ).lean();
     const serialized = serializeConfig(config);
@@ -142,7 +159,7 @@ export async function PUT(request: Request) {
 
     await connectMongo();
     const config = await GameConfig.findOneAndUpdate(
-      { gameId: LISTEN_AND_MATCH_ID },
+      { gameId: normalized.value.gameId },
       { $set: { ...normalized.value, updatedAt: new Date() } },
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
     ).lean();

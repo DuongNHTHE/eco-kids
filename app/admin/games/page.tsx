@@ -135,6 +135,12 @@ export default function AdminGamesPage() {
                             <p className="mt-1 text-[#71867c]">Quản lý trò chơi và các chủ đề hình ảnh dành cho bé.</p>
                         </div>
                     </div>
+                    <Link
+                        href="/admin/games/memory-match"
+                        className="mt-5 inline-flex rounded-full bg-[#eee9ff] px-5 py-3 font-bold text-[#604caa] hover:bg-[#e2d9ff]"
+                    >
+                        🧠 Cấu hình trò chơi Memory Match
+                    </Link>
                 </div>
             </header>
 
