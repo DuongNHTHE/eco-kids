@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { connectMongo, User } from '../src/models';
 import { writeAuditLog } from '../src/audit';
+import { verifyPassword } from '../src/password';
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
@@ -12,22 +13,24 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
     CredentialsProvider({
-      name: 'Email',
+      name: 'Email hoặc username',
       credentials: {
+        identifier: { label: 'Email hoặc username', type: 'text' },
         email: { label: 'Email', type: 'email' },
         password: { label: 'Mật khẩu', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) return null;
+        const identifier = String(credentials?.identifier || credentials?.email || '').trim().toLowerCase();
+        if (!identifier || !credentials?.password) return null;
 
         await connectMongo();
-        const email = String(credentials.email).trim().toLowerCase();
-        const user: any = await User.findOne({ email }).lean();
-        if (!user || !user.password || user.password !== String(credentials.password)) {
+        const lookup = identifier.includes('@') ? { email: identifier } : { username: identifier };
+        const user: any = await User.findOne(lookup).lean();
+        if (!user || !user.password || !(await verifyPassword(String(credentials.password), user.password))) {
           await writeAuditLog({
             action: 'LOGIN_FAILURE',
             resource: 'AUTH_SESSION',
-            actor: { email },
+            actor: { email: identifier.includes('@') ? identifier : undefined },
             metadata: { provider: 'credentials' },
             success: false,
           });
@@ -37,7 +40,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: String(user._id || user.id),
           email: user.email,
-          name: user.name,
+          name: user.name || user.username || user.email,
           role: user.role,
           image: user.avatar || null,
         };

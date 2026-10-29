@@ -8,7 +8,9 @@ import { GET as getProducts } from '../app/api/products/route';
 import { GET as getProgress } from '../app/api/progress/[childName]/route';
 import { POST as saveProgress } from '../app/api/progress/route';
 import { POST as createOrder } from '../app/api/orders/route';
+import { POST as register } from '../app/api/auth/register/route';
 import { hashParentCode, verifyParentCode } from '../src/parent-settings-code';
+import { hashPassword, verifyPassword } from '../src/password';
 import { createOrderPayment, generateOrderCode, isSupportedPaymentReceipt } from '../src/order-payment';
 import { requiresLearningTopic } from '../src/package-topic';
 
@@ -26,6 +28,31 @@ test('stores parent codes as salted hashes and verifies without retaining the pl
   assert.notEqual(savedCode.salt, '');
   assert.equal(await verifyParentCode(code, savedCode.salt, savedCode.hash), true);
   assert.equal(await verifyParentCode('736185', savedCode.salt, savedCode.hash), false);
+});
+
+test('stores account passwords as salted hashes and verifies hashed and legacy passwords', async () => {
+  const password = 'safe-password-123';
+  const savedPassword = await hashPassword(password);
+
+  assert.notEqual(savedPassword, password);
+  assert.match(savedPassword, /^scrypt\$[a-f\d]{32}\$[a-f\d]{128}$/);
+  assert.equal(await verifyPassword(password, savedPassword), true);
+  assert.equal(await verifyPassword('wrong-password', savedPassword), false);
+  assert.equal(await verifyPassword('legacy-password', 'legacy-password'), true);
+  assert.equal(await verifyPassword('wrong-password', 'legacy-password'), false);
+});
+
+test('rejects invalid registration details before accessing the database', async () => {
+  const response = await register(new Request('http://localhost/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'x', email: 'not-an-email', password: 'short' }),
+  }));
+  const result = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(result.success, false);
+  assert.match(result.message, /Username/);
 });
 
 test('creates a VietQR transfer code with the order amount and reference', () => {

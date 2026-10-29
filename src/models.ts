@@ -14,6 +14,7 @@ export function connectMongo() {
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+  username: { type: String, trim: true, lowercase: true, unique: true, sparse: true },
   password: { type: String },
   name: { type: String, required: true, trim: true },
   avatar: String,
