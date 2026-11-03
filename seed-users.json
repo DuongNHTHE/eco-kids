@@ -1,0 +1,1802 @@
+[
+  {
+    "username": "hanhlethanh",
+    "email": "hanhlethanh@example.com",
+    "password": "scrypt$84f32dc0d115772064564d3fb79aaa7f$71a5bb080695b3f7daf24f6c630e9eff68d292bf731969aa85a7556889310ccb588ac491c84470b7ef14f28f3ce600b62641fe738ebc9d6418d8f38c71c62d29",
+    "name": "Lê Thanh Hạnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuhuynhduc",
+    "email": "thuhuynhduc@example.com",
+    "password": "scrypt$44fd55c91c553b3b46aa245e39b31ee6$36be8139e6c5da956e18c411cacdd40b1ae91d1ea6476c4aee2977785a0a2b96e10064cfbd5525221f63fdb5cdcf91af85322a4b64b4661ef60d131915efcf24",
+    "name": "Huỳnh Đức Thu",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "chidoanthanh",
+    "email": "chidoanthanh@example.com",
+    "password": "scrypt$13e5c48d5f49e71f9dce058c1516ed42$d8e751010cc0f96514b118faa5b325f6a348d0d4452c250ffae17f677e731b93d2405013e94a13640dc6d24d6b28454a05b42d59795c03a6cf2ca1329b4bdf10",
+    "name": "Đoàn Thanh Chi",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quandinhgia",
+    "email": "quandinhgia@example.com",
+    "password": "scrypt$07f481979ac020865f9be81f07b4fcf8$58bfbb4f440bed6f10eb6c676067732db4179a632c2849b0eb65a45a0d7e1fdca13c26e6523d0ec56aaf73722be6bdade60a5daaf2e0b2ee5711b15a45a3bb74",
+    "name": "Đinh Gia Quân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hiendinhngoc",
+    "email": "hiendinhngoc@example.com",
+    "password": "scrypt$465edcd96d0a88551dafd46e5340e0f4$02d6d006fe2b29b8aff930766153076365a07f17be43662b5d2be18b6988296cb834ad04b3efd67686049c520bfc96cc9eb1998526112af2d15ba8ea36d7e5a4",
+    "name": "Đinh Ngọc Hiền",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "linhduongduc",
+    "email": "linhduongduc@example.com",
+    "password": "scrypt$1e3ea2fad20d262d14a5673593b46763$9543ee627ff898446a59d1cc269291e91510eed800f880e0ed5ccfe737dcf9ac3e82cb50ef77231b64501f390e52da93ae09d6f07d13519585f0254b27eb03cf",
+    "name": "Dương Đức Linh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "linhdinhquang",
+    "email": "linhdinhquang@example.com",
+    "password": "scrypt$3aa0b339ea1692ac9e701d6fb549cfb9$02f5a596379fddbdbf00365230ddcc018d1e75d1bd35d655718122a0b01039fede0fd2db9514de73417e400bb7588089945753a4eacfb986fe3f57739c059620",
+    "name": "Đinh Quang Linh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tuanbuituan",
+    "email": "tuanbuituan@example.com",
+    "password": "scrypt$aeee29136e8294daa3a5275d07d1c76b$0cbc2be28b51b070ed35bfc9bc77ed5ca338fe8717cd2af32644deba62d3cbd7cfa51b88d2b55c40c9263de988930f696940557be895e7e9a402002633e61397",
+    "name": "Bùi Tuấn Tuấn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hoangbuituan",
+    "email": "hoangbuituan@example.com",
+    "password": "scrypt$fcf6b83177ddeecfe26478b5345472aa$b64a4f035dfff0c56e5433819f72f9163f8bf4103eef130b6c9a8a066c694b62232a3c729e422927a1a8931a2603535b639de451facbf73c9e3b8851a2d3b559",
+    "name": "Bùi Tuấn Hoàng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "datvuthuy",
+    "email": "datvuthuy@example.com",
+    "password": "scrypt$0515dd92797638e337b2505e41d56ff6$8bc8ffab3fb5178b58619869e89e224d1b1399608fbdfd14f96839b1cd19b06bbb5c019b2b361b99c2136ddcf8dad5e37ba86fc05ec02c15495458c2f0d6708e",
+    "name": "Vũ Thùy Đạt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "lannguyenminh",
+    "email": "lannguyenminh@example.com",
+    "password": "scrypt$8acdbc7e89d02ad19dc1abc6b6150f40$79f4304a34a9d278166f9529c531e5ed119c5d5126c4f0e106f1d74de1a43b4a80b1424329dc50569d26b97a81c0a31cab76316b4f508ddd31d3ebfd8467e05e",
+    "name": "Nguyễn Minh Lan",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nhungphanthuy",
+    "email": "nhungphanthuy@example.com",
+    "password": "scrypt$ae5544ab06da89221dea84b7b0c80ec9$bbebc356559b5640bcbdd4faad2263b3ebbe774bf7633df322eb967ce582d7fdf4884439cdd12c0f7fce53a62a0bb0ae65280f45b2096075c020ab3b0d65572e",
+    "name": "Phan Thùy Nhung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "namvungoc",
+    "email": "namvungoc@example.com",
+    "password": "scrypt$587644e4966e068bd4f11ca703ceeceb$43924811691bd99a0c837b638246db78c742cda713693eb2c1e67510b6e9bd4f9b251c46a88e5bd765448dc973ee71d7efbc8573c8004cd6a5a8426ccd483f94",
+    "name": "Vũ Ngọc Nam",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "dungdothi",
+    "email": "dungdothi@example.com",
+    "password": "scrypt$289731b83c45b1231977b41e5b88985c$5de19cdbdd96d1fcb5837f2b27dc7ad0ca039293ac6cf05bc25c98e89bafb97d56db21205172d6ccf916b11bfead5ff3e7f3f00b7eda3d49f561325d9ac1dcfb",
+    "name": "Đỗ Thị Dũng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhlythanh",
+    "email": "vinhlythanh@example.com",
+    "password": "scrypt$e49b416841f2436d44074accbeba047d$5c9f5d72ab4f3d4b46843c27f390b5ba62ba4d674e7d399f550e68d6a31ddf35b4440845064754940cb05bda34752513d8413a8e2245c1c4086bde1c67027574",
+    "name": "Lý Thanh Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "khoaphanhai",
+    "email": "khoaphanhai@example.com",
+    "password": "scrypt$c6d8386654ebfb0e8d0f26c0fb9f4e54$90bf0626492b2f9c99ae6a079104486f29bbacff6058dacf2588bf47920dbf193a918f486c09eab2ed5a3e4d89e2592f383f3cd700d6b4a37e56a8e74e0fbe02",
+    "name": "Phan Hải Khoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tamvothi",
+    "email": "tamvothi@example.com",
+    "password": "scrypt$604f32b7c0843a1f38a718b159b0c646$1b91081f9e5f6033a0272ba0171121d5f6e03c02b506831c6f547ea1e51cac9452fec8a96391c47597722f9c6afa05549dc018d8c46c0bc71e1475dfd76f726a",
+    "name": "Võ Thị Tâm",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hoangphamthu",
+    "email": "hoangphamthu@example.com",
+    "password": "scrypt$3406ee6f047b012b37ad12078f4a00f4$a6ff790b7c42e36043eb42c1f6854e9a65ad4fdde5cc1f44a8a9994761e4298f0bd8a45c3360c358cdf67bd96e9717a06ba3fa4272f05a3974200c86e02147bf",
+    "name": "Phạm Thu Hoàng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "uyenngohuu",
+    "email": "uyenngohuu@example.com",
+    "password": "scrypt$fa4d64a177fded73ec9f98d60ec40be7$dacaf0f0f5b70326a21949d5c8a58038316ea40bbb495aae0d9c05605e10dc552e80194dde8683c1505fc8d3c3c310de87abaf45c6e3f3c71023ca621f5e5689",
+    "name": "Ngô Hữu Uyên",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuylyvan",
+    "email": "thuylyvan@example.com",
+    "password": "scrypt$50494745f0e564c07aec33ee94739b1b$7ef17578723ff7eaaeabbecd3e9fbb2329452bf3533bf6cdd371f05f2a2fde7f2d430faa1aebca9bd1e20b317205e88320ca4b75243208a6b8e69fea6e6b200a",
+    "name": "Lý Văn Thủy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hanhtrinhanh",
+    "email": "hanhtrinhanh@example.com",
+    "password": "scrypt$f78c36f17c5b4492c31ac874b47b2563$a10e917b4aa23686f16048c45cff312c87a3aa805388916e6f1d9a304f1eb35686ca3951ab104d8021db57eaa2f600689b4a38182da13670e83b517ba0143f8b",
+    "name": "Trịnh Anh Hạnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "phuongtranthanh",
+    "email": "phuongtranthanh@example.com",
+    "password": "scrypt$d142027ba00a17c2948d39846afeb43a$0005548fc9baa5688f2091e6511b0e693d1af22b568241e646a003928bcad5d78abe5e48ad9f70d78c9e4faa1f57d4961ab5eb01df0d99fcf5d9e9d5df0e8f56",
+    "name": "Trần Thanh Phương",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "namphamdinh",
+    "email": "namphamdinh@example.com",
+    "password": "scrypt$79ab943235de14e93e55f2ed403264d1$da4357a1b1e4ba5a7622cac36617fa3de370c4e166dde130e59e16aa5976b71c5f73d25888c5a80682f86f65a0823de1d405bc0d8e6939ba36eae48ee8698fc1",
+    "name": "Phạm Đình Nam",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quanphamdinh",
+    "email": "quanphamdinh@example.com",
+    "password": "scrypt$683e35d290e01ff0cec2138caa049c6f$cb136a91d61b875333dd4d0af0cf655d1542cea5aaaa50e6f38db30ad450dc5fa8a3aae8c29b15c3c4b292a3228dd394fff78bd35773203df556bec8d07dc06a",
+    "name": "Phạm Đình Quân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "maiphamkim",
+    "email": "maiphamkim@example.com",
+    "password": "scrypt$37900f7df41df74b7da050b4b2f5729a$da23dab92988d13b34f2ac92a58aa8817beaab42d3f19176a861998ee9b5dd18c6cd65bc3a927f1724ae6e8cd90a1bab6a295b1f39f01a634d6a9b2afb049c61",
+    "name": "Phạm Kim Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuyhoangquang",
+    "email": "thuyhoangquang@example.com",
+    "password": "scrypt$b330ce30625a61eff2842c955627b8f8$d837f63354a4969e4fb50195eb148f64480147d4afec18e6b4bc9cd98c20fa91c3223a2a1bd2694e636b375ab0afbd79de2b7f27f82c90244f6ee5f806f9a596",
+    "name": "Hoàng Quang Thủy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "yenbuithi",
+    "email": "yenbuithi@example.com",
+    "password": "scrypt$8ee4eed067aeb80e5fc1a26c98e9d0a1$ba186c7d4f3e5c0c0901434ab33c4e39bcb8912dc1531ad8eee0c77d9673da392b96a6e083d5aeb8be38fd63d6dd586cdcc4579df985b609cb2caa3f68908985",
+    "name": "Bùi Thị Yến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hientranduc",
+    "email": "hientranduc@example.com",
+    "password": "scrypt$632944fede09c5947c1f065b7ce21181$9be6141354d7465a44cfcdb28e842cc8c0187361abad776f1eb51f27bd3561428b4ec019e96480e46f442d0a0a0205fd7298b39cefc37886e343654afed1127f",
+    "name": "Trần Đức Hiền",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "chidinhxuan",
+    "email": "chidinhxuan@example.com",
+    "password": "scrypt$04db66d5e37629139a6f9b8410e63f0f$37d1005f624c0ff72b3a5ed7dbc10c0261051d9980b65ba6ef241d423c33e0ce8f8cb158fdbdbc10aa3351a13a24e8f3c32cb4a94a7b8c0c8e0ce63782a7e6f7",
+    "name": "Đinh Xuân Chi",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhdogia",
+    "email": "vinhdogia@example.com",
+    "password": "scrypt$fe8cf4c3de6ac0ae345fde6063e145fb$6f68f4b1429dc91c8d3e19c16dea3192c80ec55ec599182f35264000ae8d4b0a7c4615c2fabef9fc17c8a9a08e2d39fa4c843cbe8983b35fcf71f4c1755c19b9",
+    "name": "Đỗ Gia Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thutrinhhuu",
+    "email": "thutrinhhuu@example.com",
+    "password": "scrypt$bf0c42830e44383083088369c7436ebc$a3befa47fa374eb8447e5ded645306cfdde8ac2ebac53886013e99169a1cd3192722b507c80be9f9fc2b52ae066484da35ba418433705fdb925231157f6d26e0",
+    "name": "Trịnh Hữu Thư",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngocbuihai",
+    "email": "ngocbuihai@example.com",
+    "password": "scrypt$db0d43b3e5bdf8a95482ef0e43353894$d4c9cb6e6d41b0a2b48b78afedf3ee1a11b7491cf3416595225af2bc93a6c77413add8ccc1001664beadf4b8f30cfa82cfd881beef9a6892b13479e07f382479",
+    "name": "Bùi Hải Ngọc",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "mailyhai",
+    "email": "mailyhai@example.com",
+    "password": "scrypt$a1438f5a6c9f4a13e07f89d4da8561c5$e7dd193af631fe30dfe67ebb0946fdebbfb67fea0494f2c751618b823a7f31b7acfc2062d8fa9393d3812c9dad6bc04e0765b9b7f536b92d7c53c29a020c9070",
+    "name": "Lý Hải Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nhungngohuu",
+    "email": "nhungngohuu@example.com",
+    "password": "scrypt$1a82102d72b619f32642c5e59c6176f0$9167ca6c28e3e3ad9b35987bbfd97d3f6ade09ea1ef64c47bd546beec223fa84f4556e47f937e7308b02311b272bb9413564e3b677389da3cd3a4c4b33757d21",
+    "name": "Ngô Hữu Nhung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuyletrong",
+    "email": "thuyletrong@example.com",
+    "password": "scrypt$22011a0f1d177bdecd93df7aae223bf2$029e3058eb2b144bc94afdedb8e20fabf4274af1a5ce7980b292becbdd76e77b16d1dcbe95ccaf2b6615c1c4f9282c55f654da9d2d95f0169b7d38a58b262968",
+    "name": "Lê Trọng Thủy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "datmaingoc",
+    "email": "datmaingoc@example.com",
+    "password": "scrypt$c581cf4be8522ff2548f3406d6245635$96913388f9c06e7e81c9d691e148533f0af3d387b0030e7d23f414c38e8bb2d40e8bed43f9b32ac7a74106c3eae04a3757dbdd84ccdfdad979ad4f54c971b6de",
+    "name": "Mai Ngọc Đạt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "lanmaihai",
+    "email": "lanmaihai@example.com",
+    "password": "scrypt$bc3435aa15f4526ee74b29459d96e15e$c031da29dee8611e772f9d538860d4cfc61f41253f50e5ea4e5bdc940a3b0b17bee8642957ae62999ec53493622fdf6a61e61c6e212c4b27be54c23408ebef8d",
+    "name": "Mai Hải Lan",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "chihotrong",
+    "email": "chihotrong@example.com",
+    "password": "scrypt$d653ef969472cc7768e45340b862ef77$98cbee1c3a3d9888f9c04cd62c0520e7d4121cc4801a112c7fb1718dd950c8188e7472bb36afe2d494e33c764c37be74b3bb1aeff8e079321a7da3a519d51a1a",
+    "name": "Hồ Trọng Chi",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "minhbuihoai",
+    "email": "minhbuihoai@example.com",
+    "password": "scrypt$0b0e46360e7f1e310d68aa24a7ab6aab$f851895759305b88de8fd613a4ad040279037c32fe54579a803048dec6dba3ffcb866ae5a4492da033f5dff59fc9e0ff9ec0d471713502958f70380663dc9734",
+    "name": "Bùi Hoài Minh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "khoamaihai",
+    "email": "khoamaihai@example.com",
+    "password": "scrypt$252388f98f25ed1e86fc938c494edc7f$15651b2461c3ccfe580535624fad3daa7f41bc510d7fda9f76e5a08fc50daba899e4517974010c11ba0a56c1f1fef5b399b9ae5dd4646184eb45f53e1a77789e",
+    "name": "Mai Hải Khoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "uyendoanphuong",
+    "email": "uyendoanphuong@example.com",
+    "password": "scrypt$d11edca750212737c202b988ada4605d$5b4ba8953b15d7cad251d7690902e4efd3bd530e1ac48e9f15db61c7d77a5393ce898eac0d85ffa33b112b5a8942d47422314c91048d831e5a6948002b335d92",
+    "name": "Đoàn Phương Uyên",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "datbuianh",
+    "email": "datbuianh@example.com",
+    "password": "scrypt$65f2af5570b5af33569de835eecfeed7$74a0e0ac7651419042f45d8c9bfed8ac6bee2f6d6419878033fb06f183e4024ba455023f169f7261734e69442a951e2576fd2ed865af3319900f72e72fbc0a3d",
+    "name": "Bùi Anh Đạt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "khanhvothuy",
+    "email": "khanhvothuy@example.com",
+    "password": "scrypt$64ed1b73870e3f74c99c45d88712c49e$e84e12de27f0d241f9918321720a2f7a6ec94d29c830cb5312c1fb44110d32409f0a647ad7ac1a510f903b75a99fa1f0f0692ff644c18b6852b65af6817562e5",
+    "name": "Võ Thùy Khánh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "maihoangvan",
+    "email": "maihoangvan@example.com",
+    "password": "scrypt$b04f2a3785be2ea5b47ee92b3c0aaceb$b04c64e8f2ebe77e442a20d6b7bd17c395aa11bb75b80c953911b78baa76614be65d82a3cd9bb5e2965d22efd33b0660db44545b3e22c4eefbb8ec170a1a22e3",
+    "name": "Hoàng Văn Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "maidophuong",
+    "email": "maidophuong@example.com",
+    "password": "scrypt$04fce2a465005432bd46a2141fa4e560$e91d3f2f075c486721a2a371edc188bb1b5d7816a997b71dc284eb380a454209a150544decb2cc649a5981cd04ea9d459f4c0c1f478afd6eec5dee35f6408dab",
+    "name": "Đỗ Phương Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "khanhvuquang",
+    "email": "khanhvuquang@example.com",
+    "password": "scrypt$125c51bac87daffeb221cb271afeb845$3159b619832a884f9e284ca8604f3ff7f6f102539214737dd3905912ac1e21afd5f53cf28a3eca4285def1747de66eb204e91e37769c149fd0b8e4b52668534f",
+    "name": "Vũ Quang Khánh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "yenhuynhnhat",
+    "email": "yenhuynhnhat@example.com",
+    "password": "scrypt$64993f7145ae2d3ee80f0c7febed9fb8$6e5a9972af13d789c2fb8e6a30df94fe372fb08e1b485629e4e5dabe4bb8b0d117dd65bb6de8158822a2da6a3b9ebf48060cad171c725d43ebe98cb34afff233",
+    "name": "Huỳnh Nhật Yến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngocbuixuan",
+    "email": "ngocbuixuan@example.com",
+    "password": "scrypt$6a0f829b27191cc306f38629bc5141d4$f8f101a2bd0cb4dce7f27246f1ef8f669afd50b5cf563439e1c11ed5f393e52d779ebbb10fe7c130e02318a10607a8a24eb07a086d3c086e366d3782f3c9c3a4",
+    "name": "Bùi Xuân Ngọc",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hoatrantrong",
+    "email": "hoatrantrong@example.com",
+    "password": "scrypt$33a0d156a6e6ae52e9ecaf8db0ffdbf4$95a96434dc2a71b9031e76558c46157224dbd8810e352f57b1391e652b7df04d74a945df65dceb2fbd05f4d00ea6ee4fdd589025e0eb972c60c406de41391238",
+    "name": "Trần Trọng Hoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hoanguyenxuan",
+    "email": "hoanguyenxuan@example.com",
+    "password": "scrypt$7519d7d8715a650c388e73b9151c79c3$eb69e8d3b66755367b9a0ff07c66cac61b54e8fc432fe659028d85a0382a21bbf61463938899217c14cb16df4ffaa1ac06a8df98f076463cce4359fd44748e4f",
+    "name": "Nguyễn Xuân Hoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hiendinhtuan",
+    "email": "hiendinhtuan@example.com",
+    "password": "scrypt$2977ed47f2cde71f675a347e425778cb$63e98d6e36ee68e66ee4b4ecab8ffd9dc16357a58c927e58ac34a93c3cdcae7d6d568508199e84ad80494a8a98fa960460403a60d8113320ba89cf8fbf2fdf87",
+    "name": "Đinh Tuấn Hiền",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "chaudokim",
+    "email": "chaudokim@example.com",
+    "password": "scrypt$96845fbc3bd65f7df1193418b6772865$8e530da9ca3bb56e29e040d316067833caa47cd66c63df9ae4452efd7caab89db41d3ed79c4475e20219067209889977b741b479d28f97b38570daeee3c302a4",
+    "name": "Đỗ Kim Châu",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nganlyhuu",
+    "email": "nganlyhuu@example.com",
+    "password": "scrypt$139b3287cbc90097318fdab80fdb749d$2652e11185eac91b1a19c231927fb6210e717363ee3fa14a4d6e037a504054b4fc6027910337d5d9994da15b537c79fc915faeee4d6c992a8694cd932609e336",
+    "name": "Lý Hữu Ngân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tamletrong",
+    "email": "tamletrong@example.com",
+    "password": "scrypt$9625adbb6c00810a4daa9e294c3ac081$0a429aefe7c71113817656bba8fc21e85b6447bc05351bd19547b93a06a07c6c03b3c382a59947062d23bd68886d2da30fc799fb9b589a8f562f151d9fa2d421",
+    "name": "Lê Trọng Tâm",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "viethoduc",
+    "email": "viethoduc@example.com",
+    "password": "scrypt$582523067c949565b4dd293489625ee0$422ec6e6f18013d8ca8e8670ffa67f43520aaab5eca3508974e48abb586b21bbd2b0b194440aee91d55644fc34c59cf3b9405426f40fc4beb1a84858ec7671d2",
+    "name": "Hồ Đức Việt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuhobao",
+    "email": "thuhobao@example.com",
+    "password": "scrypt$086c1bf2ea343093c7623265d07f0ee2$edc2153d4bbdecda117616a7ddf4dc1e582b30fc7329844986e26bcfa3ae44f1adfd458003216a083585278ba937c7adcef02225d437d3698470afba14d04890",
+    "name": "Hồ Bảo Thu",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trunglekim",
+    "email": "trunglekim@example.com",
+    "password": "scrypt$61155594bbabf8f5ea18e134198c10c5$a10e8ffa68d4a87b3884ad8d82a86164f48bfcff43c7f4cd6a4836d863bd99758ebe8341330f25ca38c4a615538d79bf21ae8032504857f4fb33252c59817624",
+    "name": "Lê Kim Trung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuymaibao",
+    "email": "thuymaibao@example.com",
+    "password": "scrypt$e0cdd14008020a8628c6e143b0c14e52$91115010977e089e8582a30b774654784fc954a55d993d8a625a00aa81af5f51ed61433150c075b0bf45929085dea245d0523b4f8c8923c205c0f7c41a144db5",
+    "name": "Mai Bảo Thủy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "datngoquang",
+    "email": "datngoquang@example.com",
+    "password": "scrypt$b236060fbff8a668700e1a9367947c7a$28d66115a5e877abb686c9a0c51fad2aa23cd40907159c130d51d177ba3bd6c36df69881c56ec1da0abdfedc8a5ec08b377e475eadfbcd9e66531900d6359c98",
+    "name": "Ngô Quang Đạt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "phuongmaiminh",
+    "email": "phuongmaiminh@example.com",
+    "password": "scrypt$67a7b230e99dca6c3a5da3bfe9c8f655$82856d7bf21e21b88ae63dd8b84f5879eb80a3b868d0cfa2a45770fb26f27110b5736b9661cf3131091d341fa39c5bd104c175bedab8b5394ffe8dc345ad6594",
+    "name": "Mai Minh Phương",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "khoalyngoc",
+    "email": "khoalyngoc@example.com",
+    "password": "scrypt$6075af8876c2adce127e41b14195c738$44c81fb4c9a68f53a1f72934a565f3f41a95785bfc0a89f99c20e8b8845ae8f424925556d4c160a3df9cdc645fe9796db5acd3b311f0d64104621614ca27cbef",
+    "name": "Lý Ngọc Khoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "namdinhquang",
+    "email": "namdinhquang@example.com",
+    "password": "scrypt$300234b84691ff80934bdaae5dd33a74$871d4e2bce3b10354fff6bf73ffa9eda9c5991d19a9bfc438c941db2d8b0bf6aab0f03e56e9547b3531e84d9b406ed803d976f772ad5137366283716d648b2d6",
+    "name": "Đinh Quang Nam",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "phuonglyanh",
+    "email": "phuonglyanh@example.com",
+    "password": "scrypt$73308841d41d5ec981dc6ae225f07a5f$c51b31956c5585db368b665bfbac7c436ef25e282eda4508308e40b4818086a92eae391604d655e0ee27ab70038eea053c956d42389a820afffbaaf6a8ed83f5",
+    "name": "Lý Anh Phương",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thutrankhanh",
+    "email": "thutrankhanh@example.com",
+    "password": "scrypt$6ea664ae09b57690e6f0f9b0a1ae9131$dc2e4d85957fdfa3a279be980b28d7e3912a992a6ec804fe51b08f79ffb8ba86f2b50241513aaa41f7c1c3418f44b4f65daa7fe86f6b000553597d6438acd863",
+    "name": "Trần Khánh Thư",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "sondinhhai",
+    "email": "sondinhhai@example.com",
+    "password": "scrypt$f464fefc27d6673eb69585534ac0f818$2a60d1766fd50d82a075c0e6ba9086a9db9255873cb474450b161b6b1171a39a6b08397ee3bac6cf9136a951ff342f487b63a73f6b27288a05ee148007fc421e",
+    "name": "Đinh Hải Sơn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngoclehuu",
+    "email": "ngoclehuu@example.com",
+    "password": "scrypt$2c14a2877e45dd9b16b5f11d15d75135$a239b188617bdc6579b9d63aa9e328b0ca98c4910cf0135fa0fa33eb23c332e26d1e454790ba78cc50830d318152120bbb0ee0345cc117ae50e3e74280358414",
+    "name": "Lê Hữu Ngọc",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngandangkhanh",
+    "email": "ngandangkhanh@example.com",
+    "password": "scrypt$362e2bb39bcd9439dc3cd90fc115b5b8$d4a7879c01af29ab12104a07d5d8f0f12b8c6f0fd71d7964fc684e33d3448bdaf205a9107a6df18c015ec877202ddbcc61574cc73c2a7f7c35353b84270229b7",
+    "name": "Đặng Khánh Ngân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tumaithi",
+    "email": "tumaithi@example.com",
+    "password": "scrypt$350647d252520cc377840d056aead2d1$21085dddbd9c38a44a6d019e6dd30512f8458880391abc8182a33b3f6ec9f0673bac1e794826e8fdd7e20c726a0dabdc6dbbecf1224aafd13f04d3002c3e4d8c",
+    "name": "Mai Thị Tú",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tuanphamvan",
+    "email": "tuanphamvan@example.com",
+    "password": "scrypt$0c9b767858c993742f8f9a571d2ea682$0d0405f7b64396c1e7c02360a2324e0c9d00f48c72944ca2ad9a346a0157ba9fa68ad4921d8d0b3dc238ef4de8151eabdeea22c4356a547017fffb2040d15439",
+    "name": "Phạm Văn Tuấn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nhantranphuong",
+    "email": "nhantranphuong@example.com",
+    "password": "scrypt$7ac089638849c95cb485e74d13af4840$4bb8603ac3a424f5b109714e766b6682fcc3847dd4cbf8a16cee64bf88d37ca193e999179ac425e9555bc91e8199a47f8242c244edf6ccdeeea105414fbc057e",
+    "name": "Trần Phương Nhân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tientrinhquang",
+    "email": "tientrinhquang@example.com",
+    "password": "scrypt$aabac967abd7fe3a316ddf6723abfd82$c3c6232e0477169db4b6d53425447d094e77a0f2f197846d42f2faf5a715785d088642fe5abdb970e275ee34f5a0a84ee4e5c8999cd83e1581fe79e21f1a12d9",
+    "name": "Trịnh Quang Tiến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "lanphamkim",
+    "email": "lanphamkim@example.com",
+    "password": "scrypt$81a4f77a64bfa13b4e5d2b8e71774564$53b3dafb20d340551a2fdb94e75d01d77876298e2843024ad4fd350133daab9db93f1f1a849f99a00cdb0bbf641c4f6f4c6226d5538d34e2e5534e7556f03a40",
+    "name": "Phạm Kim Lan",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "maihoanghoai",
+    "email": "maihoanghoai@example.com",
+    "password": "scrypt$6da88ea7599fd52f54ac83d61323d430$a9865f233c4e029724e146e00341bb96dd3d9691bdf0d6a776bfb9d09cfa494ef74544a87053f6d6e525fc1aebfd5ea8eb48fab268babd7229749730ba5e460e",
+    "name": "Hoàng Hoài Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "cuongtrinhthu",
+    "email": "cuongtrinhthu@example.com",
+    "password": "scrypt$3d174680fab94421695a5261efbfdab2$2e708ce70e28e898da6db208ede03aa05cae9f771ad07b2b01c0fbfaa154aaa8ea45a2577a8c2aad37afeafba23f6d93a170f046216a887bbce3251eb6a61923",
+    "name": "Trịnh Thu Cường",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "huyleminh",
+    "email": "huyleminh@example.com",
+    "password": "scrypt$bcaaec0b43823495d6c8c1f51a940dd0$11d810c8aff994adfe1df2635760262f6b84a8bb6f58f4b849da30a155262a335ed044db4e6fbd03d9d17672ca5b696fce2753c3c3213f852e20a5ebd4e0c172",
+    "name": "Lê Minh Huy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "duyngotuan",
+    "email": "duyngotuan@example.com",
+    "password": "scrypt$72283268bc51af71660dd1a00946c4ea$052dd14e1fa6a5021525b5fdd8ad995273f660ee15114dc5ff8b8958bef5a312191737ffcd3a8f7394d3ee1a1c14db747848f6fc617a017ae2a020c63d5dc2ea",
+    "name": "Ngô Tuấn Duy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "binhdinhnhat",
+    "email": "binhdinhnhat@example.com",
+    "password": "scrypt$e86448e819deaf6ee77262debee5edbf$c260707a8933f991e85e4bd59ca702b17261f2672a0edfc99cf8ee3596373e1ab088ed1cd965437eca5b0458dc2990e6977f883e94608d8c8e32f3f6fae806e5",
+    "name": "Đinh Nhật Bình",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuduonghoai",
+    "email": "thuduonghoai@example.com",
+    "password": "scrypt$4e9b616f2825166242408d0049a400a1$61d279d3a542b6ebd43d068d20fdad940bd61b4b2dd4cd78771c2a9b531c65e866351760d8b7024583c6ec4150c93e6d9a53fd780e55ec22174d6c4080990ccf",
+    "name": "Dương Hoài Thu",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tramtrinhthu",
+    "email": "tramtrinhthu@example.com",
+    "password": "scrypt$06ba2a5e1c4f6bff7f1308186e032846$183d0fee63363ffd38d41bab5d6ae4f5055fba39f782aad735a60e94110c76b1cef75ec7523318b6a325a304ce4e705e4200d9ec4ab7f1c4e5187255c4beb621",
+    "name": "Trịnh Thu Trâm",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "minhngoquang",
+    "email": "minhngoquang@example.com",
+    "password": "scrypt$e8cf3e420e8f54f07bf6de1d4b7511f8$e953ecd692db0e7bc6455c17473d94fd1d3d0eebe2c487a3c742315744792fb6a0cf74d9155cd313b898a53aa5d440c016437889023befddd6a0b2d8b158519d",
+    "name": "Ngô Quang Minh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thaovuanh",
+    "email": "thaovuanh@example.com",
+    "password": "scrypt$b730aac45012008fa87d64a712c521b3$9a5a84040b08be9e9960dd210adccee55aecf98f35504d88107e9132b9cbb12902c3088f2878f6d8b9831e81ea89f1a81b40d4dfa7a38a74b7fba1a0eceee035",
+    "name": "Vũ Anh Thảo",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tuandothuy",
+    "email": "tuandothuy@example.com",
+    "password": "scrypt$98d4e66296e1fb9237880144d45e1a5c$85d40918e59b69f936a7175df129c834e6dd16fddc77170472d1209801ad5700e05bd5258d3d746d622875fc1eff15f91bed8699a6de7d7959cef3947f7f6264",
+    "name": "Đỗ Thùy Tuấn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "linhleanh",
+    "email": "linhleanh@example.com",
+    "password": "scrypt$2ccdc7c50c0d37975d105442dc3e20dc$1cbd5d5bb7f2da032effb250083541d80efd7877c793fedab2c47c2c3d18729ae68276e1de806a69f0bdc8465cf5aaa4b055b4e901c822e2b46dbba151ebe435",
+    "name": "Lê Anh Linh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trunghuynhgia",
+    "email": "trunghuynhgia@example.com",
+    "password": "scrypt$1487411cb32273ed86490c280b807565$cc17bf6bd9e709348d889ca7954b54e394206696c0b511040195a1e2fa43572e1c09013ba755cca100c60fccae66ae598665afe99deb153888de2f44b032a128",
+    "name": "Huỳnh Gia Trung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tamduonganh",
+    "email": "tamduonganh@example.com",
+    "password": "scrypt$eb825f1c4da5536111bdff39a5b132fe$daefe0f7173e612a02b419101e77365c0f495e67656b0c7260b507a85b130ebd2f1a5737587e84c844d90fa7d8d8dad7ff1a7d3519498f4d10bc30339d63af57",
+    "name": "Dương Anh Tâm",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nganvuxuan",
+    "email": "nganvuxuan@example.com",
+    "password": "scrypt$21b09e82b95b6ff883d54849b949bf6d$a7e0a88fc9b8fdc8ddcd55f9e9f502a5ccf665486d6af27d55bfdcb963f37904c00d6873624a5f97f797da395453b41178da47e2cd02eda16eb000a9dca58026",
+    "name": "Vũ Xuân Ngân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trangtrinhtu",
+    "email": "trangtrinhtu@example.com",
+    "password": "scrypt$808e7b9617d0956e69f9785d603d2fe1$0a87ce7e5fa13bf6052480b8f1acca07107c1dbb24caee2f6c619eddcf0f09b3ace218ba922df823ae869b8802f04755ecec73450aedddd4992153251ee3596a",
+    "name": "Trịnh Tú Trang",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "uyenmaivan",
+    "email": "uyenmaivan@example.com",
+    "password": "scrypt$e0cec8185675bffba155e0a9f4e45a9b$1107c7f67aa5c64afd2266702f664d2dd1f4fe059d34cf5cf8f36e4792c90248b8385e0247ddf3312710d452350ac17423b62e4aec0e2a9179da4cecf9c0ae9b",
+    "name": "Mai Văn Uyên",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "khanhmaihoai",
+    "email": "khanhmaihoai@example.com",
+    "password": "scrypt$f48e3db0353fd2a1f9b76fe814b040cb$ff8038a7f55031c0e286bc43181d980ed8b7c7a818d746a1dccd801003576229ef4bd6885999436bc2942f5ebcb2f5e3edd628aa45c395efd6f71e98cf3d588f",
+    "name": "Mai Hoài Khánh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tramduongduc",
+    "email": "tramduongduc@example.com",
+    "password": "scrypt$130fffbf0824c504c8bbb4817bc934f5$2e43dec11c8204d94e6ae52d14a4ac992be2b20b5424f715954eb937f459b38c192aa9771439c771ed0171ddc31b2936ea06daca78307c360741200f88b57ecc",
+    "name": "Dương Đức Trâm",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vyhuynhhai",
+    "email": "vyhuynhhai@example.com",
+    "password": "scrypt$fbf8537a8f402e86740b323b5c36f449$fb16946959c5fd3e79e68967623cb965102db0be656da57bc85401258eaa009e95e9899b6885d3e788b5730e7822fec67683e1a8f702ceab457d8fd1898bdd83",
+    "name": "Huỳnh Hải Vy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thudinhminh",
+    "email": "thudinhminh@example.com",
+    "password": "scrypt$92c68f5a3eb854c79a6429e0ef4be8ad$e6e7901040bee381eb577bf8daf1016294f71c8c0da0c66765d1efd2581a61ec8ab2b3c066fa0f2ff39428ffc1b7ac56d0c5c800c811b23751e86cbd25ab45d2",
+    "name": "Đinh Minh Thư",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trammaidinh",
+    "email": "trammaidinh@example.com",
+    "password": "scrypt$523c52989787c11dbd4bff1839ebed00$d7b918a143c67febe9cbadb72d43f51698efc0285c4027aff765ecaaf87fdbc4cf54dabb430a992a0783726844001fbfe9d984e17d673b513721bea7701ba862",
+    "name": "Mai Đình Trâm",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "longdinhminh",
+    "email": "longdinhminh@example.com",
+    "password": "scrypt$785067477daa5e2e0f929b59deac45cd$6c9848744cd14bc7a5010547ef963890fc470ba5e2cb96023a59a0125b96503c20f24d5bd3f3a17f815e813023e658276a43d955cba2683a885051ff2a155ed2",
+    "name": "Đinh Minh Long",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "binhnguyendinh",
+    "email": "binhnguyendinh@example.com",
+    "password": "scrypt$de20f444cea9b89a22192e1aa6088304$700b938b8c28c84f1188b74462e20c5128934764dec2485896fec8a7ba494f735692cbf03fedc6167f7a648f6a464513f45ee7a1f30d3cd36c57a8251b38f5c1",
+    "name": "Nguyễn Đình Bình",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhngophuong",
+    "email": "vinhngophuong@example.com",
+    "password": "scrypt$8bc5241d433e6ba1bf952545927b2e4d$093c1e3e875bf325399b0edfdcd65e6278fb7381a5053fc613be9c7e1deff2f65c5b7175fe01af82f2e4881ae8be5b82518cc82339e382a565cbfe8ffb7e79d8",
+    "name": "Ngô Phương Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "huyentrinhhai",
+    "email": "huyentrinhhai@example.com",
+    "password": "scrypt$61d7d1e09dcc94c49e469b65ab0a15e9$8a964567edfceeb6a8bdea39ed1b7db0800aa0a6693a810d6281d2705830cc311255e76cc89be254f380b34f3d8c813817a76ede50c18e9f367562b6d58ae519",
+    "name": "Trịnh Hải Huyền",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "sondangphuong",
+    "email": "sondangphuong@example.com",
+    "password": "scrypt$041d3d965e27b3023f3d7d4cee8e3fd9$fa52ebb5202b6228ee8e32a4e805f13d3703ce79dcc43f90930920ac857dcf80027c5e1697d33d65970fdd20c0af7ae79055cc30cb0070d3c19acf2ad3a98132",
+    "name": "Đặng Phương Sơn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nganphamhoai",
+    "email": "nganphamhoai@example.com",
+    "password": "scrypt$9e6eae130c81273653fe123748a6c17b$80d3f175c494a942308b65793b590e0102de6f8686cd98bd2ddd10e5d6320f3c9c7edf438b90974512ee35b15e496f6d71771b9e6a2733c1a334b967a9ea9d12",
+    "name": "Phạm Hoài Ngân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thaotrannhat",
+    "email": "thaotrannhat@example.com",
+    "password": "scrypt$ca6d51be8a495c0768aeb60f7713b5b6$b43b5123ee214d7d293d5def0bf47396116e2c45b1ade06f3e7049c7ea78864f21602926dab7a69d7e71b9e6a6ee3fcaaaae7cd59908c05628249a2ac68996f8",
+    "name": "Trần Nhật Thảo",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhdinhnhat",
+    "email": "vinhdinhnhat@example.com",
+    "password": "scrypt$4d717520a9eaeef1e8e9f02596060628$37c850e9688c911f8a9405440f8c38ce3f938810a74d749e303377401ece984cfb9b5bd947dc25c52e65d0bb832d54a89fa7e32e9a5d9d2ad9e11a516213b75c",
+    "name": "Đinh Nhật Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hunghoangbao",
+    "email": "hunghoangbao@example.com",
+    "password": "scrypt$167fb2408f5f941e056fbf67f79d9e7b$1ca28e2a1c73d8728b70b0fdb1e6cde0566271d94b1d56d3ab83abbac68c06f79b80eccbd743f610495d3e168bd6631ce6c9354ab931eabb722825c6d5cbcac8",
+    "name": "Hoàng Bảo Hùng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trunghotuan",
+    "email": "trunghotuan@example.com",
+    "password": "scrypt$499dab072e2d58bef65edcd5e1238b2f$c7460d485a068c925922d23ec18f06e92b69f441d36a030e488422c53ed7a711fbed93642468295a965f570315d45bb7e1e8a00712bb826042245725642f876e",
+    "name": "Hồ Tuấn Trung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhdinhdinh",
+    "email": "vinhdinhdinh@example.com",
+    "password": "scrypt$f80f74a1b61cbd8426fd61d4b2ac3aed$54308f3284510f66f276f1a53bd7220b0565c281d8077ff1dc3be2b335c126c271e5a64632d056be65371536fa18e8ab2fa7158b0c01837eba8abaa34afbd69c",
+    "name": "Đinh Đình Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "longduongdinh",
+    "email": "longduongdinh@example.com",
+    "password": "scrypt$d8a8dfb8206bbaafc512f29847fad58e$d91e739acb533a7b76f95e7116c26152b1b411411257b837b71142be031a31a24c243d2f5d80fa3f348709b1ac66d994df78de71d546aaf59a73c0e169813464",
+    "name": "Dương Đình Long",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trunghuynhhuu",
+    "email": "trunghuynhhuu@example.com",
+    "password": "scrypt$e387c996bb7db0b630bdd375cc0e030b$dc5dfd86ac054acc5fb77a4b07e24eb21cd7d0ab2d3f561931e11e9e399fdda92e05c34c8886b9884930e892a7d371187156616c0996a2a9ed44690c62181e6e",
+    "name": "Huỳnh Hữu Trung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "myduongtrong",
+    "email": "myduongtrong@example.com",
+    "password": "scrypt$5b03d9b37a80cf8cb7b99415c7e86910$3c56d36f80dfe84604ba33d9bae1247d810dca00660c4e860de380bcd3b9389a747f355cb1ec7cbb7797ed95ec2b25bac134202f127082615558113fa54c1e49",
+    "name": "Dương Trọng My",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thienhuynhkhanh",
+    "email": "thienhuynhkhanh@example.com",
+    "password": "scrypt$cd902f775cc0442ca41fb1c897a1902f$2c437d425892102092a0c2712defe11ff91ce3fb18f94a10474b22b78fdb6886c90303102e1b38f96b06bbe81b2b0df0807ebbf41e6350cf4a9295e4b9872cd0",
+    "name": "Huỳnh Khánh Thiện",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "yenhothi",
+    "email": "yenhothi@example.com",
+    "password": "scrypt$efb8575b2e83e52710b265cce84b6d5b$46607a2d192889689bd03b226bcd16d31676d1e811f568587af3d4991f374443065d024ca3cc86f9739f7ea5f4ab677e8c65967f6886c1370d6a5225d6a70ae8",
+    "name": "Hồ Thị Yến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "yenlytrong",
+    "email": "yenlytrong@example.com",
+    "password": "scrypt$90d944244d80d4699922d0458d0ae938$bda6f65a0ac7965a87ecd8c62dfcbf5b5e04bec77ced0b803453f5a7aa05b9bc97e9c6e9c7298b917fa4521c518939b784b019c919d2b2705808ed9014e4a990",
+    "name": "Lý Trọng Yến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "mynguyenvan",
+    "email": "mynguyenvan@example.com",
+    "password": "scrypt$9430125d8d9b706a91297bc8574438ae$8b86479a7cbed036a1bfd7b83904444d37ec262d7d04a6bd3c773c66bd7d4f5182a301fe235d1309958f0165008a5c8ad6f8ccb5920b2fb3f397dc272aa8b016",
+    "name": "Nguyễn Văn My",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nhungbuithanh",
+    "email": "nhungbuithanh@example.com",
+    "password": "scrypt$05de2cfe2eef221954f7e48e8907a2e1$80f288c4224dd4953c3574e5f88d4d842388327ae3efb16762e65c3fdc88239dc5e3312e4c0c5a229a6191cf3452de4dbd9702505aa9daad5f0ba24639f19cc8",
+    "name": "Bùi Thanh Nhung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "cuongdoanvan",
+    "email": "cuongdoanvan@example.com",
+    "password": "scrypt$3966bf62b18449667a2eb6f94a8b402f$e432e3dfacee5077db85a86fcc891253b1f04e86a1bc38ffc7b3645f270dd93a80a6a04739e3b0a8e53263072548427d89fa139d911d1cfe32b78d1f254919a0",
+    "name": "Đoàn Văn Cường",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tuannguyenhoai",
+    "email": "tuannguyenhoai@example.com",
+    "password": "scrypt$5a858acabae6dd0c6e6f201dcce7caf0$fc68d067014bf84f16852ec9bfe775d4719060e087b1719dc302fa02ec1cd8fa5e5fc205ec2bb5364538171cfc89000ea80e57f9ec56b73bdcee96d485e24d53",
+    "name": "Nguyễn Hoài Tuấn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quandoanthuy",
+    "email": "quandoanthuy@example.com",
+    "password": "scrypt$1e8f244e167d5ed3618e08738b446699$52f8dfc57dfb6d91f3116457855574e63cf35a7995d60cfe27e2963bf0d18a2cb72e12ba43cc31c831cdb612761bc701fe8106c17a3857789603e9c14e36b8e0",
+    "name": "Đoàn Thùy Quân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngavohai",
+    "email": "ngavohai@example.com",
+    "password": "scrypt$874102f250ff2eb3b4b4b8b1f6c994df$bc0cab033456c5a9dac85bc86a7fd03c068be78d3314e7d0185c43ea590f7ab7a99129298973732156c7bcddb1e7c198d478d8ae2eb0c8411a8777cdc41cfdec",
+    "name": "Võ Hải Nga",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hanhledinh",
+    "email": "hanhledinh@example.com",
+    "password": "scrypt$847b92f4ce332c69e032a72829f6aabd$fe17a7bdf6242be250249eb5faa7482b952f9bcb4d02c120d9692548ece2fc0310767513f7951dab240cb055a027b0805960c618ce36b3d2928175469d6dd182",
+    "name": "Lê Đình Hạnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hoaduongtuan",
+    "email": "hoaduongtuan@example.com",
+    "password": "scrypt$6565b058096fa50890e726d524efeded$7e66dc89891f7a2b1bcff5d45da0c5ba1b9fc77a73c553bdae572c22b1f31268e7769b7579124946513fc582f678cb9cb63440354fb4001c6e0c15db5d5ba2e0",
+    "name": "Dương Tuấn Hoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "giangdinhnhat",
+    "email": "giangdinhnhat@example.com",
+    "password": "scrypt$2eabbdcadd7cb300cb8307995f26cd69$40ef4c9aa2635a59d6918eb8cfc4d7dad21870f5ad6c4fd19c18152fbcefc25bf61d127f328ee842b1f7e9772591b7e235812f021508b8fbfba6cfee6f960ad4",
+    "name": "Đinh Nhật Giang",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngamaixuan",
+    "email": "ngamaixuan@example.com",
+    "password": "scrypt$b75ec85a706175759a6bf288dd9dc2f2$f05c5dad6d72efec6fd11cfd0be33238d7039da9abba4180398b248a1d2bdc075fd02df9d8a26cbcb9118c083d7f378d184381573b75bba37290a7e12778a4a2",
+    "name": "Mai Xuân Nga",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quynhlekim",
+    "email": "quynhlekim@example.com",
+    "password": "scrypt$d596770111ac886098ecc6773566ec2c$88a04fff36fc3a7d8fb5f85c34a07a20c5407888ffdcac966d5cf2049187c1f00c006a2cb478a93bb5a6d184955b4ea02082950a13a0f1f4eaa2fb6aa388a8ac",
+    "name": "Lê Kim Quỳnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trungbuithuy",
+    "email": "trungbuithuy@example.com",
+    "password": "scrypt$7d917c074c9acea053458d79f46e4923$9e16c15808999e8330496a46f010d008374cd62a96e8e2c5a69201eb4bb3ca0790465e2b82471da807bded5729543650cb0ac931d66a1f6d964e68cd2b2b8885",
+    "name": "Bùi Thùy Trung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "linhlythi",
+    "email": "linhlythi@example.com",
+    "password": "scrypt$03fe9c56b79caf467901b9dbc30283ac$88e5aadfd3572dc3ea9f459ae5fcbcc120091fbeaba074b6d281351949f55afb43bca5c788345cc210209dd8b0fff07929bf02b73dac12f57ed851a391d2105a",
+    "name": "Lý Thị Linh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trangdanghai",
+    "email": "trangdanghai@example.com",
+    "password": "scrypt$8d57f34602f3aae6797a98996507c76f$e679a88446efc79b7125ad5d618ab1ee10322f520c1a729e4945637f09c49e7090c8ad232865e137381593823658f0ae26a6a8e6f76c5e34a28a3990203e5b71",
+    "name": "Đặng Hải Trang",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thutranminh",
+    "email": "thutranminh@example.com",
+    "password": "scrypt$5ef5915a6c6051826de56e6ee995fd62$940ca879b2aad58865cf2441ff4c7729a72813b5ae2463825d7ef29012c887a9a7d8eee6c8931881986fe7afa2de5c3ada9e911d0dd9adfeff8276491a122e8b",
+    "name": "Trần Minh Thư",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nhungnguyendinh",
+    "email": "nhungnguyendinh@example.com",
+    "password": "scrypt$9c76a886ce6f354541896aee3ffdc631$dced5a4065f22470807b8710d2109b96f5ceffbe577a3d9f26632949a183ba422fb93596478eab6cbf20c6394fe887f6d488e65fc15dea5be443a87283a5e528",
+    "name": "Nguyễn Đình Nhung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "phuongtrinhkhanh",
+    "email": "phuongtrinhkhanh@example.com",
+    "password": "scrypt$7df2f0734d8cf29a7003921b01f0653c$81f734a39c42eb95787761b666f9c780157befdf39659e041bcb1b74149b9cd7f766768185bbd19fdc9950fc1f59cd57142644479d747550c5adc2b08233e436",
+    "name": "Trịnh Khánh Phương",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "datbuinhat",
+    "email": "datbuinhat@example.com",
+    "password": "scrypt$7151f343883ffff6634fc82da371593b$0aed633ddde97b7fc8d5de547ec197530e37b2d0c8a7b66b4b07891dadad7922eb108ccbded0acd826ab508776988927ffcf23cddcdec202f03e79aec0467030",
+    "name": "Bùi Nhật Đạt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "datbuiquang",
+    "email": "datbuiquang@example.com",
+    "password": "scrypt$12b90e76abc32361cead35a14df73149$9038d1c0f54f3d0e21a06325fd5f54455790eb1f25a3de24c59a2a8efa447163be51e3807cc53cc2ace55cbd202b807b06d1f3732fb19ad11abbf7eb3539ee3e",
+    "name": "Bùi Quang Đạt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quynhvuhoai",
+    "email": "quynhvuhoai@example.com",
+    "password": "scrypt$67c87e86bfe18379fba069dcfea835c6$1e49cbd33c465a02e7b558480cb32958e07ef20179856bb220f7bc9ae28b91c026a48888c7dd487e5bde069aced587f4cab19452e33f18f7816d34636fdfcb74",
+    "name": "Vũ Hoài Quỳnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thaodotuan",
+    "email": "thaodotuan@example.com",
+    "password": "scrypt$c155250e14bbcc1c6c2d041ae9793cd6$5c24a39ca483f95ae9f163a28075984a8309c3509a8da8e395a9e14ed781bbc38a37033863fdb6649ce3af60c1db472c01bc1f22cbd7f3073d4e465c347c2d56",
+    "name": "Đỗ Tuấn Thảo",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "uyenmainhat",
+    "email": "uyenmainhat@example.com",
+    "password": "scrypt$c4338bfbcf8ad250b5f97e6be35e7236$c68317ff68abb2745adbead495041a9442f927a66dab7c73df5cb8d1de0ef2ca22b1b66f72b07228e692433d825e1a6eb16f52b926cba8fbc73147bf7ceeafcc",
+    "name": "Mai Nhật Uyên",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hoatrankim",
+    "email": "hoatrankim@example.com",
+    "password": "scrypt$510d0e7276d5492a24fd78ac718a20c7$2921e362b49d19082102de3aa7aa3966a112ae5b157c7e83178e39065823e9a930ebac9fc790c6566362cf5d7117bb66f2cf9be7b6ed9d61a879f4c39a7912a1",
+    "name": "Trần Kim Hoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuyhoangtu",
+    "email": "thuyhoangtu@example.com",
+    "password": "scrypt$f8e1a9c062148f20f122f00e26f5f154$e4369998695f6c85a1048912a9e8da4c76d01b96aae7bbbf3c02dba2ab2428bf9f49d25c115c46be570b7ec40839fad7e71ce912bc8037f1c75de4b2f98fee1f",
+    "name": "Hoàng Tú Thủy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhduongtu",
+    "email": "vinhduongtu@example.com",
+    "password": "scrypt$797d3d0b29e0954787409df79efeb4e6$72aa988b2d4f80156c6224b449f1f7f70935938d7d99e923004126dc823354f7bd0586d8190dfcc84d47adc9a81655deb3a7617699875eebd5c65f842bddde5c",
+    "name": "Dương Tú Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vietmaiphuong",
+    "email": "vietmaiphuong@example.com",
+    "password": "scrypt$947d5ccb6922cd4780233938405470b8$c97cac5ccbc318b58ebbf596a9e3d76a8afd241dd8a1c1f9e4d203c769426116300ab30f132cf8852eda18a6c27d87074ef0733b108958b8d80f48f2efb1df93",
+    "name": "Mai Phương Việt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trangvudinh",
+    "email": "trangvudinh@example.com",
+    "password": "scrypt$182820b5c4124bdac32d6865038299af$32d632681f487932bb4cfffdd319741f59314ea66ce01a61c5b026c342d27e13b3f76a12acecfa8f25cdd0023d962d47453310cb772b4417ab52c5231b49ff2c",
+    "name": "Vũ Đình Trang",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thudinhthu",
+    "email": "thudinhthu@example.com",
+    "password": "scrypt$b96e670627b9707c4a2bed289a746f1b$0722a1dfcdf4e0a621f449da5e1c250ea66c4ef3f5cacbb33b715b62d95a15fc5dc4b1da25dd105eec010d575536ec8ca3e7d42cfd2bef4f8a1b118d635a2620",
+    "name": "Đinh Thu Thư",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "binhtrannhat",
+    "email": "binhtrannhat@example.com",
+    "password": "scrypt$2c44d141d69455bc6ade59476a0dad62$7ef23028849a947a8d5802ad661b2b497d59e497bdfbe592467bc5ab43efa178e11364812d7bb595d103ac852e9b4dde9af0efc331361ddedfcbe10e814e4c95",
+    "name": "Trần Nhật Bình",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhdinhphuong",
+    "email": "vinhdinhphuong@example.com",
+    "password": "scrypt$0c86d6a032bf265814c3a42ede11139b$e103fd937d0323eafe23685afeb6ec7aa0feabe4833ac22446617033a40f4fd5e10b3cef7afc7bfb54bfe61f2aa3cf75424909240b1aeb7581a5251916bc0f69",
+    "name": "Đinh Phương Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuhuynhhuu",
+    "email": "thuhuynhhuu@example.com",
+    "password": "scrypt$8caa5e9aba471500b9225d4a1f1bf3e6$136a9e3b683d25c336251ab999a067313b86ec4addd7244f5ff7c50eac6470848156b007e82a38b3881bc281dea92a03aa648b2077bb3e7d11c6f6732597089c",
+    "name": "Huỳnh Hữu Thư",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "maiduongdinh",
+    "email": "maiduongdinh@example.com",
+    "password": "scrypt$30adbcc4509927dc0d6773e83484fd33$a6ef0f633afdc8ac10558b46d3dde5be825e3d7c5691d4c50e7a5e01294ad8e504620097eee7f17d45b6528211c44066359410ae9c9a239e01ff379c2e557ec4",
+    "name": "Dương Đình Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thunguyenhai",
+    "email": "thunguyenhai@example.com",
+    "password": "scrypt$bffb2e5836178c551281416fb55ca33b$6e989f883df9aca4936db4e8ded1ef8af62ed86bb421eb0835a2dd5526f5b22ba89484b4b47491b1b34cbfcd2885032e47793722033b4a115c2907e8a0a717f7",
+    "name": "Nguyễn Hải Thu",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vydokhanh",
+    "email": "vydokhanh@example.com",
+    "password": "scrypt$5c47da501f559df25980b1c9c3d46228$892975bcc3990001b521361e1a5fdda8c887f589a4e3c3563b732e641439fc96dab7e3c41d1489a10d06fc9fdb9bb654a89e2f14a0828b95efc18a5c4d75581c",
+    "name": "Đỗ Khánh Vy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quanbuivan",
+    "email": "quanbuivan@example.com",
+    "password": "scrypt$efd8c0998fe05167c9f54d1bece604a1$02acf55b8be0ac65aeee7fb6605d62ef1b1e829b55c4b2fa1c51cb4b55aca7bed2180e45b964d4a396248ee1ae981a8977da77003ad03fa51b9ab30b1e1b9930",
+    "name": "Bùi Văn Quân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "yenduonghoai",
+    "email": "yenduonghoai@example.com",
+    "password": "scrypt$d66e032353ad0a3d3a51128411152fee$bb80c6cb3a6fb7f63792a857d38df82139e56bebb007dc88551019ba3a0280690d5b3511d231b3c89935ac883cad38611b8f9fbf69b7051f07d09fe6465f359a",
+    "name": "Dương Hoài Yến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hunghuynhtrong",
+    "email": "hunghuynhtrong@example.com",
+    "password": "scrypt$1bc7834f464b5fbdd1cd8f1d4b451163$9a9f965af2d84618c7fdad4a1b2dca6fc5ece38930669e69b6778e9dbeb6dc0f31f799231a83077ddad01a6ace6688c7eadc2678b11fc5648c5f6e8976ca6f3a",
+    "name": "Huỳnh Trọng Hùng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "namhuynhtu",
+    "email": "namhuynhtu@example.com",
+    "password": "scrypt$f17aa5e491383e2cca0c9493dfe4c20f$d73a7b3ca8cc9576120624561129eb8d6292ea20e1bd32e982b5e453a4e1c98dc05aaf7f6f81370da005e56efb62f5047440c58787c27f72fc8cca4932da4a59",
+    "name": "Huỳnh Tú Nam",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngocvuhoai",
+    "email": "ngocvuhoai@example.com",
+    "password": "scrypt$1a0e7fd842e158dae21a15b6890bc1ff$80dc75f646b5c7efdc41456becf42738daf9afae2792a5e7826945dcca7cb8d15d9c78d31cc1989724dcfdb5262b55179675d073a69504b763405cef4af6f473",
+    "name": "Vũ Hoài Ngọc",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trangvodinh",
+    "email": "trangvodinh@example.com",
+    "password": "scrypt$e6f8bfd17d903206bc886726d285078d$9f38f646114944288828a4840990b05a2c2b56486c6bb5dd3539ffcf1a94b98a23aaae8eb9d8ff4db788abb3448d209d98ec7bdf75e4720a0eaf196644273ee4",
+    "name": "Võ Đình Trang",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "duybuituan",
+    "email": "duybuituan@example.com",
+    "password": "scrypt$ad63086d9dfaaf4913770b8e7b71080c$e97b48acf69ecffa00ff9c23ba12fd3beb671513cfbf89c9355f91b4c471ef93eae8e14a6949f8f33ca96b8cf5fb1b6cd3c20c10a6f0445d2495dd777cac9194",
+    "name": "Bùi Tuấn Duy",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "giangdinhanh",
+    "email": "giangdinhanh@example.com",
+    "password": "scrypt$36e9858366a891a793cabb46c1b6bd9c$1f2361746d47799a2de902a939db4d1b17eb3dd4ea1c73936ce5f8f82d8c4cfab253432509c28d7e7ee73570672cdc5e9e4faa7cf505d8169190b9c5a71dd09a",
+    "name": "Đinh Anh Giang",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "maidohuu",
+    "email": "maidohuu@example.com",
+    "password": "scrypt$bdfbe57bffc88958833e31c25fe10344$34c85e13682d7a6444c4fa0753407e928dfa8026aabe75ea24399e17d9b1dbb2e1585bb440bef37813f9858ddba63877dd8fe4d94e9f033ac753367697438344",
+    "name": "Đỗ Hữu Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngaphanminh",
+    "email": "ngaphanminh@example.com",
+    "password": "scrypt$553d466cba2c8c735af4eea41cfa7268$fc1624575fa31502312dbca0fe42d0a750b7a4aa25c6d3681a85df4096f6a22415de306a917d3d1c8f462625dfcf4eda17448f13ca01d032297540c0ecde5907",
+    "name": "Phan Minh Nga",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quantrinhthuy",
+    "email": "quantrinhthuy@example.com",
+    "password": "scrypt$f73d6b4a433d45edf5287dbcf95093fb$5451e36316a71b70757c5d754f4ca93933e73f7bd5387dbda7f68e87e321a4330161fa22e923219bf73f7c8951a2f5e1d9d4eff56393de522abb78bf4127216a",
+    "name": "Trịnh Thùy Quân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "phuchoangbao",
+    "email": "phuchoangbao@example.com",
+    "password": "scrypt$b4832ff36b3811ce520f45faad474bae$ee6fe1e63ea4e1ca54292c8d74af35721bd530eb6bab0f774040f7c3dcccdcfc56ba9f5b1d13ca11ceccc36feea77863556254e2829b207214f69aef96464c3e",
+    "name": "Hoàng Bảo Phúc",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tuanphamminh",
+    "email": "tuanphamminh@example.com",
+    "password": "scrypt$9641299d0f3a64df253b08d5a0d27d4a$d38d5aa56d4c5cc9ac0cd95634a2b926dc58360a0512e5d2bf4c0a5d64452d9d036d17280a07599b8b6d78bc9daf71f08608c5afa19993f25d6dda53fa3ce476",
+    "name": "Phạm Minh Tuấn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tuanhuynhtuan",
+    "email": "tuanhuynhtuan@example.com",
+    "password": "scrypt$1d9d68a28b24408718b0a4110da98199$9cd8ec5f6ea6e4cf27533d0b71ead50111989bd412060e42d8494cb924b94f1f7fe94ad9a11dc23daf42c47eb57e0159e8652c8ddcc514e35f0aac6522f3579f",
+    "name": "Huỳnh Tuấn Tuấn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tienvungoc",
+    "email": "tienvungoc@example.com",
+    "password": "scrypt$fa935a53d4c558d780535d9d2ed8909d$5722e37611188a21f81d9ab5891db950bfc55630a7a8ecfa7bdb219e52ff494364a9e965b422d670093e67650bd33980006c0c886a3c13f69809c065190abcd7",
+    "name": "Vũ Ngọc Tiến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hoangphanthanh",
+    "email": "hoangphanthanh@example.com",
+    "password": "scrypt$fb02702a49f0333154c30ef6f7f94a12$a7b34a3614b764f0ba4d7a6562531f8fb7e75af52f2060246f4bde910a98235b965d83a85b87de466a76c6cd2d633389245ef07c50c95f5acac83876f85d9238",
+    "name": "Phan Thanh Hoàng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "chinguyenhuu",
+    "email": "chinguyenhuu@example.com",
+    "password": "scrypt$f05476e50b1acc937c4edf15fdceb3b3$3f9151f3bfc7b304057bb22586eaac73a1ac53288e40dafd49b80e80bec601605a04ffb071b96e9e4054023735c598cce8e19e01c56af8d6c612c9fe9ed36f1e",
+    "name": "Nguyễn Hữu Chi",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thaomaitu",
+    "email": "thaomaitu@example.com",
+    "password": "scrypt$cd1a6a3735fe48893735d604f266b29b$d9f8ce4b0720dc45b1d68b19fc1207568c8a6b36e4901e300ed174c11bdbff703548294f5ea69b4946bef1413f1aba0045f500fae7ba1f49ed264a9c681452ff",
+    "name": "Mai Tú Thảo",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thuphanbao",
+    "email": "thuphanbao@example.com",
+    "password": "scrypt$d445844f687e44b81a5f926e76157e50$eab1edbc14d4c6fff8c122ba2c1670400f6c49465a973641541a300c2dc87ad71d207fd46f93239db263197333db1a3ef27a99a5ef7f58edd18e1cd21e087eaa",
+    "name": "Phan Bảo Thu",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "yenduongkhanh",
+    "email": "yenduongkhanh@example.com",
+    "password": "scrypt$ca53d7b12de86f7427edaea525b3445f$4afa454b0a7c9ed8e1c95b245034c81f07a7866b89b2cad79f2c197ddff8f127ce934b4cb80f41b25a63e103e105d34b5d4c6c8c222964ad1694ff02522b1d8d",
+    "name": "Dương Khánh Yến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trungdinhxuan",
+    "email": "trungdinhxuan@example.com",
+    "password": "scrypt$e7063bab08152d5f8155a03d73094366$67daa100e6b93f00c4c9a9c54134cc3c273320d75c87470c9a0a70089ba0ef3d0fc07ddf1fd8dd499a8681814904a7dc783514291c8748a5dae790f3c51607ff",
+    "name": "Đinh Xuân Trung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "myphanngoc",
+    "email": "myphanngoc@example.com",
+    "password": "scrypt$178ce5460bb4a63bc2825c3bf235f908$6b62c54d9b8f0549c70a1790664401940e14c5cfadb9980a899e35e851dffac49078ec885d6cf6ff6ad0d6971025fe4ba93250c9639fb75f49295da72f50fe79",
+    "name": "Phan Ngọc My",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hanhnguyenthanh",
+    "email": "hanhnguyenthanh@example.com",
+    "password": "scrypt$1d67331bd2e64fa15e51a1854bee3d6a$2bb7af1de6458b2f1c2f1dad877bbd518aa59d327774bab0ee334f1a87c7219a160b175038e71c8fd6189fdbb294b5bb62a89d277e2ecb239e7ea78b6c2b8f35",
+    "name": "Nguyễn Thanh Hạnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hanhngothu",
+    "email": "hanhngothu@example.com",
+    "password": "scrypt$554bcc462ccf8defd6ad9ecde967d69c$8ff3caef64d40587639dd2299b13ccd5ae54974006b0c6f6b55a08b90fc8beb21c38fab5539c927707e39ab2295b42aa77b26b65a3e5ab215f33031669b479aa",
+    "name": "Ngô Thu Hạnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "trungtrinhngoc",
+    "email": "trungtrinhngoc@example.com",
+    "password": "scrypt$092d70a0b982f97d6d6a7819e6a2f1f9$0272131f78eaeb57b5081bbeef8c16c1e0f5f0ef37195bf88528be1c36669cccde3c35a009f0dd6367cc41889f43bb335269f9204ee0ecf34d19be696c3c4804",
+    "name": "Trịnh Ngọc Trung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "namduongthanh",
+    "email": "namduongthanh@example.com",
+    "password": "scrypt$f8db5aebf4f36a3d005dc1d52e44731c$fb6d9b129b791ea998f939c4a12c5727328d6b67bfec898c707ac7fc8926793b87806a610e6b4018fe10eb824e48f020433ffd901f06b17e5ed492bac73e1fbf",
+    "name": "Dương Thanh Nam",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhhokhanh",
+    "email": "vinhhokhanh@example.com",
+    "password": "scrypt$c60236161605be49e8c41002dc5762e7$3f06c119cd305ba83840d25f8f2df37a425765cb984950329193364f3a558758d3d0d08c1f02a9cdc1278ae61da0d46589af0520b4aae8191e61bd9f873538aa",
+    "name": "Hồ Khánh Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thunguyennhat",
+    "email": "thunguyennhat@example.com",
+    "password": "scrypt$9ac969ee51deb75bed15188191c29ec3$de0c3754a47b063d0d6e2a76257cdbeb1ad29a678cb4a4b0cbd939c7cbc5324425cfd1cfbbcac7089d5ff526accd374a213a80f39afe7c5034ca2f695f8b0068",
+    "name": "Nguyễn Nhật Thư",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nhungdangnhat",
+    "email": "nhungdangnhat@example.com",
+    "password": "scrypt$c984dae04439a71c8c87bbcf76fefef2$a6409c90887c9788c1a36ef59e11e76dab7ebdfcb126915e84d409a104e59c4500234401dcbf5653580b7dbb9c133ab17a6a9b730801e5dc31e4fa09945fff58",
+    "name": "Đặng Nhật Nhung",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngavuhuu",
+    "email": "ngavuhuu@example.com",
+    "password": "scrypt$660a8576b64cc8cb4f9d6162a255c682$39de416dd180e3e72c6e136291a92087c71f1dfc6b98d9eb93b567bb66616314e965a1ba03662df55087fa7bccd7b2456f73cb9bc34e1c504b68a403ec3d8fcc",
+    "name": "Vũ Hữu Nga",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "lanbuinhat",
+    "email": "lanbuinhat@example.com",
+    "password": "scrypt$db2a83c1b8a7cb0d59594ef775c78fa5$f42b87c64e1418e6a62a78733cce2f65a4778602fbafc33ec9a0e656c1c2ae84c1721a1f37d68853d0bf19e9ae8124880485d2279f87b2048ceb7909af31ab06",
+    "name": "Bùi Nhật Lan",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hunghoangkim",
+    "email": "hunghoangkim@example.com",
+    "password": "scrypt$fdb61c68360b883f7c463cf2b1ff7350$27a4cce0973ebdf4657d7f2acee49ff2608a22bc4432e39d16bd03e45d20864036f0bbaa6d86f96f1f9051cf3f1e0b51236ce707aa53920671d1b0f6c05fb8e2",
+    "name": "Hoàng Kim Hùng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "linhbuibao",
+    "email": "linhbuibao@example.com",
+    "password": "scrypt$e50cf964f7c58219b961d1259519ec56$9bd37810e60e3ec31425f057ba4d2d5b19bcad4be1733a8e2223f810bc811e72b1a66101b933d70616be94560e039fdc030b70821ee0b11eb5a11b4e92170bd5",
+    "name": "Bùi Bảo Linh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "nhandotrong",
+    "email": "nhandotrong@example.com",
+    "password": "scrypt$f2f1e4fee242eff174b7a51ed7e579c6$1b0a4a8e544e69d61abc2683290c6ed8604e7083cbd0f6cfe63ff865974c1f3a10eab194080f3d9e2a64a5a7d6bb211a02718fe49cca1a2aae17a4cc92b57e45",
+    "name": "Đỗ Trọng Nhân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "datnguyenhuu",
+    "email": "datnguyenhuu@example.com",
+    "password": "scrypt$904ee9f72df5f7136668f2fef8f25678$36454a8d9d651f11b9a962de17964e30ba7f4646b7f180345f18d598c63ded50b98515cb6d5f3968d7ed3ff91641f27cce20c47ba181200d693ffa4529f3d1c4",
+    "name": "Nguyễn Hữu Đạt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quandoanduc",
+    "email": "quandoanduc@example.com",
+    "password": "scrypt$76c02383de7c6579ce91f3d4d090a26b$ae01d4677b6dbdf44e5195ac72420388e7c941afe55a016382a500ce78247f1a159a2df8859c026ffa0d5ba289d3c4a6d20466bcac9ad976c9863d3a5d460dd7",
+    "name": "Đoàn Đức Quân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "maidoantu",
+    "email": "maidoantu@example.com",
+    "password": "scrypt$044b7a25b1c1ff8fe155d982d5138d55$f37422df1eca1b43bc7567e748ba7e3f182a51a50cd4a41e1ec91aaf9e82136d3d6970c53114268b50262ee19f759b61f8dd4ed884c0bb5ebbaab1120eae856d",
+    "name": "Đoàn Tú Mai",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "dungtranhoai",
+    "email": "dungtranhoai@example.com",
+    "password": "scrypt$e069981672819ed3d6401c9426a47e57$330dba4c040bcbff6c1614a2a1b74c719e10662a21f7c21524b62f0585ba560ce7ec8d2151ec980487490bb8cd5f5483f30db8b4cf7f9d40fd10be3c95aa65bc",
+    "name": "Trần Hoài Dũng",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhlythuy",
+    "email": "vinhlythuy@example.com",
+    "password": "scrypt$a9ab4cbe9e5245c91de1a7c262491024$c2734b95254d2ea7a05ee49187e3e5783f481b37b5f05517c1e586247f869133b4f23cb6573be671f5df3d3e4d0486f4ef4c9394b0f94cc72e728e48c3c36107",
+    "name": "Lý Thùy Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tuandanghai",
+    "email": "tuandanghai@example.com",
+    "password": "scrypt$ac07b057a7e0e484fc1b060219b1e855$168939191bc2bdabd9c67712db43795ad080709496b589e4308e89decf70424ea94cbb446296135d2f0b8a5e49bbe133f2184d1e9f0f5cba1617eb77af72a1dd",
+    "name": "Đặng Hải Tuấn",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "minhhuynhkim",
+    "email": "minhhuynhkim@example.com",
+    "password": "scrypt$404aff237edee7f2efe8666957fddebb$a51ab35491da6707bb43a7bb102249cd500d2147f43c07b7f1e93f53bdd50f3a775643d477b229333cada8c3c3479a6bbc0be270b42b6930254e4fa79b4b844e",
+    "name": "Huỳnh Kim Minh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vietnguyenminh",
+    "email": "vietnguyenminh@example.com",
+    "password": "scrypt$3810640d777d918c3bade2dee177ce0c$d1dc7005d83e1c6571e3280b39fd4b74137beb40d0e04899aeb6eb13255b586ff5df94f0e48b2cdf8578c59a084d97eaa7d46588165d6dc03d5bfb6e1536a40d",
+    "name": "Nguyễn Minh Việt",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "cuonghuynhphuong",
+    "email": "cuonghuynhphuong@example.com",
+    "password": "scrypt$70e7e4ce01035685807d10901b72fb7d$61cb91521b109af9c1add169fb142423ecd491eba3fd69f4af38265482d9497cecc9eb03f27d9c4fe81092d6bef5b25cca185a8858d4da8a8a1ca649e9df546f",
+    "name": "Huỳnh Phương Cường",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "myphamxuan",
+    "email": "myphamxuan@example.com",
+    "password": "scrypt$acb2b5b1ec14cde769193504c4c34708$4ffa006f995dd16a7bb36a0d4fa40fe25bd29d629194203bea238b568cf9d8b2bcc16b8f0028cc33aa2bfc46c16937003bdfe87837ca5fac364ff910de2f315b",
+    "name": "Phạm Xuân My",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quandinhduc",
+    "email": "quandinhduc@example.com",
+    "password": "scrypt$91b3e18a05f580e096f2fcf8b2f2fb0c$d847ec330ebd48038f19d7751edd4a96d03712e26ba1baf978ed3d1b5e50f1799a1cd64f3b73fcdd61dd0642fc2f8aad46756d5f1088270f1f7e26a4bd6f0177",
+    "name": "Đinh Đức Quân",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "ngocdoandinh",
+    "email": "ngocdoandinh@example.com",
+    "password": "scrypt$11fe338f4b3c9ab69bdaeb3db07c849a$07c68abc068ff0ca8e8654c2ff366684e27b90e7da8526e4e079b5f34c2ccbda04af771ce9f8a58530fbf6e2a00029badb5668aa6af1a87e8289e61a1045445f",
+    "name": "Đoàn Đình Ngọc",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "quynhhominh",
+    "email": "quynhhominh@example.com",
+    "password": "scrypt$fd2dc19a41e320f52fb6397c63ce7aaf$d2b4ff7de034df74b4512e4ac723317d7bd682f52f76bc633a9cb9f36d7bafadaa84128d5508aad2ec103913a432e9a20a604d1e520f67e87f53a827b1cc31d2",
+    "name": "Hồ Minh Quỳnh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "linhphanthuy",
+    "email": "linhphanthuy@example.com",
+    "password": "scrypt$2b32c9a2058a5d8b3e1e0492aa0433fd$8c1d51ddc4416b2d611ec5f0646e4a372f1e493887986386553cc0742f7922e4e7f904d6873cacf572875af5a46feba83a0e4c53433f786f008a9f9c94f19ab0",
+    "name": "Phan Thùy Linh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "vinhvuhai",
+    "email": "vinhvuhai@example.com",
+    "password": "scrypt$8d65a2f218bef52075d1bc7c14b68518$66f357dd3513e8d5ef89a45df73963e1ea963a75829b2c66ce333e921820ebaba3eed68c3c756f68778d1e9c5e55959fdfb047244b376dacdbc19b3a95279a05",
+    "name": "Vũ Hải Vinh",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "khoatrinhnhat",
+    "email": "khoatrinhnhat@example.com",
+    "password": "scrypt$d2040dc89666357c5fc51bfe3738f462$1f87e8f0d90f502218af57b0436788539abcd9b713427f6aaa465f7ce528a663ec718916ab42d31c34bafab27ed7db520d96c0bd2fbdaa3b51d181a30d323f1a",
+    "name": "Trịnh Nhật Khoa",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "hienvovan",
+    "email": "hienvovan@example.com",
+    "password": "scrypt$54c98149bc5334ac26fe2a4bbed2f092$880fc724ea642ba7d3e5697393e0cc9c5b3434e329cfa7df1bae0b77140ccd0c6cc0d39f623ca295cb8ae4de6a1fc551d00bc16595d501507f89f3d1d65f3481",
+    "name": "Võ Văn Hiền",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "cuongmaituan",
+    "email": "cuongmaituan@example.com",
+    "password": "scrypt$1764d2e095d23b86ed55f3c5cb449e4e$7de8f573ee219ceb5027fdaadee4a5ea5e41b60676ba58a741511b8973e357d3468b1deb643f4efb6e200c0ec741f22295a8d5c4ba0e56eb50fd764131e165e9",
+    "name": "Mai Tuấn Cường",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "thientrinhthi",
+    "email": "thientrinhthi@example.com",
+    "password": "scrypt$208afdc605ef4e41c7e1e121e565aab8$dfca7f9c3327bffa84a4f63edca34c84943dbe427aa6b8ad74888840c3cb078a85bc429414480a2eb4e5c545636931a1e2eb9cc3ebc61f3bbf478e3146c9b346",
+    "name": "Trịnh Thị Thiện",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "myvukhanh",
+    "email": "myvukhanh@example.com",
+    "password": "scrypt$6cc0ead773748704bb743dd47f3ff41a$0b4e9ce33133b3ed6900d3d29fdc884c36e04b3aec06936e73efa5bacc5d8b257f1101740b54bfdf0c49b9fcdf541654e7af887e3c06381f554b74f514e4c7bc",
+    "name": "Vũ Khánh My",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "cuongdinhtrong",
+    "email": "cuongdinhtrong@example.com",
+    "password": "scrypt$70a5988aba14e06be0306df16580da61$dd7e154e0e6ab81ba0b50ee793030c253a8c1431aba28e2c21ca21e5c5aa15c85af16f4d0e44a627150d11948254b68b2aacf4cf2ecaee1cd2d3591ddc7fe72f",
+    "name": "Đinh Trọng Cường",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  },
+  {
+    "username": "tiendangminh",
+    "email": "tiendangminh@example.com",
+    "password": "scrypt$18796287c550c430733b2c19ae6481ca$cc933fe9b0f306cae96cfae34f07cebb8ef6df55981e2d192a4b1ca41f88c48fd5152ecef99e6e6021e6ecd32f27429a9d8f2b72c9b33dd7a0c6c68e6b4402e0",
+    "name": "Đặng Minh Tiến",
+    "role": "PARENT",
+    "createdAt": "2026-11-03T00:00:00.000Z",
+    "updatedAt": "2026-11-03T00:00:00.000Z"
+  }
+]

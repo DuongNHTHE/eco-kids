@@ -41,6 +41,9 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
         { icon: '📊', label: t('Reports'), href: '/admin/reports' },
         { icon: '📦', label: 'Sản phẩm', href: '/admin/products' },
         { icon: '👥', label: 'Người dùng', href: '/admin/users' },
+        ...((session?.user as { role?: string } | undefined)?.role === 'ADMIN'
+            ? [{ icon: '🧭', label: 'Lịch sử truy cập', href: '/admin/activity' }]
+            : []),
         { icon: '🎓', label: t('Students'), href: '/admin/students' },
         { icon: '☎', label: 'Hỗ trợ tư vấn', href: '/admin/consultations' },
         { icon: '🛒', label: t('Orders'), href: '/admin/orders' },

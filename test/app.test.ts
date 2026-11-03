@@ -13,6 +13,7 @@ import { hashParentCode, verifyParentCode } from '../src/parent-settings-code';
 import { hashPassword, verifyPassword } from '../src/password';
 import { createOrderPayment, generateOrderCode, isSupportedPaymentReceipt } from '../src/order-payment';
 import { requiresLearningTopic } from '../src/package-topic';
+import { parseUserActivityInput } from '../src/user-activity';
 
 test('requires learning topics for the retail book and Started Kit packages', () => {
   assert.equal(requiresLearningTopic({ slug: 'starter', name: 'Sách Bán Lẻ' }), true);
@@ -82,6 +83,27 @@ test('accepts only receipt images whose bytes match a supported image format', (
   assert.equal(isSupportedPaymentReceipt(Buffer.from('RIFF0000WEBP'), 'image/webp'), true);
   assert.equal(isSupportedPaymentReceipt(Buffer.from('<svg/>'), 'image/png'), false);
   assert.equal(isSupportedPaymentReceipt(Buffer.from([0xff, 0xd8, 0xff]), 'image/png'), false);
+});
+
+test('validates tracked user activity without accepting query strings or API paths', () => {
+  assert.deepEqual(parseUserActivityInput({ eventType: 'PAGE_VIEW', path: '/dashboard' }), {
+    eventType: 'PAGE_VIEW',
+    path: '/dashboard',
+  });
+  assert.deepEqual(parseUserActivityInput({
+    eventType: 'INTERACTION',
+    path: '/learn',
+    targetType: 'BUTTON',
+    targetLabel: '  Bắt đầu học  ',
+  }), {
+    eventType: 'INTERACTION',
+    path: '/learn',
+    targetType: 'BUTTON',
+    targetLabel: 'Bắt đầu học',
+  });
+  assert.equal(parseUserActivityInput({ eventType: 'PAGE_VIEW', path: '//outside.example/path' }), null);
+  assert.equal(parseUserActivityInput({ eventType: 'PAGE_VIEW', path: '/api/user-activity' }), null);
+  assert.equal(parseUserActivityInput({ eventType: 'INTERACTION', path: '/learn?token=private', targetType: 'BUTTON' }), null);
 });
 
 test('extracts pronunciation score from Azure assessment payload', () => {

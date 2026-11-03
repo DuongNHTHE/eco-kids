@@ -172,6 +172,7 @@ export function AppSidebar({
                                 key={item.label}
                                 href={item.href}
                                 className={classes}
+                                data-activity-label={item.label}
                                 onClick={() => setIsOpen(false)}
                             >
                                 <span>{item.icon}</span>

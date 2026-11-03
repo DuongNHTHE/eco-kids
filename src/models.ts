@@ -132,6 +132,23 @@ auditLogSchema.index({ user_id: 1, createdAt: -1 });
 auditLogSchema.index({ resource: 1, resourceId: 1, createdAt: -1 });
 auditLogSchema.index({ action: 1, createdAt: -1 });
 
+const userActivitySchema = new mongoose.Schema({
+  userId: { type: String, required: true, index: true },
+  actorEmail: { type: String, index: true },
+  actorRole: String,
+  eventType: { type: String, enum: ['PAGE_VIEW', 'INTERACTION'], required: true },
+  path: { type: String, required: true },
+  targetType: { type: String, enum: ['LINK', 'BUTTON', 'OTHER'] },
+  targetLabel: { type: String, maxlength: 80 },
+  ipAddress: String,
+  userAgent: String,
+  createdAt: { type: Date, default: Date.now, index: true },
+}, { collection: 'user_activities', versionKey: false });
+
+userActivitySchema.index({ userId: 1, createdAt: -1 });
+userActivitySchema.index({ eventType: 1, createdAt: -1 });
+userActivitySchema.index({ path: 1, createdAt: -1 });
+
 const parentSettingsSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true, index: true },
   useParentCode: { type: Boolean, default: false },
@@ -175,6 +192,7 @@ export const Cart = (mongoose.models.Cart || mongoose.model('Cart', cartSchema))
 export const Partner = (mongoose.models.Partner || mongoose.model('Partner', partnerSchema)) as mongoose.Model<any>;
 export const Notification = (mongoose.models.Notification || mongoose.model('Notification', notificationSchema)) as mongoose.Model<any>;
 export const AuditLog = (mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema)) as mongoose.Model<any>;
+export const UserActivity = (mongoose.models.UserActivity || mongoose.model('UserActivity', userActivitySchema)) as mongoose.Model<any>;
 export const ParentSettings = (mongoose.models.ParentSettings || mongoose.model('ParentSettings', parentSettingsSchema)) as mongoose.Model<any>;
 export const GameConfig = (mongoose.models.GameConfig || mongoose.model('GameConfig', gameConfigSchema)) as mongoose.Model<any>;
 

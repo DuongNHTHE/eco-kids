@@ -13,6 +13,17 @@ Website MVP được xây dựng từ tài liệu Checkpoint 1–3: kết hợp 
 
 MongoDB là bắt buộc. Chạy `npm run db:seed` một lần sau khi cấu hình `MONGODB_URI` để tạo chủ đề, từ vựng và sản phẩm ban đầu. Tiến độ học, đơn hàng, đăng ký đối tác và nội dung đều được đọc/ghi từ MongoDB; ứng dụng không có dữ liệu fallback trong bộ nhớ.
 
+## Import 200 user mẫu
+
+File [seed-users.json](./seed-users.json) chứa sẵn 200 user mẫu. Chạy lệnh sau để import/upsert danh sách vào MongoDB:
+
+```powershell
+npm run seed:user
+npm run seed:user -- --date 2026-11-03
+```
+
+`--date` có thể nhận ngày `YYYY-MM-DD` (được hiểu là 00:00 UTC) hoặc thời điểm ISO 8601; ngày này được áp dụng cho `createdAt` và `updatedAt` của toàn bộ user. Nếu bỏ qua, dùng ngày lưu trong file JSON. Có thể chỉ định file khác bằng `--file users.json`. Mật khẩu mẫu mặc định là `SeedUser@123`; mỗi user lưu password dưới dạng hash. Các tài khoản mẫu dùng email `@example.com` và vai trò `PARENT`.
+
 ## Google Analytics 4
 
 Tạo GA4 property và Web data stream, sau đó thêm Measurement ID (bắt đầu bằng `G-`) vào `.env`:
@@ -67,6 +78,7 @@ console.log(response.text);
 - Phát âm mẫu bằng Web Speech API; nhận diện giọng nói nếu trình duyệt hỗ trợ.
 - Nhắc nghỉ mắt sau 20 phút và hoạt động thực hành không màn hình.
 - Dashboard phụ huynh: chuỗi ngày học, từ đã học, điểm phát âm, biểu đồ tiến độ.
+- Lịch sử truy cập và tương tác (chỉ ADMIN): ghi nhận trang, loại phần tử được nhấp, thời điểm, IP và trình duyệt; không lưu nội dung biểu mẫu.
 - Cửa hàng bộ KIT, giỏ hàng và tạo đơn.
 - Form đăng ký giải pháp B2B cho trường/trung tâm.
 
